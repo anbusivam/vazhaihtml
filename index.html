@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vazhai NGO - Light a Lamp. Light a Life.</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #2d5016, #4a7c59);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .logo .tamil {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            font-size: 0.9rem;
+            color: #e0e0e0;
+        }
+
+        .menu {
+            list-style: none;
+        }
+
+        .menu li {
+            margin-bottom: 5px;
+        }
+
+        .menu a {
+            display: block;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .menu a:hover, .menu a.active {
+            background-color: rgba(255, 215, 0, 0.1);
+            border-left-color: #ffd700;
+            color: #ffd700;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .section-card {
+            background: white;
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 5px solid #4a7c59;
+        }
+
+        .section-card h2 {
+            color: #2d5016;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 10px;
+        }
+
+        .section-card p {
+            color: #555;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .highlight {
+            background-color: #fff8dc;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffd700;
+            margin: 15px 0;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #4a7c59, #2d5016);
+            color: white;
+            border-radius: 10px;
+            margin: 10px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .contact-form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2d5016;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #4a7c59;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4a7c59, #2d5016);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .event-card {
+            background: linear-gradient(135deg, #fff8dc, #ffffff);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #ffd700;
+        }
+
+        .event-date {
+            color: #2d5016;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .motto {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #2d5016;
+            font-style: italic;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #fff8dc, #ffffff);
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+        }
+
+        .founding-story {
+            background: linear-gradient(135deg, #f0f8e0, #ffffff);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4a7c59;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <div class="logo">
+                <div class="tamil">வாழை</div>
+                <h1>VAZHAI</h1>
+                <p>தலைமுறை வளர்ச்சியின் அடையாளம்</p>
+            </div>
+            <ul class="menu">
+                <li><a href="#" class="menu-item active" data-section="home">Home</a></li>
+                <li><a href="#" class="menu-item" data-section="who-we-are">Who We Are</a></li>
+                <li><a href="#" class="menu-item" data-section="what-we-do">What We Do</a></li>
+                <li><a href="#" class="menu-item" data-section="join-vazhai">Join Vazhai</a></li>
+                <li><a href="#" class="menu-item" data-section="vazhai-events">Vazhai Events</a></li>
+                <li><a href="#" class="menu-item" data-section="contact-us">Contact Us</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <!-- Home Section -->
+            <div id="home" class="content-section active">
+                <div class="motto">Light a Lamp. Light a Life.</div>
+                
+                <!--<img src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Students learning together" class="hero-image">-->
+                <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/workshop1.jpg?raw=true" alt="Students learning together" class="hero-image">
+                
+                <div class="section-card">
+                    <h2>Welcome to Vazhai NGO</h2>
+                    <p>வாழை (Vazhai) represents the symbol of generational growth and development. Just as a banana tree nurtures and sustains, we at Vazhai NGO are committed to nurturing the minds and futures of children across Tamil Nadu.</p>
+                    <p>Our mission is simple yet profound: to light a lamp in every child's life, illuminating their path to education, growth, and success. We believe that education is the most powerful tool for transformation, and every child deserves the opportunity to learn, grow, and thrive.</p>
+                </div>
+
+                <div class="founding-story">
+                    <h3 style="color: #2d5016; margin-bottom: 15px;">Our Foundation Story</h3>
+                    <p>Vazhai was founded by a group of First Generation College Graduates from Presidency College Chennai in April 2005. These dedicated individuals, having experienced the transformative power of education firsthand, wanted to pay back to society through education, mentoring, and guidance to children in the remotest parts of Tamil Nadu.</p>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">500+</div>
+                        <div>Students Helped</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">2</div>
+                        <div>Districts Served</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">19</div>
+                        <div>Years of Service</div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Our Impact</h2>
+                    <p>With helping hands from all fields, Vazhai has helped over 500 students in Dharmapuri and Villupuram districts of Tamil Nadu. Our comprehensive approach includes mentoring, life skill workshops, and academic support programs designed to empower students with the tools they need for success.</p>
+                </div>
+            </div>
+
+            <!-- Who We Are Section -->
+            <div id="who-we-are" class="content-section">
+                <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity11.jpg?raw=true" alt="Presidency College Chennai" class="hero-image">
+                
+                <div class="section-card">
+                    <h2>Our Genesis</h2>
+                    <p>Vazhai was born out of gratitude and a deep sense of responsibility. Founded in April 2005 by a group of First Generation College Graduates from the prestigious Presidency College Chennai, our organization represents the beautiful cycle of giving back to society.</p>
+                    <p>Our founders understood the challenges faced by first-generation learners, having walked that path themselves. They experienced the transformative power of education and wanted to extend that same opportunity to children in the remotest parts of Tamil Nadu.</p>
+                </div>
+
+                <div class="section-card">
+                    <h2>The Meaning of Vazhai</h2>
+                    <p>வாழை (Vazhai) - the Tamil word for banana tree - is deeply symbolic in our culture. The banana tree represents:</p>
+                    <p><strong>Generational Growth:</strong> Just as a banana tree produces offshoots that continue the lineage, education creates a continuous cycle of growth and development across generations.</p>
+                    <p><strong>Nourishment:</strong> Every part of the banana tree serves a purpose - from fruit to leaves to trunk. Similarly, our holistic approach to education nourishes every aspect of a child's development.</p>
+                    <p><strong>Sustainability:</strong> The banana tree's ability to regenerate mirrors our commitment to creating sustainable change in communities.</p>
+                </div>
+
+                <div class="section-card">
+                    <h2>Our Philosophy</h2>
+                    <p>We believe that education is not just about academic achievement, but about lighting the lamp of knowledge, curiosity, and self-belief in every child. Our motto "Light a Lamp. Light a Life" encapsulates our commitment to illuminating the path forward for underprivileged children.</p>
+                    <p>As first-generation college graduates ourselves, we understand the unique challenges and barriers that students from disadvantaged backgrounds face. This personal experience drives our passion and informs our approach to mentoring and guidance.</p>
+                </div>
+
+                <div class="section-card">
+                    <h2>Our Team</h2>
+                    <p>Our team consists of passionate volunteers from diverse professional backgrounds - engineers, doctors, teachers, entrepreneurs, and social workers. What unites us is our shared commitment to education and our belief in the potential of every child.</p>
+                    <p>Many of our team members are themselves products of similar backgrounds, making our mentoring approach authentic and relatable to the students we serve.</p>
+                </div>
+            </div>
+
+            <!-- What We Do Section -->
+            <div id="what-we-do" class="content-section">
+                
+                <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/school1.jpg?raw=true" alt="Students in classroom" class="hero-image">
+                <div class="section-card">
+                    <h2>Educational Mentoring</h2>
+                    <p>Our core focus is on providing personalized mentoring to students in rural areas of Tamil Nadu. Our mentors, who are professionals from various fields, work closely with students to provide academic guidance, career counseling, and life skills development.</p>
+                    <p>We believe that mentoring goes beyond academic support - it's about being a guiding light, a source of encouragement, and a bridge between dreams and reality for these young minds.</p>
+                </div>
+                <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity23.jpg?raw=true" alt="Students in classroom" class="hero-image">
+                
+                <div class="section-card">
+                    <h2>Life Skills Workshops</h2>
+                    <p>Our comprehensive life skills workshops cover essential areas including:</p>
+                    <p><strong>Communication Skills:</strong> Building confidence in both Tamil and English communication</p>
+                    <p><strong>Leadership Development:</strong> Nurturing leadership qualities and decision-making skills</p>
+                    <p><strong>Digital Literacy:</strong> Introducing students to technology and digital tools</p>
+                    <p><strong>Financial Literacy:</strong> Basic understanding of money management and planning</p>
+                    <p><strong>Career Guidance:</strong> Exposure to various career paths and opportunities</p>
+                </div>
+                <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity16.jpg?raw=true" alt="Students in classroom" class="hero-image">
+                <div class="section-card">
+                    <h2>Academic Support Programs</h2>
+                    <p>We provide targeted academic support to help students excel in their studies. Our programs include:</p>
+                    <p>Subject-specific tutoring, exam preparation workshops, study materials and resources, scholarship guidance, and college admission counseling.</p>
+                    <p>Our academic support is designed to complement regular schooling and help students achieve their full potential.</p>
+                </div>
+                <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity24.jpg?raw=true" alt="Students in classroom" class="hero-image">
+                <div class="section-card">
+                    <h2>Geographic Focus</h2>
+                    <p>We currently serve students in <strong>Dharmapuri</strong> and <strong>Villupuram</strong> districts of Tamil Nadu. These regions were chosen for their high concentration of rural schools and the significant need for educational support.</p>
+                    <div class="highlight">
+                        <p><strong>Impact to Date:</strong> Over 500 students have benefited from our programs across these two districts, with many going on to pursue higher education and professional careers.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Join Vazhai Section -->
+            <div id="join-vazhai" class="content-section">
+                <img src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Volunteers working together" class="hero-image">
+                <div class="section-card">
+                    <h2>Volunteer Opportunities</h2>
+                    <p><strong>Academic Mentoring:</strong> Provide one-on-one or group mentoring sessions to help students with their studies and career planning.</p>
+                    <p><strong>Workshop Facilitation:</strong> Lead life skills workshops on topics like communication, leadership, and digital literacy.</p>
+                    <p><strong>Career Guidance:</strong> Share your professional experience and help students understand various career paths.</p>
+                    <p><strong>Administrative Support:</strong> Help with organizing events, managing programs, and supporting our operations.</p>
+                </div>
+                
+                
+                <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/mentor1.jpg?raw=true" alt="Volunteers working together" class="hero-image">
+                <div class="section-card">
+                    <h2>Become a Mentor</h2>
+                    <p>Join our community of dedicated mentors and make a lasting impact on a child's life. As a mentor with Vazhai, you'll have the opportunity to guide young minds, share your knowledge and experience, and be part of their journey to success.</p>
+                    <p>We welcome professionals from all fields - whether you're an engineer, doctor, teacher, businessman, or from any other profession, your experience and guidance can light up a child's future.</p>
+                </div>
+
+                <div class="section-card">
+                    <h2>Requirements and Commitment</h2>
+                    <p>We believe that consistent engagement creates the most meaningful impact. We ask our volunteers to:</p>
+                    <p>Commit to at least one day per month for volunteering activities, participate in our orientation program, maintain regular communication with assigned students, and attend volunteer meetings.</p>
+                    <div class="highlight">
+                        <p><strong>Special Preference:</strong> We especially encourage graduates to join us, as your personal journey can inspire and guide our students.</p>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>How to Get Started</h2>
+                    <p>Interested in joining the Vazhai family? Here's how you can start your journey with us:</p>
+                    <p>1. <strong>Contact Us:</strong> Reach out through our contact form or email us directly</p>
+                    <p>2. <strong>Orientation:</strong> Attend our volunteer orientation session</p>
+                    <p>3. <strong>Matching:</strong> We'll match you with students based on your expertise and interests</p>
+                    <p>4. <strong>Begin Mentoring:</strong> Start your meaningful journey of lighting lamps and lighting lives</p>
+                </div>
+            </div>
+
+            <!-- Vazhai Events Section -->
+            <div id="vazhai-events" class="content-section">
+                <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Community event" class="hero-image">
+                
+                <div class="section-card">
+                    <h2>Annual Founder's Day</h2>
+                    <div class="event-card">
+                        <div class="event-date">April 2025</div>
+                        <h3>Vazhai Founder's Day Celebration</h3>
+                        <p>Join us as we celebrate our founding anniversary with current and former students, volunteers, and supporters. This event features student presentations, success stories, and cultural performances showcasing the talent of our beneficiaries.</p>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Educational Workshops</h2>
+                    <div class="event-card">
+                        <div class="event-date">Monthly</div>
+                        <h3>Life Skills Development Workshops</h3>
+                        <p>Monthly workshops covering communication skills, leadership development, digital literacy, and career guidance. These sessions are conducted at our partner schools in Dharmapuri and Villupuram districts.</p>
+                    </div>
+                    
+                    <div class="event-card">
+                        <div class="event-date">Quarterly</div>
+                        <h3>Academic Excellence Programs</h3>
+                        <p>Intensive academic support sessions focusing on exam preparation, study techniques, and subject-specific guidance. These programs are designed to help students excel in their academic pursuits.</p>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Special Events</h2>
+                    <div class="event-card">
+                        <div class="event-date">September 2025</div>
+                        <h3>Mentor-Student Meet</h3>
+                        <p>Annual gathering where mentors and students come together to share experiences, celebrate achievements, and strengthen bonds. This event includes interactive sessions, group activities, and recognition ceremonies.</p>
+                    </div>
+                    
+                    <div class="event-card">
+                        <div class="event-date">December 2025</div>
+                        <h3>Career Guidance Fair</h3>
+                        <p>Comprehensive career fair featuring professionals from various fields, college representatives, and information about scholarship opportunities. Students get exposure to different career paths and higher education options.</p>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Community Outreach</h2>
+                    <p>We regularly organize community outreach programs to create awareness about the importance of education and to identify students who can benefit from our programs. These initiatives help us connect with parents, teachers, and local leaders.</p>
+                    <p>Our outreach events include parent-teacher meetings, community awareness sessions, and collaboration with local educational institutions to expand our reach and impact.</p>
+                </div>
+            </div>
+
+            <!-- Contact Us Section -->
+            <div id="contact-us" class="content-section">
+                <img src="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Contact us" class="hero-image">
+                
+                <div class="section-card">
+                    <h2>Get in Touch</h2>
+                    <p>Whether you want to volunteer, need more information about our programs, or simply want to learn more about Vazhai, we'd love to hear from you. Together, we can light more lamps and light more lives.</p>
+                    
+                    <div class="contact-form">
+                        <form>
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="interest">I'm interested in:</label>
+                                <select id="interest" name="interest" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px;">
+                                    <option value="">Select an option</option>
+                                    <option value="mentoring">Becoming a Mentor</option>
+                                    <option value="volunteering">Volunteering</option>
+                                    <option value="partnership">Partnership Opportunities</option>
+                                    <option value="information">General Information</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="message">Message</label>
+                                <textarea id="message" name="message" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Connect with Us</h2>
+                    <p><strong>Email:</strong> info@vazhaingo.org</p>
+                    <p><strong>Phone:</strong> +91-44-12345678</p>
+                    <p><strong>Address:</strong> Chennai, Tamil Nadu</p>
+                    <p><strong>Serving:</strong> Dharmapuri and Villupuram Districts</p>
+                    
+                    <div class="highlight">
+                        <p><strong>For Mentoring Inquiries:</strong> mentors@vazhaingo.org</p>
+                        <p><strong>For Student Applications:</strong> students@vazhaingo.org</p>
+                        <p><strong>For Partnership Opportunities:</strong> partnerships@vazhaingo.org</p>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Visit Our Programs</h2>
+                    <p>We welcome visitors to observe our programs and see the impact of our work firsthand. If you're interested in visiting our program locations in Dharmapuri or Villupuram districts, please contact us in advance to arrange a visit.</p>
+                    <p>These visits provide an excellent opportunity to understand our methodology, meet our students and volunteers, and see how we're working to light lamps and light lives across Tamil Nadu.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Menu functionality
+        const menuItems = document.querySelectorAll('.menu-item');
+        const contentSections = document.querySelectorAll('.content-section');
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all menu items
+                menuItems.forEach(mi => mi.classList.remove('active'));
+                
+                // Add active class to clicked item
+                this.classList.add('active');
+                
+                // Hide all content sections
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show selected content section
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+                
+                // Scroll to top of main content
+                document.querySelector('.main-content').scrollTop = 0;
+                window.scrollTo(0, 0);
+            });
+        });
+
+        // Form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your interest in Vazhai! We will get back to you soon.');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
