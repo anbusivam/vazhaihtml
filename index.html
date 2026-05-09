@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vazhai NGO - Light a Lamp. Light a Life.</title>
+    <link rel="icon" type="image/x-icon"       href="https://github.com/anbusivam/vazhaiimages/blob/main/images/favicon_io/favicon.ico?raw=true">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://github.com/anbusivam/vazhaiimages/blob/main/images/favicon_io/favicon-16x16.png?raw=true">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://github.com/anbusivam/vazhaiimages/blob/main/images/favicon_io/favicon-32x32.png?raw=true">
+    <link rel="apple-touch-icon"               href="https://github.com/anbusivam/vazhaiimages/blob/main/images/favicon_io/apple-touch-icon.png?raw=true">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -80,15 +84,15 @@
         .drawer-overlay.show { opacity: 1; }
         .drawer {
             position: fixed;
-            top: 0; left: -280px; bottom: 0;
+            top: 0; right: -280px; bottom: 0;
             width: 280px;
             background: linear-gradient(160deg, var(--green-deep) 0%, var(--green-mid) 100%);
             z-index: 195;
-            transition: left 0.35s cubic-bezier(.4,0,.2,1);
+            transition: right 0.35s cubic-bezier(.4,0,.2,1);
             padding-top: var(--nav-height);
             overflow-y: auto;
         }
-        .drawer.open { left: 0; }
+        .drawer.open { right: 0; }
         .drawer-logo {
             text-align: center;
             padding: 24px 20px 20px;
@@ -162,14 +166,14 @@
             color: rgba(255,255,255,0.8);
             text-decoration: none;
             font-size: 0.92rem;
-            border-left: 3px solid transparent;
+            border-right: 3px solid transparent;
             transition: all 0.25s;
         }
         .menu-list a .nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
         .menu-list a:hover,
         .menu-list a.active {
             background: rgba(255,215,0,0.1);
-            border-left-color: var(--gold-light);
+            border-right-color: var(--gold-light);
             color: var(--gold-light);
         }
 
@@ -196,7 +200,11 @@
         .page-hero img {
             width: 100%; height: 100%;
             object-fit: cover;
+            object-position: center center;
             display: block;
+        }
+        #donation .page-hero img {
+            object-position: left center;
         }
         .page-hero-overlay {
             position: absolute; inset: 0;
@@ -382,12 +390,60 @@
         }
         .cta-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
-        /* ─── RESPONSIVE ─── */
+        /* ─── STICKY BOTTOM BAR (mobile only) ─── */
+        .bottom-bar {
+            display: none;
+        }
         @media (max-width: 900px) {
+            .bottom-bar {
+                display: flex;
+                position: fixed;
+                bottom: 0; left: 0; right: 0;
+                z-index: 180;
+                background: var(--green-deep);
+                border-top: 1px solid rgba(255,215,0,0.2);
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+            }
+            .bottom-bar-btn {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                padding: 10px 8px;
+                text-decoration: none;
+                font-size: 0.7rem;
+                font-weight: 500;
+                letter-spacing: 0.3px;
+                cursor: pointer;
+                border: none;
+                background: none;
+                transition: background 0.2s;
+            }
+            .bottom-bar-btn:first-child {
+                border-right: 1px solid rgba(255,215,0,0.1);
+                color: rgba(255,255,255,0.75);
+            }
+            .bottom-bar-btn:nth-child(2) {
+                border-right: 1px solid rgba(255,215,0,0.1);
+                color: rgba(255,255,255,0.75);
+            }
+            .bottom-bar-btn:nth-child(3) {
+                border-right: 1px solid rgba(255,215,0,0.1);
+                color: #a8d8b8;
+            }
+            .bottom-bar-btn:last-child {
+                color: var(--gold-light);
+                background: linear-gradient(135deg, rgba(230,184,0,0.15), rgba(230,184,0,0.05));
+            }
+            .bottom-bar-btn:active { background: rgba(255,255,255,0.08); }
+            .bottom-bar-icon { font-size: 1.3rem; line-height: 1; }
+
             .sidebar { display: none; }
             .topbar { display: flex; }
             .drawer-overlay { display: block; pointer-events: none; }
-            .main { margin-left: 0; padding-top: var(--nav-height); }
+            .main { margin-left: 0; padding-top: var(--nav-height); padding-bottom: 60px; }
             .page-body { padding: 24px 18px 40px; }
             .page-hero { height: 220px; }
             .page-hero-text h1 { font-size: 1.5rem; }
@@ -535,7 +591,7 @@
         <li><a href="#" class="menu-item" data-section="join-vazhai"><span class="nav-icon">🤝</span>Join Vazhai</a></li>
         <li><a href="#" class="menu-item" data-section="vazhai-events"><span class="nav-icon">📅</span>Vazhai Events</a></li>
         <li><a href="#" class="menu-item" data-section="contact-us"><span class="nav-icon">✉️</span>Contact Us</a></li>
-        <li><a href="#" class="menu-item" data-section="donation"><span class="nav-icon">💛</span>Donation</a></li>
+        <li><a href="#" class="menu-item" data-section="donation"><span class="nav-icon">💛</span>Donate</a></li>
     </ul>
 </nav>
 
@@ -560,7 +616,7 @@
         <li><a href="#" class="menu-item" data-section="join-vazhai"><span class="nav-icon">🤝</span>Join Vazhai</a></li>
         <li><a href="#" class="menu-item" data-section="vazhai-events"><span class="nav-icon">📅</span>Vazhai Events</a></li>
         <li><a href="#" class="menu-item" data-section="contact-us"><span class="nav-icon">✉️</span>Contact Us</a></li>
-        <li><a href="#" class="menu-item" data-section="donation"><span class="nav-icon">💛</span>Donation</a></li>
+        <li><a href="#" class="menu-item" data-section="donation"><span class="nav-icon">💛</span>Donate</a></li>
     </ul>
     <div class="sidebar-footer">Founded April 2005 · Tamil Nadu</div>
 </aside>
@@ -873,7 +929,7 @@
     <!-- DONATION -->
     <section id="donation" class="content-section">
         <div class="page-hero">
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/donation.jpg?raw=true" alt="Donation">
+            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/Donation.jpg?raw=true" alt="Donation">
             <div class="page-hero-overlay"></div>
             <div class="page-hero-text">
                 <h1>Support Vazhai</h1>
@@ -954,6 +1010,12 @@
     const allItems = document.querySelectorAll('.menu-item');
     const sections = document.querySelectorAll('.content-section');
 
+    function navigateTo(target) {
+        history.pushState(null, '', '#' + target);
+        activateSection(target);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function activateSection(target) {
         if (!document.getElementById(target)) return;
         allItems.forEach(i => i.classList.remove('active'));
@@ -1013,5 +1075,25 @@
         chevron.classList.toggle('open');
     }
 </script>
+<!-- ═══ MOBILE STICKY BOTTOM BAR ═══ -->
+<div class="bottom-bar">
+    <button class="bottom-bar-btn" onclick="navigateTo('what-we-do')">
+        <span class="bottom-bar-icon">📚</span>
+        <span>What We Do</span>
+    </button>
+    <button class="bottom-bar-btn" onclick="navigateTo('contact-us')">
+        <span class="bottom-bar-icon">✉️</span>
+        <span>Contact</span>
+    </button>
+    <button class="bottom-bar-btn" onclick="navigateTo('join-vazhai')">
+        <span class="bottom-bar-icon">🤝</span>
+        <span>Join Us</span>
+    </button>
+    <button class="bottom-bar-btn" onclick="navigateTo('donation')">
+        <span class="bottom-bar-icon">💛</span>
+        <span>Donate</span>
+    </button>
+</div>
+
 </body>
 </html>
