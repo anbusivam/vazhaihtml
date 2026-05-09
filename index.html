@@ -410,6 +410,41 @@
         .sidebar::-webkit-scrollbar-track { background: transparent; }
         .sidebar::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 4px; }
 
+        .drawer-logo-img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto 8px;
+            background: white;
+        }
+        .d-motto {
+            font-style: italic;
+            color: var(--gold);
+            font-size: 0.78rem;
+            margin-top: 4px;
+        }
+
+        /* ─── LOGO IMAGE ─── */
+        .sidebar-logo-img {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            border-radius: 12px;
+            display: block;
+            margin: 0 auto 4px;
+            background: white; /* fallback bg in case image has transparency */
+        }
+        .topbar-logo-img {
+            height: 44px;
+            width: auto;
+            max-width: 160px;
+            object-fit: contain;
+            border-radius: 6px;
+            background: white;
+        }
+
         /* ─── DONATE BOXES ─── */
         .donate-box {
             border-radius: 16px;
@@ -464,8 +499,14 @@
 <!-- ═══ MOBILE TOP BAR ═══ -->
 <header class="topbar" id="topbar">
     <div class="topbar-brand">
-        <span class="brand-tamil">வாழை</span>
-        <span class="brand-en">VAZHAI</span>
+        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true"
+             alt="Vazhai NGO"
+             class="topbar-logo-img"
+             onerror="this.style.display='none';document.getElementById('topbar-logo-fallback').style.display='flex';">
+        <div id="topbar-logo-fallback" style="display:none;align-items:center;gap:8px;">
+            <span class="brand-tamil">வாழை</span>
+            <span class="brand-en">VAZHAI</span>
+        </div>
     </div>
     <button class="hamburger" id="hamburger" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -476,9 +517,16 @@
 <div class="drawer-overlay" id="overlay"></div>
 <nav class="drawer" id="drawer">
     <div class="drawer-logo">
-        <div class="d-tamil">வாழை</div>
-        <div class="d-en">VAZHAI</div>
+        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true"
+             alt="Vazhai NGO Logo"
+             class="drawer-logo-img"
+             onerror="this.style.display='none';document.getElementById('drawer-logo-fallback').style.display='block';">
+        <div id="drawer-logo-fallback" style="display:none;">
+            <div class="d-tamil">வாழை</div>
+            <div class="d-en">VAZHAI</div>
+        </div>
         <div class="d-tagline">தலைமுறை வளர்ச்சியின் அடையாளம்</div>
+        <div class="d-motto">Light a Lamp. Light a Life.</div>
     </div>
     <ul class="menu-list" id="drawer-menu">
         <li><a href="#" class="menu-item active" data-section="home"><span class="nav-icon">🏠</span>Home</a></li>
@@ -494,9 +542,15 @@
 <!-- ═══ DESKTOP SIDEBAR ═══ -->
 <aside class="sidebar">
     <div class="sidebar-logo">
-        <div class="logo-tamil">வாழை</div>
-        <div class="logo-en">VAZHAI</div>
-        <div class="logo-sub">தலைமுறை வளர்ச்சியின் அடையாளம்</div>
+        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true"
+             alt="Vazhai NGO Logo"
+             class="sidebar-logo-img"
+             onerror="this.style.display='none';document.getElementById('sidebar-logo-fallback').style.display='block';">
+        <div id="sidebar-logo-fallback" style="display:none">
+            <div class="logo-tamil">வாழை</div>
+            <div class="logo-en">VAZHAI</div>
+            <div class="logo-sub">தலைமுறை வளர்ச்சியின் அடையாளம்</div>
+        </div>
         <div class="logo-motto">Light a Lamp. Light a Life.</div>
     </div>
     <ul class="nav-menu" id="sidebar-menu">
@@ -950,7 +1004,8 @@
     });
     overlay.addEventListener('click', closeDrawer);
 
-    // ─── Monthly donation toggle
+
+
     function toggleMonthly() {
         const body = document.getElementById('monthly-body');
         const chevron = document.getElementById('monthly-chevron');
