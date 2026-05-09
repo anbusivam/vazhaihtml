@@ -400,26 +400,53 @@
                     }
                 });
             }
-        });
-        const menuItems = document.querySelectorAll('.menu-item');
-        const sections = document.querySelectorAll('.content-section');
 
-        menuItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Active link UI
-                menuItems.forEach(mi => mi.classList.remove('active'));
-                this.classList.add('active');
+            // Menu navigation with hash
+            const menuItems = document.querySelectorAll('.menu-item');
+            const sections = document.querySelectorAll('.content-section');
 
-                // Switch section
-                const target = this.getAttribute('data-section');
-                sections.forEach(s => s.classList.remove('active'));
-                document.getElementById(target).classList.add('active');
-
+            function activateSection(section) {
+                let found = false;
+                menuItems.forEach(mi => {
+                    if (mi.getAttribute('data-section') === section) {
+                        mi.classList.add('active');
+                        found = true;
+                    } else {
+                        mi.classList.remove('active');
+                    }
+                });
+                sections.forEach(s => {
+                    if (s.id === section) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
                 // Scroll to top
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                return found;
+            }
+
+            menuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.getAttribute('data-section');
+                    if (target) {
+                        window.location.hash = target;
+                    }
+                });
             });
+
+            function handleHash() {
+                let section = window.location.hash.replace('#', '');
+                if (!section) section = 'home';
+                if (!activateSection(section)) {
+                    activateSection('home');
+                }
+            }
+
+            window.addEventListener('hashchange', handleHash);
+            handleHash(); // On page load
         });
     </script>
 </body>
