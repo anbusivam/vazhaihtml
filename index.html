@@ -409,6 +409,54 @@
         .sidebar::-webkit-scrollbar { width: 4px; }
         .sidebar::-webkit-scrollbar-track { background: transparent; }
         .sidebar::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 4px; }
+
+        /* ─── DONATE BOXES ─── */
+        .donate-box {
+            border-radius: 16px;
+            margin-bottom: 18px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1.5px solid transparent;
+        }
+        .donate-onetime {
+            border-color: var(--gold);
+            background: linear-gradient(135deg, #fffdf0, var(--white));
+        }
+        .donate-monthly {
+            border-color: var(--green-soft);
+            background: linear-gradient(135deg, #f0f8ed, var(--white));
+        }
+        .donate-box-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 20px 22px;
+        }
+        .donate-toggle { cursor: pointer; user-select: none; }
+        .donate-toggle:hover { background: rgba(0,0,0,0.02); }
+        .donate-icon {
+            font-size: 1.1rem;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .donate-onetime .donate-icon { background: var(--gold-pale); color: var(--gold); }
+        .donate-monthly .donate-icon { background: rgba(74,124,89,0.12); color: var(--green-soft); }
+        .donate-box-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--green-deep);
+            font-size: 1.1rem; line-height: 1.2;
+        }
+        .donate-box-sub { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
+        .donate-chevron { font-size: 1.1rem; color: var(--green-soft); transition: transform 0.3s; }
+        .donate-chevron.open { transform: rotate(180deg); }
+        .donate-widget-wrap { padding: 0 22px 20px; }
+        .donate-collapsible {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(.4,0,.2,1);
+        }
+        .donate-collapsible.open { max-height: 700px; }
     </style>
 </head>
 <body>
@@ -780,16 +828,43 @@
         </div>
 
         <div class="page-body">
-            <div class="card gold-accent">
-                <h2>Donate Now</h2>
-                <p>Your generous contribution helps us continue our mission of mentoring and empowering children. Every donation, big or small, makes a meaningful difference in shaping brighter futures.</p>
-                <p>Thank you for supporting Vazhai and believing in the power of mentorship!</p>
-                <div style="margin-top: 20px;">
+            <p style="color:var(--text-mid);font-size:0.93rem;margin-bottom:22px;">Your generous contribution helps us continue our mission of mentoring and empowering children. Every donation, big or small, makes a meaningful difference in shaping brighter futures. Thank you for supporting Vazhai!</p>
+
+            <!-- ONE-TIME DONATION -->
+            <div class="donate-box donate-onetime">
+                <div class="donate-box-header">
+                    <span class="donate-icon">✦</span>
+                    <div>
+                        <div class="donate-box-title">One-Time Donation</div>
+                        <div class="donate-box-sub">Make a single contribution of any amount</div>
+                    </div>
+                </div>
+                <div class="donate-widget-wrap">
                     <form>
-                        <script src="https://cdn.razorpay.com/static/widget/subscription-button.js"
-                            data-subscription_button_id="pl_R2Wz7OWXdi5WdX"
-                            data-button_theme="brand-color" async></script>
+                        <script src="https://checkout.razorpay.com/v1/payment-button.js"
+                            data-payment_button_id="pl_Qwp1n9PkcR8tKi" async></script>
                     </form>
+                </div>
+            </div>
+
+            <!-- MONTHLY SUBSCRIPTION -->
+            <div class="donate-box donate-monthly" id="monthly-box">
+                <div class="donate-box-header donate-toggle" onclick="toggleMonthly()">
+                    <span class="donate-icon">↻</span>
+                    <div style="flex:1;">
+                        <div class="donate-box-title">Monthly Subscription</div>
+                        <div class="donate-box-sub">Become a regular supporter — choose your plan</div>
+                    </div>
+                    <span class="donate-chevron" id="monthly-chevron">▾</span>
+                </div>
+                <div class="donate-collapsible" id="monthly-body">
+                    <div class="donate-widget-wrap">
+                        <form>
+                            <script src="https://cdn.razorpay.com/static/widget/subscription-button.js"
+                                data-subscription_button_id="pl_SnE7xSxS7tFLxU"
+                                data-button_theme="brand-color" async></script>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -825,25 +900,32 @@
     const allItems = document.querySelectorAll('.menu-item');
     const sections = document.querySelectorAll('.content-section');
 
+    function activateSection(target) {
+        if (!document.getElementById(target)) return;
+        allItems.forEach(i => i.classList.remove('active'));
+        document.querySelectorAll(`[data-section="${target}"]`).forEach(i => i.classList.add('active'));
+        sections.forEach(s => s.classList.remove('active'));
+        document.getElementById(target).classList.add('active');
+    }
+
     allItems.forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
             const target = this.getAttribute('data-section');
-
-            // Update all menus
-            allItems.forEach(i => i.classList.remove('active'));
-            document.querySelectorAll(`[data-section="${target}"]`).forEach(i => i.classList.add('active'));
-
-            // Switch section
-            sections.forEach(s => s.classList.remove('active'));
-            document.getElementById(target).classList.add('active');
-
-            // Close drawer on mobile
+            history.pushState(null, '', '#' + target);
+            activateSection(target);
             closeDrawer();
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
+
+    // Restore section from URL hash on load or back/forward
+    function loadFromHash() {
+        const hash = window.location.hash.replace('#', '');
+        activateSection(hash && document.getElementById(hash) ? hash : 'home');
+    }
+    window.addEventListener('popstate', loadFromHash);
+    loadFromHash();
 
     // ─── Drawer
     const hamburger = document.getElementById('hamburger');
@@ -867,6 +949,14 @@
         drawer.classList.contains('open') ? closeDrawer() : openDrawer();
     });
     overlay.addEventListener('click', closeDrawer);
+
+    // ─── Monthly donation toggle
+    function toggleMonthly() {
+        const body = document.getElementById('monthly-body');
+        const chevron = document.getElementById('monthly-chevron');
+        body.classList.toggle('open');
+        chevron.classList.toggle('open');
+    }
 </script>
 </body>
 </html>
