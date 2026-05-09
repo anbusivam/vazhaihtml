@@ -112,12 +112,16 @@
         }
         .monthly-content {
             max-height: 0;
+            opacity: 0;
             overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+            margin-top: 0;
+            transition: opacity 0.3s, max-height 0.4s cubic-bezier(0.4,0,0.2,1), margin-top 0.3s;
         }
         .monthly-content.expanded {
-            max-height: 300px;
+            max-height: 2000px; /* Large enough to fit widget, but still animates */
+            opacity: 1;
             margin-top: 12px;
+            overflow: visible;
         }
         @media (max-width: 600px) {
             .donate-box {
