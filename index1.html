@@ -62,6 +62,70 @@
             font-weight: bold;
         }
 
+        /* --- DONATION BOXES --- */
+        .donate-box {
+            background: #f8faf5;
+            border: 2px solid var(--accent);
+            border-radius: 14px;
+            margin: 18px auto 0 auto;
+            max-width: 400px;
+            box-shadow: 0 2px 10px rgba(45,80,22,0.07);
+            padding: 22px 18px 18px 18px;
+            text-align: center;
+            transition: box-shadow 0.2s;
+        }
+        .donate-box:hover {
+            box-shadow: 0 4px 18px rgba(45,80,22,0.13);
+        }
+        .donate-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .donate-onetime .donate-title {
+            cursor: default;
+        }
+        .donate-onetime {
+            margin-bottom: 18px;
+        }
+        .donate-monthly {
+            margin-bottom: 0;
+        }
+        .monthly-toggle {
+            cursor: pointer;
+            outline: none;
+        }
+        .monthly-toggle .arrow {
+            margin-left: 8px;
+            font-size: 1.1em;
+            transition: transform 0.3s;
+        }
+        .monthly-toggle[aria-expanded="true"] .arrow {
+            transform: rotate(90deg);
+        }
+        .monthly-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        .monthly-content.expanded {
+            max-height: 300px;
+            margin-top: 12px;
+        }
+        @media (max-width: 600px) {
+            .donate-box {
+                max-width: 98%;
+                padding: 14px 6px 12px 6px;
+            }
+        }
+
         /* Horizontal Menu */
         .nav-menu {
             display: flex;
@@ -295,23 +359,44 @@
             <div class="section-card" style="text-align:center;">
                 <h2>Support Vazhai</h2>
                 <p>Your generous contribution helps us shape brighter futures.</p>
-                <!-- Recurring Contribution Razorpay Button -->
-                <!-- One-Time Contribution Razorpay Button -->
-                <div style="margin-top:20px;">
+                <div class="donate-box donate-onetime">
+                    <div class="donate-title">One-Time Donation</div>
                     <form>
                         <script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_Qwp1n9PkcR8tKi" async> </script>
                     </form>
                 </div>
-                <div style="margin-top:20px;">
-                    <form>
-                        <script src="https://cdn.razorpay.com/static/widget/subscription-button.js" data-subscription_button_id="pl_SnE7xSxS7tFLxU" data-button_theme="brand-color" async> </script>
-                    </form>
+                <div class="donate-box donate-monthly">
+                    <div class="donate-title monthly-toggle" id="monthlyToggle" tabindex="0" role="button" aria-expanded="false">Monthly Subscription <span class="arrow">&#9654;</span></div>
+                    <div class="monthly-content" id="monthlyContent">
+                        <form>
+                            <script src="https://cdn.razorpay.com/static/widget/subscription-button.js" data-subscription_button_id="pl_SnE7xSxS7tFLxU" data-button_theme="brand-color" async> </script>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
+        // Expand/collapse for monthly subscription box
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('monthlyToggle');
+            const content = document.getElementById('monthlyContent');
+            if (toggle && content) {
+                toggle.addEventListener('click', function() {
+                    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+                    toggle.setAttribute('aria-expanded', !expanded);
+                    content.classList.toggle('expanded');
+                });
+                // Keyboard accessibility
+                toggle.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggle.click();
+                    }
+                });
+            }
+        });
         const menuItems = document.querySelectorAll('.menu-item');
         const sections = document.querySelectorAll('.content-section');
 
