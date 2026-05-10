@@ -336,6 +336,7 @@
         .model-box.old { background: #f5f5f0; border-left: 4px solid var(--green-light); }
         .model-box.new { background: linear-gradient(135deg, #f0f8e8, var(--white)); border-right: 4px solid var(--green-mid); }
         .model-arrow { background: var(--green-soft); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--white); padding: 0 14px; }
+        .model-arrow .arrow-mobile { display: none; }
         .model-box-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
         .model-box.old .model-box-label { color: var(--text-light); }
         .model-box.new .model-box-label { color: var(--green-soft); }
@@ -583,7 +584,9 @@
             .stat-num { font-size: 1.5rem; }
             .role-grid { grid-template-columns: 1fr; }
             .model-transition { grid-template-columns: 1fr; }
-            .model-arrow { padding: 10px; font-size: 1.2rem; transform: rotate(90deg); }
+            .model-arrow { padding: 10px 0; font-size: 1.2rem; min-height: 52px; }
+            .model-arrow .arrow-desktop { display: none; }
+            .model-arrow .arrow-mobile { display: inline; }
             .fund-grid { grid-template-columns: 1fr; }
             .action-bar-btns { flex-direction: column; align-items: center; }
         }
@@ -785,7 +788,7 @@
             <div class="section-label">Our Evolving Model</div>
             <div class="model-transition">
                 <div class="model-box old">
-                    <div class="model-box-label">Then · 2005–2024</div>
+                    <div class="model-box-label">Then  2005–2024</div>
                     <div class="model-box-title">Direct Mentoring &amp; Workshops</div>
                     <ul>
                         <li>Continuous mentoring relationships</li>
@@ -794,9 +797,12 @@
                         <li>Volunteer-led programs across districts</li>
                     </ul>
                 </div>
-                <div class="model-arrow">→</div>
+                <div class="model-arrow" aria-label="Then to now transition">
+                    <span class="arrow-desktop" aria-hidden="true">→</span>
+                    <span class="arrow-mobile" aria-hidden="true">↓</span>
+                </div>
                 <div class="model-box new">
-                    <div class="model-box-label">Now · 2025 Onwards</div>
+                    <div class="model-box-label">Now  2025 Onwards</div>
                     <div class="model-box-title">Grassroots School Support Model</div>
                     <ul>
                         <li>School Companions placed full-time in schools</li>
@@ -811,19 +817,19 @@
                 <div class="role-card companion">
                     <div class="role-icon">🏫</div>
                     <div class="role-title">School Companion</div>
-                    <span class="role-type">Employee · In-School</span>
+                    <span class="role-type">Employee  In-School</span>
                     <div class="role-desc">Placed full-time in a school. Builds reading, writing and speaking skills daily. Reports weekly to the Vazhai network.</div>
                 </div>
                 <div class="role-card coordinator">
                     <div class="role-icon">🗺️</div>
                     <div class="role-title">Field Coordinator</div>
-                    <span class="role-type">Employee · Field</span>
+                    <span class="role-type">Employee  Field</span>
                     <div class="role-desc">Visits schools weekly, tracks progress, identifies new schools, coordinates career guidance and inter-school events.</div>
                 </div>
                 <div class="role-card volunteer">
                     <div class="role-icon">🤝</div>
                     <div class="role-title">Vazhai Volunteer</div>
-                    <span class="role-type">Volunteer · Remote &amp; On-site</span>
+                    <span class="role-type">Volunteer  Remote &amp; On-site</span>
                     <div class="role-desc">Prepares materials, supports companions, mentors students. Any professional can contribute meaningfully.</div>
                 </div>
             </div>
@@ -928,14 +934,14 @@
         </div>
 
         <div class="page-body">
-            <div class="section-label">New Model · 2025 Onwards</div>
+            <div class="section-label">New Model  2025 Onwards</div>
 
             <div class="role-detail companion">
                 <div class="role-detail-header">
                     <span class="role-detail-icon">🏫</span>
                     <div>
                         <div class="role-detail-htitle">School Companions</div>
-                        <div class="role-detail-htag">Employee · Placed directly in rural government schools</div>
+                        <div class="role-detail-htag">Employee  Placed directly in rural government schools</div>
                     </div>
                 </div>
                 <div class="role-detail-body companion">
@@ -965,7 +971,7 @@
                     <span class="role-detail-icon">🗺️</span>
                     <div>
                         <div class="role-detail-htitle">Field Coordinators</div>
-                        <div class="role-detail-htag">Employee · On-ground management across multiple schools</div>
+                        <div class="role-detail-htag">Employee  On-ground management across multiple schools</div>
                     </div>
                 </div>
                 <div class="role-detail-body coordinator">
@@ -987,7 +993,7 @@
                     <span class="role-detail-icon">🤝</span>
                     <div>
                         <div class="role-detail-htitle">Vazhai Volunteer Group</div>
-                        <div class="role-detail-htag">Volunteer · Remote &amp; on-site support</div>
+                        <div class="role-detail-htag">Volunteer  Remote &amp; on-site support</div>
                     </div>
                 </div>
                 <div class="role-detail-body volunteer">
@@ -1517,3 +1523,4 @@
 </script>
 </body>
 </html>
+
