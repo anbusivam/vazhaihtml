@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vazhai NGO — Rural Education NGO Tamil Nadu | Krishnagiri, Dharmapuri, Villupuram</title>
-<meta name="description" content="Vazhai is an impact-focused education NGO placing full-time School Companions in rural government schools across Tamil Nadu — Krishnagiri, Dharmapuri, and Villupuram. Donate to rural education, sponsor a child's education, or volunteer. Education equity for every government school student.">
-<meta name="keywords" content="VAZHAI, NGO, rural education, Tamil Nadu, Krishnagiri, Dharmapuri, Villupuram, education equity, education NGO, rural education NGO, NGO for government school students, donate to education NGO India, donate to education NGO Tamil Nadu, sponsor a child's education government school, CSR education projects India, CSR education projects Tamil Nadu, corporate volunteering in education, payroll giving education nonprofit, donations education NGO, impact-focused education NGO">
+<meta name="description" content="Vazhai is an impact-focused education NGO placing full-time School Companions in rural government schools across Tamil Nadu — Krishnagiri, Dharmapuri, and Villupuram. Donate to rural education, sponsor a child's education, or volunteer.">
 <meta property="og:title" content="Vazhai NGO — Rural Education, Tamil Nadu">
 <meta property="og:description" content="We place full-time School Companions in remote government schools in Krishnagiri, Dharmapuri, and Villupuram — so every child in rural Tamil Nadu has a trained adult present every school day. Donate, volunteer, or sponsor a school.">
 <meta property="og:url" content="https://vazhai.in">
@@ -14,6 +13,40 @@
 <link rel="icon" href="https://github.com/anbusivam/vazhaiimages/blob/main/images/favicon_io/favicon.ico?raw=true">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NGO",
+  "name": "Vazhai NGO",
+  "url": "https://vazhai.in",
+  "logo": "https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true",
+  "description": "Vazhai is an impact-focused education NGO placing full-time School Companions in rural government schools across Tamil Nadu, ensuring education equity.",
+  "foundingDate": "2005-04",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "# 341/157, T.H. Road, Kaladipet, Thiruvottiyur",
+    "addressLocality": "Chennai",
+    "addressRegion": "Tamil Nadu",
+    "postalCode": "600019",
+    "addressCountry": "IN"
+  },
+  "areaServed": [
+    { "@type": "City", "name": "Krishnagiri" },
+    { "@type": "City", "name": "Dharmapuri" },
+    { "@type": "City", "name": "Villupuram" }
+  ],
+  "potentialAction": {
+    "@type": "DonateAction",
+    "target": "https://vazhai.in/#donation",
+    "name": "Donate to Vazhai NGO"
+  },
+  "sameAs": [
+    "https://facebook.com/vazhai"
+  ]
+}
+</script>
+
 <style>
 :root {
   --forest:  #0f2d0a;
@@ -137,6 +170,7 @@ body::before {
   font-size:clamp(4.5rem,11vw,11rem);
   line-height:.88; color:var(--forest);
   letter-spacing:-.01em;
+  font-weight: normal; /* Override default h1 weight for Bebas */
 }
 .mh-title .tamil { color:var(--gold); }
 .mh-kicker {
@@ -175,6 +209,7 @@ body::before {
   color:var(--leaf); display:block;
   margin-bottom:14px; padding-bottom:9px;
   border-bottom:1px solid var(--faint);
+  font-weight: normal; /* for h2/h3 usage */
 }
 .col-body { font-size:.9rem; line-height:1.82; color:#2a3a22; }
 .col-body+.col-body { margin-top:12px; }
@@ -249,7 +284,7 @@ body::before {
 .ms-era { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.2em; text-transform:uppercase; margin-bottom:8px; display:block; }
 .ms-half.light .ms-era { color:var(--sage); }
 .ms-half.dark  .ms-era { color:var(--gold-lt); }
-.ms-head { font-family:'Bebas Neue', sans-serif; font-size:2rem; line-height:1.05; margin-bottom:18px; }
+.ms-head { font-family:'Bebas Neue', sans-serif; font-size:2rem; line-height:1.05; margin-bottom:18px; font-weight:normal; }
 .ms-half.light .ms-head { color:var(--forest); }
 .ms-half.dark  .ms-head { color:var(--gold); }
 .ms-list { list-style:none; display:flex; flex-direction:column; gap:9px; }
@@ -276,7 +311,7 @@ body::before {
 }
 .role-tile:hover .rt-bg { color:var(--khaki); }
 .rt-type { font-family:'DM Mono', monospace; font-size:.56rem; letter-spacing:.14em; text-transform:uppercase; color:var(--leaf); display:block; margin-bottom:9px; }
-.rt-title { font-family:'Bebas Neue', sans-serif; font-size:1.8rem; line-height:1.05; color:var(--forest); margin-bottom:11px; }
+.rt-title { font-family:'Bebas Neue', sans-serif; font-size:1.8rem; line-height:1.05; color:var(--forest); margin-bottom:11px; font-weight:normal; }
 .rt-body { font-size:.79rem; line-height:1.65; color:#2e4a22; }
 .rt-salary { font-family:'DM Mono', monospace; font-size:.65rem; color:var(--leaf); margin-top:11px; display:block; }
 
@@ -291,8 +326,8 @@ body::before {
 .cta-pane.gold .s-btn { border-color:var(--forest); color:var(--forest); }
 .cta-pane.gold .s-btn:hover { background:var(--forest); color:var(--white); border-color:var(--forest); }
 
-.cta-ey { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.18em; text-transform:uppercase; color:var(--leaf); display:block; margin-bottom:12px; }
-.cta-h { font-family:'Bebas Neue', sans-serif; font-size:2.4rem; line-height:1.05; margin-bottom:12px; color:var(--forest); }
+.cta-ey { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.18em; text-transform:uppercase; color:var(--leaf); display:block; margin-bottom:12px; font-weight:normal; }
+.cta-h { font-family:'Bebas Neue', sans-serif; font-size:2.4rem; line-height:1.05; margin-bottom:12px; color:var(--forest); font-weight:normal; }
 .cta-b { font-size:.85rem; line-height:1.75; color:#2e4a22; margin-bottom:20px; }
 .cta-btn {
   display:inline-block; font-family:'DM Mono', monospace;
@@ -322,7 +357,7 @@ body::before {
 
 .dark-mh { padding:0 5vw 32px; border-bottom:1px solid rgba(255,255,255,.1); }
 .dark-ey { font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:12px; }
-.dark-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3.5rem,9vw,8.5rem); line-height:.9; color:var(--paper); }
+.dark-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3.5rem,9vw,8.5rem); line-height:.9; color:var(--paper); font-weight:normal; }
 .dark-title em { color:var(--gold-lt); font-style:normal; }
 
 .wwa-hero {
@@ -346,7 +381,7 @@ body::before {
 .meaning-tile { padding:34px 26px; border-right:1px solid rgba(255,255,255,.08); }
 .meaning-tile:last-child { border-right:none; }
 .mt-icon { font-family:'Bebas Neue', sans-serif; font-size:2.6rem; color:var(--gold); line-height:1; margin-bottom:10px; }
-.mt-title { font-family:'Bebas Neue', sans-serif; font-size:1.3rem; color:var(--paper); margin-bottom:9px; }
+.mt-title { font-family:'Bebas Neue', sans-serif; font-size:1.3rem; color:var(--paper); margin-bottom:9px; font-weight:normal;}
 .mt-body { font-size:.79rem; line-height:1.7; color:rgba(255,255,255,.55); }
 
 /* ════════════════════════════════
@@ -367,13 +402,13 @@ body::before {
   display:flex; align-items:flex-end;
   justify-content:space-between; gap:24px;
 }
-.wwd-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3rem,8vw,7rem); line-height:.9; color:var(--forest); }
+.wwd-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3rem,8vw,7rem); line-height:.9; color:var(--forest); font-weight:normal;}
 .wwd-intro { max-width:340px; font-size:.83rem; line-height:1.75; color:#2e4a22; padding-bottom:5px; }
 
 .prog-block { display:grid; grid-template-columns:195px 1fr; border-bottom:1px solid var(--faint); }
 .prog-bar { background:var(--dew); padding:28px 22px; border-right:1px solid var(--forest); }
 .pb-type { font-family:'DM Mono', monospace; font-size:.55rem; letter-spacing:.16em; text-transform:uppercase; color:var(--leaf); display:block; margin-bottom:9px; }
-.pb-name { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; line-height:1.05; color:var(--forest); margin-bottom:11px; }
+.pb-name { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; line-height:1.05; color:var(--forest); margin-bottom:11px; font-weight:normal;}
 .pb-meta { font-family:'DM Mono', monospace; font-size:.59rem; line-height:1.7; color:var(--khaki); }
 .prog-content { padding:28px 32px; }
 .prog-intro { font-size:.86rem; line-height:1.82; color:#2e3a22; margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--faint); }
@@ -384,7 +419,7 @@ body::before {
 .mtag { font-family:'DM Mono', monospace; font-size:.51rem; letter-spacing:.08em; text-transform:uppercase; background:var(--leaf); color:white; padding:1px 5px; margin-left:3px; vertical-align:middle; border-radius:2px; }
 
 .geo-block { padding:40px 5vw; border-top:3px double var(--forest); display:grid; grid-template-columns:1fr 2.5fr; gap:40px; }
-.geo-lbl { font-family:'Bebas Neue', sans-serif; font-size:2.6rem; line-height:1; color:var(--gold); }
+.geo-lbl { font-family:'Bebas Neue', sans-serif; font-size:2.6rem; line-height:1; color:var(--gold); font-weight:normal;}
 .geo-body { font-size:.87rem; line-height:1.82; color:#2e3a22; }
 .geo-body strong { color:var(--forest); }
 .geo-body p+p { margin-top:11px; }
@@ -399,7 +434,7 @@ body::before {
 .join-mh { padding:0 5vw; position:relative; overflow:hidden; border-bottom:3px solid var(--forest); padding-bottom:0; }
 .join-bg { font-family:'Bebas Neue', sans-serif; font-size:clamp(5rem,15vw,15rem); line-height:.85; color:var(--faint); user-select:none; white-space:nowrap; }
 .join-overlay { position:absolute; bottom:16px; left:5vw; }
-.join-ov-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(2.6rem,5.5vw,5rem); color:var(--forest); line-height:1; }
+.join-ov-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(2.6rem,5.5vw,5rem); color:var(--forest); line-height:1; font-weight:normal;}
 .join-ov-sub { font-family:'DM Mono', monospace; font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; color:var(--khaki); margin-top:5px; }
 
 .join-roles { display:grid; grid-template-columns:repeat(3,1fr); border-bottom:3px solid var(--forest); }
@@ -408,14 +443,14 @@ body::before {
 .jr:hover { background:var(--dew); }
 .jr-num { font-family:'Bebas Neue', sans-serif; font-size:3.5rem; line-height:1; color:var(--gold); margin-bottom:7px; }
 .jr-kind { font-family:'DM Mono', monospace; font-size:.55rem; letter-spacing:.14em; text-transform:uppercase; color:var(--khaki); display:block; margin-bottom:6px; }
-.jr-title { font-family:'Bebas Neue', sans-serif; font-size:1.7rem; color:var(--forest); margin-bottom:10px; line-height:1; }
+.jr-title { font-family:'Bebas Neue', sans-serif; font-size:1.7rem; color:var(--forest); margin-bottom:10px; line-height:1; font-weight:normal;}
 .jr-body { font-size:.79rem; line-height:1.65; color:#2e4a22; margin-bottom:9px; }
 .jr-sal { font-family:'DM Mono', monospace; font-size:.63rem; color:var(--leaf); }
 
 .vol-split { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--forest); }
 .vc { padding:40px 5vw; border-right:1px solid var(--forest); }
 .vc:last-child { border-right:none; background:var(--dew); }
-.vc-title { font-family:'Bebas Neue', sans-serif; font-size:1.8rem; margin-bottom:20px; color:var(--forest); }
+.vc-title { font-family:'Bebas Neue', sans-serif; font-size:1.8rem; margin-bottom:20px; color:var(--forest); font-weight:normal;}
 .vtask { padding:11px 0; border-bottom:1px solid var(--faint); }
 .vtask:last-child { border-bottom:none; }
 .vtask-t { font-size:.82rem; font-weight:700; color:var(--forest); margin-bottom:3px; }
@@ -435,7 +470,7 @@ body::before {
 .step-b { font-size:.75rem; line-height:1.6; color:#3a4a2e; }
 
 .join-apply { padding:40px 5vw; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; border-bottom:1px solid var(--faint); }
-.ja-t { font-family:'Bebas Neue', sans-serif; font-size:2rem; color:var(--forest); line-height:1.05; }
+.ja-t { font-family:'Bebas Neue', sans-serif; font-size:2rem; color:var(--forest); line-height:1.05; font-weight:normal;}
 .ja-s { font-size:.8rem; color:#3a4a2e; margin-top:4px; }
 
 /* ════════════════════════════════
@@ -446,8 +481,8 @@ body::before {
 .don-hero { width:100%; height:260px; object-fit:cover; object-position:center; display:block; filter:brightness(.55) saturate(.75); border-bottom:3px solid rgba(255,255,255,.1); }
 
 .don-mh { padding:28px 5vw 32px; border-bottom:3px solid rgba(200,168,0,.3); }
-.don-ey { font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:9px; }
-.don-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3.5rem,9vw,8rem); line-height:.9; color:var(--white); }
+.don-ey { font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:9px; font-weight:normal;}
+.don-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3.5rem,9vw,8rem); line-height:.9; color:var(--white); font-weight:normal;}
 .don-tagline { font-style:italic; font-size:1.02rem; color:rgba(255,255,255,.82); margin-top:12px; max-width:540px; line-height:1.65; }
 .don-note { padding:13px 5vw; background:rgba(0,0,0,.18); font-family:'DM Mono', monospace; font-size:.62rem; color:rgba(255,255,255,.6); letter-spacing:.04em; }
 
@@ -472,7 +507,7 @@ body::before {
 .db-desc { font-size:.75rem; line-height:1.55; color:#3a4a2e; }
 
 .don-widgets { background:var(--paper); padding:40px 5vw; border-top:3px solid var(--forest); display:grid; grid-template-columns:1fr 1fr; gap:40px; }
-.dw-title { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; color:var(--forest); margin-bottom:5px; }
+.dw-title { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; color:var(--forest); margin-bottom:5px; font-weight:normal;}
 .dw-sub { font-size:.75rem; color:#3a4a2e; margin-bottom:16px; line-height:1.55; }
 .dw-toggle { cursor:pointer; display:flex; align-items:center; gap:9px; }
 .dw-chev { font-size:.77rem; color:var(--gold); transition:transform .25s; }
@@ -493,7 +528,7 @@ body::before {
 .ct-hero { width:100%; height:220px; object-fit:cover; object-position:center 40%; display:block; filter:saturate(.85) brightness(.82); border-bottom:3px solid var(--forest); }
 
 .ct-mh { padding:28px 5vw 32px; border-bottom:3px solid var(--forest); display:flex; align-items:flex-end; justify-content:space-between; gap:24px; }
-.ct-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3rem,8vw,7rem); line-height:.9; color:var(--forest); }
+.ct-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3rem,8vw,7rem); line-height:.9; color:var(--forest); font-weight:normal;}
 .ct-reach { max-width:260px; text-align:right; }
 .ct-reach p { font-size:.81rem; line-height:1.72; color:#2e4a22; margin-bottom:12px; }
 
@@ -506,7 +541,7 @@ body::before {
 .cc-val a:hover { color:var(--leaf); }
 
 .visit-block { padding:44px 5vw; display:grid; grid-template-columns:1fr 2.5fr; gap:40px; border-bottom:1px solid var(--faint); }
-.vb-lbl { font-family:'Bebas Neue', sans-serif; font-size:2rem; color:var(--gold); line-height:1; }
+.vb-lbl { font-family:'Bebas Neue', sans-serif; font-size:2rem; color:var(--gold); line-height:1; font-weight:normal;}
 .vb-body { font-size:.85rem; line-height:1.82; color:#2e3a22; }
 .vb-body p+p { margin-top:11px; }
 
@@ -518,14 +553,14 @@ body::before {
 .ev-hero { width:100%; height:220px; object-fit:cover; object-position:center 35%; display:block; filter:saturate(.85) brightness(.8); border-bottom:3px solid var(--forest); }
 
 .ev-mh { padding:28px 5vw 24px; border-bottom:3px solid var(--forest); }
-.ev-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3rem,8vw,7rem); line-height:.9; color:var(--forest); }
+.ev-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3rem,8vw,7rem); line-height:.9; color:var(--forest); font-weight:normal;}
 .ev-sub { font-family:'DM Mono', monospace; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--khaki); margin-top:9px; }
 
 .ev-body { display:grid; grid-template-columns:1fr 1fr; }
 .ev-col { padding:40px 5vw; border-right:1px solid var(--forest); }
 .ev-col:last-child { border-right:none; background:var(--dew); }
 
-.evg-head { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.18em; text-transform:uppercase; color:var(--leaf); display:flex; align-items:center; gap:10px; margin-bottom:16px; margin-top:26px; }
+.evg-head { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.18em; text-transform:uppercase; color:var(--leaf); display:flex; align-items:center; gap:10px; margin-bottom:16px; margin-top:26px; font-weight:normal;}
 .evg-head:first-child { margin-top:0; }
 .evg-head::after { content:''; flex:1; height:1px; background:var(--khaki); }
 
@@ -536,7 +571,7 @@ body::before {
 .ev-desc { font-size:.75rem; line-height:1.55; color:#3a4a2e; }
 
 .ev-cta { margin-top:28px; padding:28px 24px; background:var(--forest); }
-.ev-cta-h { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; color:var(--gold); margin-bottom:9px; }
+.ev-cta-h { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; color:var(--gold); margin-bottom:9px; font-weight:normal;}
 .ev-cta-b { font-size:.81rem; color:rgba(255,255,255,.65); line-height:1.7; margin-bottom:16px; }
 .ev-btn {
   display:inline-block; font-family:'DM Mono', monospace;
@@ -615,10 +650,9 @@ body::before {
 </head>
 <body>
 
-<!-- FLOATING NAV -->
-<nav class="fnav">
+<nav class="fnav" aria-label="Main Navigation">
   <div class="fnav-logo menu-item" data-section="home">
-    <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true" alt="Vazhai"
+    <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true" alt="Vazhai NGO Logo - Rural Education in Tamil Nadu"
          onerror="this.style.display='none'">
     <span class="fnav-logo-text">வாழை VAZHAI</span>
   </div>
@@ -631,477 +665,474 @@ body::before {
   <button class="fnav-item menu-item" data-section="vazhai-events">Events</button>
 </nav>
 
-<!-- ═══ HOME ═══ -->
-<div id="home" class="pg active">
-  <div class="masthead">
-    <div class="mh-top">
-      <span class="mh-dateline">Tamil Nadu · Est. April 2005 · Reg No. 296/05</span>
-      <span class="mh-reg">vazhai.in</span>
-    </div>
-    <div class="mh-inner">
-      <div class="mh-logo-wrap">
-        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true"
-             alt="Vazhai NGO Logo" class="mh-logo"
-             onerror="this.style.display='none'">
+<main>
+  <section id="home" class="pg active" aria-label="Home">
+    <header class="masthead">
+      <div class="mh-top">
+        <span class="mh-dateline">Tamil Nadu · Est. April 2005 · Reg No. 296/05</span>
+        <span class="mh-reg">vazhai.in</span>
       </div>
-      <div class="mh-title-wrap">
-        <div class="mh-title"><span class="tamil">வாழை</span> VAZHAI</div>
-        <div class="mh-kicker">Rural Education NGO · Tamil Nadu &nbsp;·&nbsp; Krishnagiri · Dharmapuri · Villupuram &nbsp;·&nbsp; Est. April 2005</div>
+      <div class="mh-inner">
+        <div class="mh-logo-wrap">
+          <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true"
+               alt="Vazhai NGO Logo - Education NGO in Tamil Nadu" class="mh-logo"
+               onerror="this.style.display='none'">
+        </div>
+        <div class="mh-title-wrap">
+          <h1 class="mh-title"><span class="tamil">வாழை</span> VAZHAI</h1>
+          <div class="mh-kicker">Rural Education NGO · Tamil Nadu &nbsp;·&nbsp; Krishnagiri · Dharmapuri · Villupuram</div>
+        </div>
       </div>
-    </div>
-  </div>
+    </header>
 
-  <div class="live-strip">
-    <div class="live-dot"></div>
-    <span>Active now — <strong>School Companion deployed at Kodakarai Secondary School, Krishnagiri, 2025.</strong> &nbsp;Target for 2026: <strong>10 government schools + one Field Coordinator.</strong></span>
-  </div>
-
-  <div class="home-grid">
-    <div class="hcol">
-      <span class="col-label">Why We Exist</span>
-      <p class="col-body">Twenty to thirty kilometres past Aiyur, deep in the forests of Krishnagiri district, Tamil Nadu, government schools serve children who rarely appear in policy conversations about education equity.</p>
-      <p class="col-body">Teachers commute hours each way through forest roads. Parents migrate for daily wages, sometimes taking their children along. Dropout is quiet — it doesn't announce itself.</p>
-      <p class="col-body"><strong>VAZHAI is a rural education NGO that puts a trained, full-time School Companion inside each of these schools.</strong> Not for a workshop. Not for a day. Every single school day, the whole year.</p>
-      <p class="col-body">We began in Dharmapuri and Villupuram. We are now expanding into Krishnagiri. One school at a time, one companion at a time — until no child in rural Tamil Nadu goes without support.</p>
+    <div class="live-strip">
+      <div class="live-dot"></div>
+      <span>Active now — <strong>School Companion deployed at Kodakarai Secondary School, Krishnagiri, 2025.</strong> &nbsp;Target for 2026: <strong>10 rural government schools + one Field Coordinator.</strong></span>
     </div>
 
-    <div class="stat-col">
-      <span class="col-label" style="align-self:flex-start;width:100%;color:var(--gold);border-bottom-color:rgba(255,255,255,.1);">Impact at a Glance</span>
-      <div class="sg-num">500+</div>
-      <div class="sg-div"></div>
-      <div class="sg-label">Students supported across<br>rural Tamil Nadu</div>
-      <div class="sg-num accent">19+</div>
-      <div class="sg-div"></div>
-      <div class="sg-label">Years of unbroken<br>field presence</div>
-      <div class="sg-num accent" style="font-size:clamp(2rem,4vw,4rem);margin-top:16px;">2 Districts</div>
-      <div class="sg-div"></div>
-      <div class="sg-label">Served — Dharmapuri,<br>Villupuram &amp; growing</div>
-    </div>
+    <div class="home-grid">
+      <article class="hcol">
+        <h2 class="col-label">Why We Exist</h2>
+        <p class="col-body">Twenty to thirty kilometres past Aiyur, deep in the forests of Krishnagiri district, Tamil Nadu, government schools serve children who rarely appear in policy conversations about education equity.</p>
+        <p class="col-body">Teachers commute hours each way through forest roads. Parents migrate for daily wages, sometimes taking their children along. Dropout is quiet — it doesn't announce itself.</p>
+        <p class="col-body"><strong>VAZHAI is a rural education NGO that puts a trained, full-time School Companion inside each of these schools.</strong> Not for a workshop. Not for a day. Every single school day, the whole year to ensure foundational literacy.</p>
+        <p class="col-body">We began in Dharmapuri and Villupuram. We are now expanding into Krishnagiri. One school at a time, one companion at a time — until no child in rural Tamil Nadu goes without support.</p>
+      </article>
 
-    <div class="hcol">
-      <span class="col-label">In Their Own Words · 2025</span>
-      <div class="voice-blk">
-        <div class="vb-tamil">நான் கஷ்டமான வாக்கியங்களை படிக்க சிரமப்படுவேன். பள்ளித் தோழர் தினமும் படிக்கவும் எழுதவும் உதவுகிறார்கள்.</div>
-        <div class="vb-en">I used to find difficult sentences hard to read. Our School Companion sits with us every day and helps us read and write better.</div>
-        <div class="vb-attr">Student · Kodakarai Secondary School</div>
+      <div class="stat-col">
+        <h2 class="col-label" style="align-self:flex-start;width:100%;color:var(--gold);border-bottom-color:rgba(255,255,255,.1);">Impact at a Glance</h2>
+        <div class="sg-num">500+</div>
+        <div class="sg-div"></div>
+        <div class="sg-label">Students supported across<br>rural Tamil Nadu</div>
+        <div class="sg-num accent">19+</div>
+        <div class="sg-div"></div>
+        <div class="sg-label">Years of unbroken<br>field presence</div>
+        <div class="sg-num accent" style="font-size:clamp(2rem,4vw,4rem);margin-top:16px;">2 Districts</div>
+        <div class="sg-div"></div>
+        <div class="sg-label">Served — Dharmapuri,<br>Villupuram &amp; growing</div>
       </div>
-      <div class="voice-blk">
-        <div class="vb-tamil">வாழை நடத்திய career guidance session அட்டெண்ட் பண்ணதுக்கப்புறம், என்னென்ன படிப்புகள் இருக்குன்னு புரிஞ்சது.</div>
-        <div class="vb-en">After attending Vazhai's career guidance session, I finally understood what courses are available to me and what I can work towards.</div>
-        <div class="vb-attr">Student · Kodakarai Secondary School</div>
+
+      <article class="hcol">
+        <h2 class="col-label">In Their Own Words · 2025</h2>
+        <div class="voice-blk">
+          <div class="vb-tamil">நான் கஷ்டமான வாக்கியங்களை படிக்க சிரமப்படுவேன். பள்ளித் தோழர் தினமும் படிக்கவும் எழுதவும் உதவுகிறார்கள்.</div>
+          <div class="vb-en">I used to find difficult sentences hard to read. Our School Companion sits with us every day and helps us read and write better.</div>
+          <div class="vb-attr">Student · Kodakarai Secondary School</div>
+        </div>
+        <div class="voice-blk">
+          <div class="vb-tamil">வாழை நடத்திய career guidance session அட்டெண்ட் பண்ணதுக்கப்புறம், என்னென்ன படிப்புகள் இருக்குன்னு புரிஞ்சது.</div>
+          <div class="vb-en">After attending Vazhai's career guidance session, I finally understood what courses are available to me and what I can work towards.</div>
+          <div class="vb-attr">Student · Kodakarai Secondary School</div>
+        </div>
+        <div class="voice-blk">
+          <div class="vb-tamil">நானும் இந்த ஊர்ல தான் வளர்ந்தேன். தினமும் அவங்களோட இருந்து படிக்க உதவுறது எனக்கு ரொம்ப சந்தோஷம்.</div>
+          <div class="vb-attr">Sevvanthi · School Companion, Kodakarai, 2025</div>
+        </div>
+      </article>
+    </div>
+
+    <div class="photo-strip">
+      <div class="photo-cell">
+        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/workshop1.jpg?raw=true" alt="Vazhai NGO life skills workshop for rural students in Dharmapuri">
+        <div class="photo-cap">Skills workshop · Dharmapuri</div>
       </div>
-      <div class="voice-blk">
-        <div class="vb-tamil">நானும் இந்த ஊர்ல தான் வளர்ந்தேன். தினமும் அவங்களோட இருந்து படிக்க உதவுறது எனக்கு ரொம்ப சந்தோஷம்.</div>
-        <div class="vb-attr">Sevvanthi · School Companion, Kodakarai, 2025</div>
+      <div class="photo-cell">
+        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/school1.jpg?raw=true" alt="Government school students learning with a Vazhai School Companion in Krishnagiri, Tamil Nadu">
+        <div class="photo-cap">Kodakarai Secondary School · Krishnagiri</div>
       </div>
-    </div>
-  </div>
-
-  <!-- PHOTO STRIP -->
-  <div class="photo-strip">
-    <div class="photo-cell">
-      <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/workshop1.jpg?raw=true" alt="Workshop">
-      <div class="photo-cap">Skills workshop · Dharmapuri</div>
-    </div>
-    <div class="photo-cell">
-      <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/school1.jpg?raw=true" alt="School">
-      <div class="photo-cap">Kodakarai Secondary School · Krishnagiri</div>
-    </div>
-    <div class="photo-cell">
-      <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity11.jpg?raw=true" alt="Activity">
-      <div class="photo-cap">Learning in action · Government school, Tamil Nadu</div>
-    </div>
-  </div>
-
-  <div class="stats-strip">
-    <div class="ss"><div class="ss-n">500+</div><div class="ss-l">Students Supported</div></div>
-    <div class="ss"><div class="ss-n">19+</div><div class="ss-l">Years on the Ground</div></div>
-    <div class="ss"><div class="ss-n">2</div><div class="ss-l">Districts · Expanding</div></div>
-    <div class="ss"><div class="ss-n">10</div><div class="ss-l">Schools Target · 2026</div></div>
-  </div>
-
-  <div class="model-split">
-    <div class="ms-half light">
-      <span class="ms-era">Then · 2005–2024</span>
-      <div class="ms-head">Mentoring &amp; Community Programs</div>
-      <ul class="ms-list">
-        <li>Long-term mentoring for government school students</li>
-        <li>Life-skills, career, and communication workshops</li>
-        <li>Home visits to build family trust</li>
-        <li>Volunteer-driven programs in Dharmapuri &amp; Villupuram</li>
-        <li>500+ students supported across 19 years</li>
-      </ul>
-    </div>
-    <div class="ms-half dark">
-      <span class="ms-era">Now · 2025 Onwards</span>
-      <div class="ms-head">Full-Time School Companions</div>
-      <ul class="ms-list">
-        <li>One trained School Companion placed per rural school</li>
-        <li>Field Coordinators managing multiple schools</li>
-        <li>Focus: forest and hill-area government schools, Krishnagiri</li>
-        <li>Designed to scale — same model, more schools each year</li>
-        <li>Target: 10 schools covered by end of 2026</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="roles-strip">
-    <div class="role-tile">
-      <div class="rt-bg">01</div>
-      <span class="rt-type">Employee · In-School · Full-time</span>
-      <div class="rt-title">School Companion</div>
-      <div class="rt-body">Lives and works alongside students in a remote government school. Builds foundational literacy, tracks attendance, and supports the headmaster — every day of the school year. Our first Companion at Kodakarai is from the same village as the students.</div>
-      <span class="rt-salary">₹15,000–20,000 / month</span>
-    </div>
-    <div class="role-tile">
-      <div class="rt-bg">02</div>
-      <span class="rt-type">Employee · Field · Full-time</span>
-      <div class="rt-title">Field Coordinator</div>
-      <div class="rt-body">Manages School Companions across multiple schools. Visits each school weekly, spots problems early, brings in career guidance experts, and identifies new schools ready for the program.</div>
-      <span class="rt-salary">₹25,000–35,000 / month</span>
-    </div>
-    <div class="role-tile">
-      <div class="rt-bg">03</div>
-      <span class="rt-type">Volunteer · Remote or On-site</span>
-      <div class="rt-title">Volunteer</div>
-      <div class="rt-body">Working professionals who give one day a month. You create learning materials, run career sessions, or mentor students online. No teaching degree needed — just your skills and willingness to show up.</div>
-      <span class="rt-salary">Time, expertise &amp; presence</span>
-    </div>
-  </div>
-
-  <div class="cta-double">
-    <div class="cta-pane">
-      <span class="cta-ey">Get Involved · Education Equity Starts Here</span>
-      <div class="cta-h">You can help<br>in three ways</div>
-      <p class="cta-b">Give your time as a volunteer, donate to support a School Companion's salary, or simply share Vazhai with someone who cares about rural education in Tamil Nadu. Every form of support keeps a child in school.</p>
-      <button class="cta-btn filled menu-item" data-section="join-vazhai">Volunteer or Join →</button>
-      <button class="cta-btn menu-item" data-section="donation">Donate to Vazhai →</button>
-    </div>
-    <div class="cta-pane gold">
-      <span class="cta-ey">Spread the Word</span>
-      <div class="cta-h">Not ready yet?<br>Share Vazhai.</div>
-      <p class="cta-b">Knowing one person who might donate or volunteer is just as valuable. Sharing our work takes ten seconds — and could be the reason a child in Krishnagiri stays in school.</p>
-      <div class="share-row">
-        <a class="s-btn" href="https://wa.me/?text=I%20came%20across%20Vazhai%20NGO%20%E2%80%94%20they%20place%20dedicated%20companions%20in%20remote%20government%20schools%20in%20Tamil%20Nadu.%20https%3A%2F%2Fvazhai.in" target="_blank">WhatsApp</a>
-        <button class="s-btn" onclick="copyLink('c1')">Copy Link</button>
-        <a class="s-btn" href="mailto:?subject=Vazhai%20NGO&body=https%3A%2F%2Fvazhai.in">Email</a>
-      </div>
-      <div class="copied" id="c1">Link copied.</div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ WHO WE ARE ═══ -->
-<div id="who-we-are" class="pg">
-  <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity11.jpg?raw=true" alt="Vazhai NGO activity — rural education Tamil Nadu" class="wwa-hero">
-  <div class="dark-mh">
-    <span class="dark-ey">Our Story · Our Values · Our People</span>
-    <div class="dark-title">Who We <em>Are</em></div>
-  </div>
-  <div class="wwa-grid">
-    <div class="wwa-col">
-      <span class="col-label">How We Started</span>
-      <p>VAZHAI is a registered NGO for government school students in rural Tamil Nadu, founded in April 2005 by first-generation college graduates from Presidency College, Chennai. They knew what it cost to be the first person in a family to reach higher education — and chose to lower that cost for the next generation.</p>
-      <p>Many of our team members grew up in the same conditions as the students we now serve. That lived understanding shapes how we speak, what we teach, and why we stay.</p>
-      <div class="pq-dark">
-        <div class="pq-text">We were first-generation graduates ourselves. We knew the confusion, the lack of guidance, the moments where you almost gave up. We started Vazhai so other children wouldn't have to go through that alone.</div>
-        <div class="pq-attr">Vazhai Founding Team · Presidency College, Chennai · Est. April 2005</div>
-      </div>
-      <span class="col-label" style="margin-top:22px;">What We Believe</span>
-      <p>Education equity is not a distant goal — it is a daily practice. VAZHAI believes that every child in rural Tamil Nadu deserves a fair shot at education, regardless of which village they were born in, how far their school is from a town, or what their parents do for a living.</p>
-      <p>Our team includes engineers, doctors, teachers, entrepreneurs, and social workers. Between 2005 and 2024, we ran sustained mentoring programs across Dharmapuri and Villupuram districts, supporting over <strong>500 students</strong>. In 2025, we shifted to a deeper model — placing full-time School Companions directly inside schools in Krishnagiri.</p>
-    </div>
-    <div class="wwa-col">
-      <span class="col-label">The Name: Vazhai</span>
-      <p><strong>வாழை (Vazhai)</strong> is the Tamil word for the banana tree. We chose it deliberately. The banana tree gives completely — fruit, leaf, flower, stem, and root. It regenerates on its own. And every new shoot carries the same strength as the one before it.</p>
-      <p>That is what we want education to do for rural communities in Tamil Nadu: give fully, sustain itself, and carry forward from one generation to the next.</p>
-    </div>
-  </div>
-  <div class="meaning-strip">
-    <div class="meaning-tile">
-      <div class="mt-icon">I</div>
-      <div class="mt-title">Generational Growth</div>
-      <div class="mt-body">A banana tree sends out new shoots that carry the same strength as the parent. One child who gets an education passes that possibility on to the next. That is the cycle we are building — in Krishnagiri, Dharmapuri, Villupuram, and beyond.</div>
-    </div>
-    <div class="meaning-tile">
-      <div class="mt-icon">II</div>
-      <div class="mt-title">Complete Nourishment</div>
-      <div class="mt-body">Every part of the banana tree serves a purpose. Our program doesn't focus on one subject or one exam. We build literacy, confidence, career awareness, and community trust — because a child needs all of it to thrive.</div>
-    </div>
-    <div class="meaning-tile">
-      <div class="mt-icon">III</div>
-      <div class="mt-title">Built to Last</div>
-      <div class="mt-body">The banana tree regenerates year after year without being replanted. Our School Companion model works the same way — one framework, many schools, sustained presence. Not a project. A permanent commitment to rural education equity.</div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ WHAT WE DO ═══ -->
-<div id="what-we-do" class="pg">
-  <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/school1.jpg?raw=true" alt="Government school · Krishnagiri · Tamil Nadu" class="wwd-hero-strip">
-  <div class="wwd-mh">
-    <div class="wwd-title">What<br>We Do</div>
-    <div class="wwd-intro">Three roles. One mission. Getting trained, committed people into rural government schools in Tamil Nadu — and keeping them there, every day.</div>
-  </div>
-
-  <div class="prog-block">
-    <div class="prog-bar">
-      <span class="pb-type">Employee · Full-time · In-School</span>
-      <div class="pb-name">School Companions</div>
-      <div class="pb-meta">One per school<br>Present every school day<br>Weekly progress reports<br>Salary: ₹15,000–20,000/mo</div>
-    </div>
-    <div class="prog-content">
-      <p class="prog-intro">A School Companion is Vazhai's most direct investment in a child. Based full-time inside a government school in a remote forest or hill area, they work alongside teachers, build trust with families, and make sure no student is quietly slipping through the cracks. Our first Companion at Kodakarai Secondary School, Krishnagiri (2025) grew up in the same village — and that local connection has made all the difference.</p>
-      <div class="task-grid">
-        <div class="task-item"><strong>Reading, Writing &amp; Speaking</strong> <span class="mtag">Mandatory</span> — assessed 3× a year; target: 25% improvement or a score above 70%</div>
-        <div class="task-item"><strong>Student Stage Speech</strong> <span class="mtag">Mandatory</span> — every student speaks at least once a year; sessions are recorded and shared with Vazhai</div>
-        <div class="task-item"><strong>Support the Headmaster</strong> <span class="mtag">Mandatory</span> — take classes, assist in special sessions, help run school events</div>
-        <div class="task-item"><strong>Baseline Assessment</strong> <span class="mtag">Mandatory</span> — evaluate each student's starting level at the beginning of the year</div>
-        <div class="task-item"><strong>Dropout Tracking</strong> <span class="mtag">Mandatory</span> — identify absent students early; work with families to bring them back</div>
-        <div class="task-item"><strong>Weekly &amp; Annual Reports</strong> <span class="mtag">Mandatory</span> — submit every Friday; full annual report at year-end</div>
-        <div class="task-item"><strong>Home Visits</strong> — meet parents, build trust, understand what is keeping a child from school</div>
-        <div class="task-item"><strong>Library &amp; Reading Sessions</strong> — manage the school book corner; make reading a daily habit</div>
-        <div class="task-item"><strong>Bridge Course</strong> — run focused catch-up lessons for students who are behind grade level</div>
-        <div class="task-item"><strong>NMMS Preparation</strong> — guide eligible students through the National Means-cum-Merit Scholarship process</div>
+      <div class="photo-cell">
+        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity11.jpg?raw=true" alt="Rural government school students participating in a learning activity in Tamil Nadu">
+        <div class="photo-cap">Learning in action · Government school, Tamil Nadu</div>
       </div>
     </div>
-  </div>
 
-  <div class="prog-block">
-    <div class="prog-bar">
-      <span class="pb-type">Employee · Full-time · Field</span>
-      <div class="pb-name">Field Coordinators</div>
-      <div class="pb-meta">Multi-school management<br>Weekly school visits<br>Program expansion<br>Salary: ₹25,000–35,000/mo</div>
+    <div class="stats-strip">
+      <div class="ss"><div class="ss-n">500+</div><div class="ss-l">Students Supported</div></div>
+      <div class="ss"><div class="ss-n">19+</div><div class="ss-l">Years on the Ground</div></div>
+      <div class="ss"><div class="ss-n">2</div><div class="ss-l">Districts · Expanding</div></div>
+      <div class="ss"><div class="ss-n">10</div><div class="ss-l">Schools Target · 2026</div></div>
     </div>
-    <div class="prog-content">
-      <p class="prog-intro">A Field Coordinator is the connective tissue of the program. They travel to each school weekly, check that School Companions have what they need, and bring in outside resources — career experts, skill training partners, inter-school competitions. They also scout new government schools ready to join the program.</p>
-      <div class="task-grid">
-        <div class="task-item">Visit at least one school every week; review Companion reports on the ground <span class="mtag">Mandatory</span></div>
-        <div class="task-item">Identify, visit, and document new rural schools for the program <span class="mtag">Mandatory</span></div>
-        <div class="task-item">Train teachers and Companions in student level identification — three times a year <span class="mtag">Mandatory</span></div>
-        <div class="task-item">Organise career guidance sessions in every partner school, every year <span class="mtag">Mandatory</span></div>
-        <div class="task-item">Plan and run inter-school sports and cultural competitions <span class="mtag">Mandatory</span></div>
-        <div class="task-item">Coordinate skill exposure visits for students — e.g., TVS plant tours <span class="mtag">Mandatory</span></div>
-        <div class="task-item">Meet potential donors; support fundraising and CSR partnerships <span class="mtag">Mandatory</span></div>
-        <div class="task-item">Keep the Vazhai volunteer network updated on all field developments</div>
+
+    <div class="model-split">
+      <article class="ms-half light">
+        <span class="ms-era">Then · 2005–2024</span>
+        <h3 class="ms-head">Mentoring &amp; Community Programs</h3>
+        <ul class="ms-list">
+          <li>Long-term mentoring for government school students</li>
+          <li>Life-skills, career, and communication workshops</li>
+          <li>Home visits to build family trust</li>
+          <li>Volunteer-driven programs in Dharmapuri &amp; Villupuram</li>
+          <li>500+ students supported across 19 years</li>
+        </ul>
+      </article>
+      <article class="ms-half dark">
+        <span class="ms-era">Now · 2025 Onwards</span>
+        <h3 class="ms-head">Full-Time School Companions</h3>
+        <ul class="ms-list">
+          <li>One trained School Companion placed per rural school</li>
+          <li>Field Coordinators managing multiple schools</li>
+          <li>Focus: forest and hill-area government schools, Krishnagiri</li>
+          <li>Designed to scale — same model, more schools each year</li>
+          <li>Target: 10 schools covered by end of 2026</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="roles-strip">
+      <article class="role-tile">
+        <div class="rt-bg">01</div>
+        <span class="rt-type">Employee · In-School · Full-time</span>
+        <h3 class="rt-title">School Companion</h3>
+        <div class="rt-body">Lives and works alongside students in a remote government school. Builds foundational literacy, tracks attendance, and supports the headmaster — every day of the school year. Our first Companion at Kodakarai is from the same village as the students.</div>
+        <span class="rt-salary">₹15,000–20,000 / month</span>
+      </article>
+      <article class="role-tile">
+        <div class="rt-bg">02</div>
+        <span class="rt-type">Employee · Field · Full-time</span>
+        <h3 class="rt-title">Field Coordinator</h3>
+        <div class="rt-body">Manages School Companions across multiple schools. Visits each school weekly, spots problems early, brings in career guidance experts, and identifies new schools ready for the program.</div>
+        <span class="rt-salary">₹25,000–35,000 / month</span>
+      </article>
+      <article class="role-tile">
+        <div class="rt-bg">03</div>
+        <span class="rt-type">Volunteer · Remote or On-site</span>
+        <h3 class="rt-title">Volunteer</h3>
+        <div class="rt-body">Working professionals who give one day a month. You create learning materials, run career sessions, or mentor students online. No teaching degree needed — just your skills and willingness to show up.</div>
+        <span class="rt-salary">Time, expertise &amp; presence</span>
+      </article>
+    </div>
+
+    <div class="cta-double">
+      <div class="cta-pane">
+        <span class="cta-ey">Get Involved · Education Equity Starts Here</span>
+        <h2 class="cta-h">You can help<br>in three ways</h2>
+        <p class="cta-b">Give your time as a volunteer, donate to support a School Companion's salary, or simply share Vazhai with someone who cares about rural education in Tamil Nadu. Every form of support keeps a child in school.</p>
+        <button class="cta-btn filled menu-item" data-section="join-vazhai">Volunteer or Join →</button>
+        <button class="cta-btn menu-item" data-section="donation">Donate to Vazhai →</button>
+      </div>
+      <div class="cta-pane gold">
+        <span class="cta-ey">Spread the Word</span>
+        <h2 class="cta-h">Not ready yet?<br>Share Vazhai.</h2>
+        <p class="cta-b">Knowing one person who might donate or volunteer is just as valuable. Sharing our work takes ten seconds — and could be the reason a child in Krishnagiri stays in school.</p>
+        <div class="share-row">
+          <a class="s-btn" href="https://wa.me/?text=I%20came%20across%20Vazhai%20NGO%20%E2%80%94%20they%20place%20dedicated%20companions%20in%20remote%20government%20schools%20in%20Tamil%20Nadu.%20https%3A%2F%2Fvazhai.in" target="_blank">WhatsApp</a>
+          <button class="s-btn" onclick="copyLink('c1')">Copy Link</button>
+          <a class="s-btn" href="mailto:?subject=Vazhai%20NGO&body=https%3A%2F%2Fvazhai.in">Email</a>
+        </div>
+        <div class="copied" id="c1">Link copied.</div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="prog-block">
-    <div class="prog-bar">
-      <span class="pb-type">Volunteer · Remote or On-site</span>
-      <div class="pb-name">Vazhai Volunteers</div>
-      <div class="pb-meta">Min. 1 day per month<br>Mostly remote<br>Open to all professionals<br>Friday calls weekly</div>
+  <section id="who-we-are" class="pg" aria-label="Who We Are">
+    <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity11.jpg?raw=true" alt="Vazhai NGO activity demonstrating education equity for rural government school students in Tamil Nadu" class="wwa-hero">
+    <header class="dark-mh">
+      <span class="dark-ey">Our Story · Our Values · Our People</span>
+      <h2 class="dark-title">Who We <em>Are</em></h2>
+    </header>
+    <div class="wwa-grid">
+      <article class="wwa-col">
+        <h3 class="col-label">How We Started</h3>
+        <p>VAZHAI is a registered NGO for government school students in rural Tamil Nadu, founded in April 2005 by first-generation college graduates from Presidency College, Chennai. They knew what it cost to be the first person in a family to reach higher education — and chose to lower that cost for the next generation.</p>
+        <p>Many of our team members grew up in the same conditions as the students we now serve. That lived understanding shapes how we speak, what we teach, and why we stay.</p>
+        <div class="pq-dark">
+          <div class="pq-text">We were first-generation graduates ourselves. We knew the confusion, the lack of guidance, the moments where you almost gave up. We started Vazhai so other children wouldn't have to go through that alone.</div>
+          <div class="pq-attr">Vazhai Founding Team · Presidency College, Chennai · Est. April 2005</div>
+        </div>
+        <h3 class="col-label" style="margin-top:22px;">What We Believe</h3>
+        <p>Education equity is not a distant goal — it is a daily practice. VAZHAI believes that every child in rural Tamil Nadu deserves a fair shot at education, regardless of which village they were born in, how far their school is from a town, or what their parents do for a living.</p>
+        <p>Our team includes engineers, doctors, teachers, entrepreneurs, and social workers. Between 2005 and 2024, we ran sustained mentoring programs across Dharmapuri and Villupuram districts, supporting over <strong>500 students</strong>. In 2025, we shifted to a deeper model — placing full-time School Companions directly inside schools in Krishnagiri.</p>
+      </article>
+      <article class="wwa-col">
+        <h3 class="col-label">The Name: Vazhai</h3>
+        <p><strong>வாழை (Vazhai)</strong> is the Tamil word for the banana tree. We chose it deliberately. The banana tree gives completely — fruit, leaf, flower, stem, and root. It regenerates on its own. And every new shoot carries the same strength as the one before it.</p>
+        <p>That is what we want education to do for rural communities in Tamil Nadu: give fully, sustain itself, and carry forward from one generation to the next.</p>
+      </article>
     </div>
-    <div class="prog-content">
-      <p class="prog-intro">Volunteers power everything that the field team cannot do alone. They create the materials School Companions use every day, open doors to careers students have never heard of, and expand the program's reach through their own professional networks. No teaching experience required — just your skills and a few hours a month.</p>
-      <div class="task-grid">
-        <div class="task-item">Build and standardise student assessment materials using the AID India framework</div>
-        <div class="task-item">Design school identification and field visit forms for Coordinators</div>
-        <div class="task-item">Develop stage speech guides and confidence-building content for Companions</div>
-        <div class="task-item">Lead career talks and exposure sessions — online or in person</div>
-        <div class="task-item">Mentor students through National Children's Science Congress (NCSC) projects</div>
-        <div class="task-item">Coach 10th standard students for the Ashok Leyland ITI Integrated Course</div>
-        <div class="task-item">Run spoken English and communication skill sessions</div>
-        <div class="task-item">Support fundraising, CSR outreach, and payroll giving programs for corporate partners</div>
+    <div class="meaning-strip">
+      <div class="meaning-tile">
+        <div class="mt-icon">I</div>
+        <h3 class="mt-title">Generational Growth</h3>
+        <div class="mt-body">A banana tree sends out new shoots that carry the same strength as the parent. One child who gets an education passes that possibility on to the next. That is the cycle we are building — in Krishnagiri, Dharmapuri, Villupuram, and beyond.</div>
+      </div>
+      <div class="meaning-tile">
+        <div class="mt-icon">II</div>
+        <h3 class="mt-title">Complete Nourishment</h3>
+        <div class="mt-body">Every part of the banana tree serves a purpose. Our program doesn't focus on one subject or one exam. We build literacy, confidence, career awareness, and community trust — because a child needs all of it to thrive.</div>
+      </div>
+      <div class="meaning-tile">
+        <div class="mt-icon">III</div>
+        <h3 class="mt-title">Built to Last</h3>
+        <div class="mt-body">The banana tree regenerates year after year without being replanted. Our School Companion model works the same way — one framework, many schools, sustained presence. Not a project. A permanent commitment to rural education equity.</div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="geo-block">
-    <div class="geo-lbl">Where<br>We<br>Work</div>
-    <div class="geo-body">
-      <p>Between 2005 and 2024, Vazhai served students in <strong>Dharmapuri</strong> and <strong>Villupuram</strong> districts. In 2025, we expanded into one of Tamil Nadu's most underserved areas: the forest and hill region beyond <strong>Aiyur</strong>, near Denkanikottai in <strong>Krishnagiri district</strong> — where some villages sit 20 to 30 km inside forest routes with little or no public transport.</p>
-      <p>We began with Kodakarai Secondary School. By the end of 2026, we aim to have <strong>10 rural government schools</strong> covered. Each new school means a School Companion present every single school day — not a workshop that comes and goes, but a person who stays.</p>
-    </div>
-  </div>
-</div>
+  <section id="what-we-do" class="pg" aria-label="What We Do">
+    <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/school1.jpg?raw=true" alt="A remote government school building in the Krishnagiri district of Tamil Nadu where Vazhai operates" class="wwd-hero-strip">
+    <header class="wwd-mh">
+      <h2 class="wwd-title">What<br>We Do</h2>
+      <div class="wwd-intro">Three roles. One mission. Getting trained, committed people into rural government schools in Tamil Nadu — and keeping them there, every day.</div>
+    </header>
 
-<!-- ═══ JOIN ═══ -->
-<div id="join-vazhai" class="pg">
-  <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/beavolunteer.jpg?raw=true" alt="Join Vazhai — volunteer for rural education in Tamil Nadu" class="join-hero">
-  <div class="join-mh">
-    <div class="join-bg">JOIN</div>
-    <div class="join-overlay">
-      <div class="join-ov-title">Your skills belong<br>in a classroom</div>
-      <div class="join-ov-sub">Vazhai · Volunteer, School Companion, or Field Coordinator</div>
-    </div>
-  </div>
-
-  <div class="join-roles">
-    <div class="jr">
-      <div class="jr-num">01</div>
-      <span class="jr-kind">Part-time · Mostly Remote</span>
-      <div class="jr-title">Volunteer</div>
-      <div class="jr-body">Any working professional can contribute. Give one day a month — create learning materials, run a career session online, or mentor students in reading and communication. No field travel required for most tasks.</div>
-      <div class="jr-sal">Your time and expertise</div>
-    </div>
-    <div class="jr">
-      <div class="jr-num">02</div>
-      <span class="jr-kind">Full-time Employee · In-School</span>
-      <div class="jr-title">School Companion</div>
-      <div class="jr-body">Be present every school day in a government school in the Krishnagiri forest area. Help students read, write, and speak with confidence. Support the headmaster. Build trust with families. A role for someone from — or close to — the local community.</div>
-      <div class="jr-sal">₹15,000–₹20,000 / month</div>
-    </div>
-    <div class="jr">
-      <div class="jr-num">03</div>
-      <span class="jr-kind">Full-time Employee · Field</span>
-      <div class="jr-title">Field Coordinator</div>
-      <div class="jr-body">Visit multiple schools weekly, support School Companions, and identify new rural government schools ready for the program. Coordinate career guidance, skill visits, and inter-school events. A role for someone who leads well without a fixed desk.</div>
-      <div class="jr-sal">₹25,000–₹35,000 / month</div>
-    </div>
-  </div>
-
-  <div class="vol-split">
-    <div class="vc">
-      <div class="vc-title">What Volunteers Actually Do</div>
-      <div class="vtask"><div class="vtask-t">Student Assessment Materials</div><div class="vtask-b">Review and standardise student level identification sheets using the AID India framework. A focused 2–4 hour task, done remotely. Needed before June 2026.</div></div>
-      <div class="vtask"><div class="vtask-t">Career Exposure Sessions</div><div class="vtask-b">Share what you do in a 30-minute call with students. Engineer, nurse, chef, accountant — any profession is valuable to a child who has never met someone from outside their village.</div></div>
-      <div class="vtask"><div class="vtask-t">Bridge Course Content</div><div class="vtask-b">Create simple Tamil-medium catch-up lessons for students who are one or two grades behind. Plain language, practical examples.</div></div>
-      <div class="vtask"><div class="vtask-t">ITI &amp; NCSC Support</div><div class="vtask-b">Help 10th standard students apply for the Ashok Leyland ITI Integrated Course, or guide them through National Children's Science Congress project work.</div></div>
-      <div class="vtask"><div class="vtask-t">Fundraising &amp; CSR Outreach</div><div class="vtask-b">Connect Vazhai to donors, corporate volunteering programs, payroll giving schemes, or CSR education projects in India. Your network is our reach.</div></div>
-    </div>
-    <div class="vc">
-      <div class="vc-title">What Volunteers Say · 2025</div>
-      <div class="vquote"><div class="vq-t">"Being part of Vazhai makes us feel connected to something real. Even joining calls and reviewing materials matters — because you know it keeps the work going on the ground."</div><div class="vq-a">Narayanasamy &amp; Indhumathi · Volunteers</div></div>
-      <div class="vquote"><div class="vq-t">"The school visits past Denkanikottai were tough to reach. But seeing the headmasters and understanding the situation directly — that gave us clarity nothing else could."</div><div class="vq-a">Mani &amp; Patterson · Volunteers</div></div>
-      <div class="vquote"><div class="vq-t">"The students at Kodakarai had so many questions about careers. You could see they were hungry for information — just no one had brought it to them before."</div><div class="vq-a">Priya · Volunteer</div></div>
-      <div class="vquote"><div class="vq-t">"A regular phone call with Sevvanthi taught me more about what a School Companion really does than any report could. She's doing extraordinary work in an ordinary place."</div><div class="vq-a">Pramila · Volunteer</div></div>
-      <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity23.jpg?raw=true" alt="Vazhai volunteers and students · Tamil Nadu" class="mentor-img">
-    </div>
-  </div>
-
-  <div class="steps-bar">
-    <div class="step"><div class="step-n">01</div><div class="step-t">Apply Online</div><div class="step-b">Fill out our join form — takes five minutes. Tell us your skills and availability. We read every response.</div></div>
-    <div class="step"><div class="step-n">02</div><div class="step-t">Orientation Call</div><div class="step-b">We'll walk you through the program, answer your questions, and figure out where you fit best.</div></div>
-    <div class="step"><div class="step-n">03</div><div class="step-t">Your First Task</div><div class="step-b">We assign you something concrete in your first week — a specific output, not a vague invite to "help out."</div></div>
-    <div class="step"><div class="step-n">04</div><div class="step-t">Friday Calls</div><div class="step-b">Every Friday, the whole Vazhai network connects. Hear from the field. Share what you did. Stay part of the work.</div></div>
-  </div>
-
-  <div class="join-apply">
-    <div>
-      <div class="ja-t">Ready to start?</div>
-      <div class="ja-s">We'll get back to you within a few days of your application.</div>
-    </div>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeEGwx0oQ6Fk1GGHJP17l7Nrw99FF2CwqDa73NM8g8P19kXBQ/viewform?usp=header" target="_blank" class="cta-btn filled">Apply to Join Vazhai →</a>
-  </div>
-</div>
-
-<!-- ═══ DONATION ═══ -->
-<div id="donation" class="pg">
-  <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/Donation.jpg?raw=true" alt="Donate to Vazhai — education NGO Tamil Nadu" class="don-hero">
-  <div class="don-mh">
-    <span class="don-ey">Donate to Rural Education · Tamil Nadu &amp; India</span>
-    <div class="don-title">Support<br>Vazhai</div>
-    <p class="don-tagline">A School Companion earns ₹15,000 a month. In return, children in a forest-area government school have a trained adult present every school day — someone who tracks their progress, follows up when they're absent, and refuses to let them fall through the cracks. Your donation funds that person. Nothing more, nothing less.</p>
-  </div>
-  <div class="don-note">Note: Vazhai does not currently hold 80G exemption. Donations to this education NGO are not eligible for income tax deduction.</div>
-
-  <div class="tiers">
-    <div class="tier-row"><div class="tier-amt">₹500 / mo</div><div class="tier-what">Covers <strong>one student's study materials for an entire year</strong> — books, stationery, and learning resources they would otherwise go without.</div></div>
-    <div class="tier-row"><div class="tier-amt">₹1,500 / mo</div><div class="tier-what">Pays for <strong>one field visit to a remote government school</strong> — fuel, transport, and coordination costs for a week of on-ground work in Krishnagiri.</div></div>
-    <div class="tier-row feat"><div class="tier-amt">₹5,000 / mo</div><div class="tier-what"><strong>Partially sponsors a School Companion for a month</strong> — contributing directly to the salary of a person who shows up for students every single day.</div></div>
-    <div class="tier-row"><div class="tier-amt">₹15,000 / mo</div><div class="tier-what"><strong>Fully funds one School Companion for one month</strong> — one trained person, one rural school, every school day of the year.</div></div>
-    <div class="tier-row"><div class="tier-amt">₹2–3L / yr</div><div class="tier-what"><strong>Sponsors an entire school for a year</strong> — Companion salary, field coordination, study materials, career guidance sessions, and inter-school events for one rural school community.</div></div>
-  </div>
-
-  <div class="don-breakdown">
-    <div class="db-item"><span class="db-lbl">School Companion Salary</span><div class="db-amt">₹15–20K</div><div class="db-desc">Per month, per school. Present every single school day — full year.</div></div>
-    <div class="db-item"><span class="db-lbl">Field Coordinator Salary</span><div class="db-amt">₹25–35K</div><div class="db-desc">Per month. Manages Companions across multiple schools; weekly visits and training.</div></div>
-    <div class="db-item"><span class="db-lbl">Travel &amp; Field Costs</span><div class="db-amt">Variable</div><div class="db-desc">Fuel, transport, and stay for reaching remote hill schools in Krishnagiri.</div></div>
-    <div class="db-item"><span class="db-lbl">Materials &amp; Training</span><div class="db-amt">Variable</div><div class="db-desc">Student assessment kits, study resources, and career guidance sessions.</div></div>
-    <div class="db-item"><span class="db-lbl">Student Programs</span><div class="db-amt">Variable</div><div class="db-desc">NCSC science projects, ITI preparation, inter-school competitions, and stage speech activities.</div></div>
-    <div class="db-item"><span class="db-lbl">Program Expansion</span><div class="db-amt">10 Schools · 2026</div><div class="db-desc">Setting up and sustaining each new rural government school with a full Companion and Coordinator.</div></div>
-  </div>
-
-  <div class="don-widgets">
-    <div>
-      <div class="dw-title">One-Time Donation</div>
-      <div class="dw-sub">Any amount. Goes directly towards School Companions, field visits, and student materials. Every rupee is tracked and reported.</div>
-      <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_Qwp1n9PkcR8tKi" async></script></form>
-    </div>
-    <div>
-      <div class="dw-toggle" onclick="toggleMonthly()">
-        <div class="dw-title">Monthly Giving</div>
-        <div class="dw-chev" id="dwchev">▾</div>
+    <article class="prog-block">
+      <div class="prog-bar">
+        <span class="pb-type">Employee · Full-time · In-School</span>
+        <h3 class="pb-name">School Companions</h3>
+        <div class="pb-meta">One per school<br>Present every school day<br>Weekly progress reports<br>Salary: ₹15,000–20,000/mo</div>
       </div>
-      <div class="dw-sub">The most effective way to support a rural education NGO — predictable monthly income lets us hire, plan, and commit to schools a full year ahead.</div>
-      <div class="dw-body" id="dwbody">
-        <form id="rzp-sub-form"><script src="https://cdn.razorpay.com/static/widget/subscription-button.js"
-                                        data-subscription_button_id="pl_SnE7xSxS7tFLxU"
-                                        data-button_theme="brand-color" async></script></form>
+      <div class="prog-content">
+        <p class="prog-intro">A School Companion is Vazhai's most direct investment in a child. Based full-time inside a government school in a remote forest or hill area, they work alongside teachers, build trust with families, and make sure no student is quietly slipping through the cracks. Our first Companion at Kodakarai Secondary School, Krishnagiri (2025) grew up in the same village — and that local connection has made all the difference.</p>
+        <div class="task-grid">
+          <div class="task-item"><strong>Reading, Writing &amp; Speaking</strong> <span class="mtag">Mandatory</span> — assessed 3× a year; target: 25% improvement or a score above 70%</div>
+          <div class="task-item"><strong>Student Stage Speech</strong> <span class="mtag">Mandatory</span> — every student speaks at least once a year; sessions are recorded and shared with Vazhai</div>
+          <div class="task-item"><strong>Support the Headmaster</strong> <span class="mtag">Mandatory</span> — take classes, assist in special sessions, help run school events</div>
+          <div class="task-item"><strong>Baseline Assessment</strong> <span class="mtag">Mandatory</span> — evaluate each student's starting level at the beginning of the year</div>
+          <div class="task-item"><strong>Dropout Tracking</strong> <span class="mtag">Mandatory</span> — identify absent students early; work with families to bring them back</div>
+          <div class="task-item"><strong>Weekly &amp; Annual Reports</strong> <span class="mtag">Mandatory</span> — submit every Friday; full annual report at year-end</div>
+          <div class="task-item"><strong>Home Visits</strong> — meet parents, build trust, understand what is keeping a child from school</div>
+          <div class="task-item"><strong>Library &amp; Reading Sessions</strong> — manage the school book corner; make reading a daily habit</div>
+          <div class="task-item"><strong>Bridge Course</strong> — run focused catch-up lessons for students who are behind grade level</div>
+          <div class="task-item"><strong>NMMS Preparation</strong> — guide eligible students through the National Means-cum-Merit Scholarship process</div>
+        </div>
+      </div>
+    </article>
+
+    <article class="prog-block">
+      <div class="prog-bar">
+        <span class="pb-type">Employee · Full-time · Field</span>
+        <h3 class="pb-name">Field Coordinators</h3>
+        <div class="pb-meta">Multi-school management<br>Weekly school visits<br>Program expansion<br>Salary: ₹25,000–35,000/mo</div>
+      </div>
+      <div class="prog-content">
+        <p class="prog-intro">A Field Coordinator is the connective tissue of the program. They travel to each school weekly, check that School Companions have what they need, and bring in outside resources — career experts, skill training partners, inter-school competitions. They also scout new government schools ready to join the program.</p>
+        <div class="task-grid">
+          <div class="task-item">Visit at least one school every week; review Companion reports on the ground <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Identify, visit, and document new rural schools for the program <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Train teachers and Companions in student level identification — three times a year <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Organise career guidance sessions in every partner school, every year <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Plan and run inter-school sports and cultural competitions <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Coordinate skill exposure visits for students — e.g., TVS plant tours <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Meet potential donors; support fundraising and CSR partnerships <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Keep the Vazhai volunteer network updated on all field developments</div>
+        </div>
+      </div>
+    </article>
+
+    <article class="prog-block">
+      <div class="prog-bar">
+        <span class="pb-type">Volunteer · Remote or On-site</span>
+        <h3 class="pb-name">Vazhai Volunteers</h3>
+        <div class="pb-meta">Min. 1 day per month<br>Mostly remote<br>Open to all professionals<br>Friday calls weekly</div>
+      </div>
+      <div class="prog-content">
+        <p class="prog-intro">Volunteers power everything that the field team cannot do alone. They create the materials School Companions use every day, open doors to careers students have never heard of, and expand the program's reach through their own professional networks. No teaching experience required — just your skills and a few hours a month.</p>
+        <div class="task-grid">
+          <div class="task-item">Build and standardise student assessment materials using the AID India framework</div>
+          <div class="task-item">Design school identification and field visit forms for Coordinators</div>
+          <div class="task-item">Develop stage speech guides and confidence-building content for Companions</div>
+          <div class="task-item">Lead career talks and exposure sessions — online or in person</div>
+          <div class="task-item">Mentor students through National Children's Science Congress (NCSC) projects</div>
+          <div class="task-item">Coach 10th standard students for the Ashok Leyland ITI Integrated Course</div>
+          <div class="task-item">Run spoken English and communication skill sessions</div>
+          <div class="task-item">Support fundraising, CSR outreach, and payroll giving programs for corporate partners</div>
+        </div>
+      </div>
+    </article>
+
+    <div class="geo-block">
+      <h2 class="geo-lbl">Where<br>We<br>Work</h2>
+      <div class="geo-body">
+        <p>Between 2005 and 2024, Vazhai served students in <strong>Dharmapuri</strong> and <strong>Villupuram</strong> districts. In 2025, we expanded into one of Tamil Nadu's most underserved areas: the forest and hill region beyond <strong>Aiyur</strong>, near Denkanikottai in <strong>Krishnagiri district</strong> — where some villages sit 20 to 30 km inside forest routes with little or no public transport.</p>
+        <p>We began with Kodakarai Secondary School. By the end of 2026, we aim to have <strong>10 rural government schools</strong> covered. Each new school means a School Companion present every single school day — not a workshop that comes and goes, but a person who stays.</p>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="don-share">
-    <span class="don-share-lbl">Can't donate right now? Share Vazhai instead.</span>
-    <a class="s-btn" href="https://wa.me/?text=I%20came%20across%20Vazhai%20NGO%20%E2%80%94%20they%20place%20dedicated%20companions%20in%20remote%20government%20schools%20in%20Tamil%20Nadu.%20https%3A%2F%2Fvazhai.in" target="_blank">WhatsApp</a>
-    <button class="s-btn" onclick="copyLink('c2')">Copy Link</button>
-    <span class="copied" id="c2" style="color:var(--gold-lt);">Copied.</span>
-  </div>
-</div>
+  <section id="join-vazhai" class="pg" aria-label="Join Vazhai">
+    <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/beavolunteer.jpg?raw=true" alt="Volunteer engaging with rural students in Tamil Nadu, demonstrating how to join Vazhai NGO" class="join-hero">
+    <header class="join-mh">
+      <div class="join-bg">JOIN</div>
+      <div class="join-overlay">
+        <h2 class="join-ov-title">Your skills belong<br>in a classroom</h2>
+        <div class="join-ov-sub">Vazhai · Volunteer, School Companion, or Field Coordinator</div>
+      </div>
+    </header>
 
-<!-- ═══ CONTACT ═══ -->
-<div id="contact-us" class="pg">
-  <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity3.jpg?raw=true" alt="Contact Vazhai NGO · Tamil Nadu" class="ct-hero">
-  <div class="ct-mh">
-    <div class="ct-title">Contact<br>Us</div>
-    <div class="ct-reach">
-      <p>Want to volunteer, donate, explore CSR education projects in Tamil Nadu, or simply learn more about Vazhai? Use any of the channels below — or fill our Join Form to get the conversation started.</p>
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSeEGwx0oQ6Fk1GGHJP17l7Nrw99FF2CwqDa73NM8g8P19kXBQ/viewform?usp=header" target="_blank" class="cta-btn filled">Join Form →</a>
-      <a href="mailto:vazhai.connect@gmail.com" class="cta-btn" style="display:inline-block;margin-top:8px;">Email Us →</a>
+    <div class="join-roles">
+      <article class="jr">
+        <div class="jr-num">01</div>
+        <span class="jr-kind">Part-time · Mostly Remote</span>
+        <h3 class="jr-title">Volunteer</h3>
+        <div class="jr-body">Any working professional can contribute. Give one day a month — create learning materials, run a career session online, or mentor students in reading and communication. No field travel required for most tasks.</div>
+        <div class="jr-sal">Your time and expertise</div>
+      </article>
+      <article class="jr">
+        <div class="jr-num">02</div>
+        <span class="jr-kind">Full-time Employee · In-School</span>
+        <h3 class="jr-title">School Companion</h3>
+        <div class="jr-body">Be present every school day in a government school in the Krishnagiri forest area. Help students read, write, and speak with confidence. Support the headmaster. Build trust with families. A role for someone from — or close to — the local community.</div>
+        <div class="jr-sal">₹15,000–₹20,000 / month</div>
+      </article>
+      <article class="jr">
+        <div class="jr-num">03</div>
+        <span class="jr-kind">Full-time Employee · Field</span>
+        <h3 class="jr-title">Field Coordinator</h3>
+        <div class="jr-body">Visit multiple schools weekly, support School Companions, and identify new rural government schools ready for the program. Coordinate career guidance, skill visits, and inter-school events. A role for someone who leads well without a fixed desk.</div>
+        <div class="jr-sal">₹25,000–₹35,000 / month</div>
+      </article>
     </div>
-  </div>
-  <div class="ct-grid">
-    <div class="ct-cell"><span class="cc-lbl">Email</span><div class="cc-val"><a href="mailto:vazhai.connect@gmail.com">vazhai.connect@gmail.com</a></div></div>
-    <div class="ct-cell"><span class="cc-lbl">Website</span><div class="cc-val"><a href="https://vazhai.in" target="_blank">vazhai.in</a></div></div>
-    <div class="ct-cell"><span class="cc-lbl">Facebook</span><div class="cc-val"><a href="https://facebook.com/vazhai" target="_blank">facebook.com/vazhai</a></div></div>
-    <div class="ct-cell"><span class="cc-lbl">Registration</span><div class="cc-val">NGO Reg. No. 296/05, Tamil Nadu</div></div>
-    <div class="ct-cell" style="grid-column:span 2"><span class="cc-lbl">Registered Address</span><div class="cc-val"># 341/157, T.H. Road, Kaladipet, Thiruvottiyur, Chennai – 600 019</div></div>
-  </div>
-  <div class="visit-block">
-    <div class="vb-lbl">Visit Our Schools</div>
-    <div class="vb-body">
-      <p>We welcome visits from donors, corporate partners, and anyone who wants to see rural education work up close. If you'd like to visit our school programs in the Denkanikottai–Aiyur area of Krishnagiri, contact us in advance to plan the trip.</p>
-      <p>A field visit is the fastest way to understand what this work actually looks like — the terrain, the schools, the students, and the School Companion who shows up for them every day.</p>
-    </div>
-  </div>
-</div>
 
-<!-- ═══ EVENTS ═══ -->
-<div id="vazhai-events" class="pg">
-  <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity12a.jpg?raw=true" alt="Vazhai NGO events · government school Tamil Nadu" class="ev-hero">
-  <div class="ev-mh">
-    <div class="ev-title">Vazhai Events</div>
-    <div class="ev-sub">On the ground and online · 2025</div>
-  </div>
-  <div class="ev-body">
-    <div class="ev-col">
-      <div class="evg-head">Field Events</div>
-      <div class="ev-entry"><div class="ev-date">Aug 2025</div><div><div class="ev-ttl">School Identification — Krishnagiri District</div><div class="ev-desc">Planned visits to assess rural government schools in the Krishnagiri area for inclusion in the School Companion program.</div></div></div>
-      <div class="ev-entry"><div class="ev-date">Jul 2025</div><div><div class="ev-ttl">School Identification — Aiyur Forest Area</div><div class="ev-desc">Visited government schools near the Ayyur forest in Denkanikottai. Met headmasters, assessed student needs, and gathered field data.</div></div></div>
-      <div class="evg-head">Recurring · On-site</div>
-      <div class="ev-entry"><div class="ev-date">Monthly</div><div><div class="ev-ttl">Life Skills Workshops</div><div class="ev-desc">Sessions on communication, leadership, digital literacy, and career awareness — run by Vazhai volunteers at partner schools in Dharmapuri and Villupuram.</div></div></div>
-      <div class="ev-entry"><div class="ev-date">Quarterly</div><div><div class="ev-ttl">Student &amp; Family Visits</div><div class="ev-desc">Field visits to understand each student's home situation, build family trust, and identify anything pulling them away from school.</div></div></div>
-      <div class="ev-entry"><div class="ev-date">3× / Year</div><div><div class="ev-ttl">Student Level Assessments</div><div class="ev-desc">Structured reading, writing, and speaking assessments at the start, midpoint, and end of the academic year — to measure growth and adjust support.</div></div></div>
-      <div class="ev-entry"><div class="ev-date">Annual</div><div><div class="ev-ttl">Career Guidance Sessions</div><div class="ev-desc">In-person career exposure sessions at every partner school — covering higher education options, vocational training, and real-world career paths.</div></div></div>
-      <div class="ev-entry"><div class="ev-date">Annual</div><div><div class="ev-ttl">Inter-School Competition</div><div class="ev-desc">Sports and cultural competitions — speech, writing, and more — across schools. Planned carefully to work around the challenging terrain of hill-area schools.</div></div></div>
+    <div class="vol-split">
+      <article class="vc">
+        <h3 class="vc-title">What Volunteers Actually Do</h3>
+        <div class="vtask"><div class="vtask-t">Student Assessment Materials</div><div class="vtask-b">Review and standardise student level identification sheets using the AID India framework. A focused 2–4 hour task, done remotely. Needed before June 2026.</div></div>
+        <div class="vtask"><div class="vtask-t">Career Exposure Sessions</div><div class="vtask-b">Share what you do in a 30-minute call with students. Engineer, nurse, chef, accountant — any profession is valuable to a child who has never met someone from outside their village.</div></div>
+        <div class="vtask"><div class="vtask-t">Bridge Course Content</div><div class="vtask-b">Create simple Tamil-medium catch-up lessons for students who are one or two grades behind. Plain language, practical examples.</div></div>
+        <div class="vtask"><div class="vtask-t">ITI &amp; NCSC Support</div><div class="vtask-b">Help 10th standard students apply for the Ashok Leyland ITI Integrated Course, or guide them through National Children's Science Congress project work.</div></div>
+        <div class="vtask"><div class="vtask-t">Fundraising &amp; CSR Outreach</div><div class="vtask-b">Connect Vazhai to donors, corporate volunteering programs, payroll giving schemes, or CSR education projects in India. Your network is our reach.</div></div>
+      </article>
+      <article class="vc">
+        <h3 class="vc-title">What Volunteers Say · 2025</h3>
+        <div class="vquote"><div class="vq-t">"Being part of Vazhai makes us feel connected to something real. Even joining calls and reviewing materials matters — because you know it keeps the work going on the ground."</div><div class="vq-a">Narayanasamy &amp; Indhumathi · Volunteers</div></div>
+        <div class="vquote"><div class="vq-t">"The school visits past Denkanikottai were tough to reach. But seeing the headmasters and understanding the situation directly — that gave us clarity nothing else could."</div><div class="vq-a">Mani &amp; Patterson · Volunteers</div></div>
+        <div class="vquote"><div class="vq-t">"The students at Kodakarai had so many questions about careers. You could see they were hungry for information — just no one had brought it to them before."</div><div class="vq-a">Priya · Volunteer</div></div>
+        <div class="vquote"><div class="vq-t">"A regular phone call with Sevvanthi taught me more about what a School Companion really does than any report could. She's doing extraordinary work in an ordinary place."</div><div class="vq-a">Pramila · Volunteer</div></div>
+        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity23.jpg?raw=true" alt="Vazhai volunteers working closely with rural students in Tamil Nadu" class="mentor-img">
+      </article>
     </div>
-    <div class="ev-col">
-      <div class="evg-head">Recurring · Online</div>
-      <div class="ev-entry"><div class="ev-date">Monthly</div><div><div class="ev-ttl">Volunteer Connect</div><div class="ev-desc">The full Vazhai volunteer group comes together — in person or online — to share field updates, reflect on what is working, and plan the month ahead.</div></div></div>
-      <div class="ev-entry"><div class="ev-date">Every Friday</div><div><div class="ev-ttl">Weekly Status Call</div><div class="ev-desc">School Companions, Field Coordinators, and volunteers check in together. Open to new volunteers who want to understand the work before committing.</div></div></div>
-      <div class="ev-cta">
-        <div class="ev-cta-h">Join us at the next event.</div>
-        <div class="ev-cta-b">Our Friday calls are the easiest way in. No application needed — just show up, listen, and ask questions. If you feel the work is for you, we'll take it from there.</div>
-        <button class="ev-btn menu-item" data-section="join-vazhai">Join Vazhai →</button>
-        <button class="ev-btn muted menu-item" data-section="contact-us">Contact Us →</button>
+
+    <div class="steps-bar">
+      <div class="step"><div class="step-n">01</div><h4 class="step-t">Apply Online</h4><div class="step-b">Fill out our join form — takes five minutes. Tell us your skills and availability. We read every response.</div></div>
+      <div class="step"><div class="step-n">02</div><h4 class="step-t">Orientation Call</h4><div class="step-b">We'll walk you through the program, answer your questions, and figure out where you fit best.</div></div>
+      <div class="step"><div class="step-n">03</div><h4 class="step-t">Your First Task</h4><div class="step-b">We assign you something concrete in your first week — a specific output, not a vague invite to "help out."</div></div>
+      <div class="step"><div class="step-n">04</div><h4 class="step-t">Friday Calls</h4><div class="step-b">Every Friday, the whole Vazhai network connects. Hear from the field. Share what you did. Stay part of the work.</div></div>
+    </div>
+
+    <div class="join-apply">
+      <div>
+        <h2 class="ja-t">Ready to start?</h2>
+        <div class="ja-s">We'll get back to you within a few days of your application.</div>
+      </div>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSeEGwx0oQ6Fk1GGHJP17l7Nrw99FF2CwqDa73NM8g8P19kXBQ/viewform?usp=header" target="_blank" class="cta-btn filled">Apply to Join Vazhai →</a>
+    </div>
+  </section>
+
+  <section id="donation" class="pg" aria-label="Donate to Vazhai NGO">
+    <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/Donation.jpg?raw=true" alt="Donation impact: A student in a rural Tamil Nadu government school supported by Vazhai NGO" class="don-hero">
+    <header class="don-mh">
+      <span class="don-ey">Donate to Rural Education · Tamil Nadu &amp; India</span>
+      <h2 class="don-title">Support<br>Vazhai</h2>
+      <p class="don-tagline">A School Companion earns ₹15,000 a month. In return, children in a forest-area government school have a trained adult present every school day — someone who tracks their progress, follows up when they're absent, and refuses to let them fall through the cracks. Your donation funds that person. Nothing more, nothing less.</p>
+    </header>
+    <div class="don-note">Note: Vazhai does not currently hold 80G exemption. Donations to this education NGO are not eligible for income tax deduction.</div>
+
+    <div class="tiers">
+      <article class="tier-row"><div class="tier-amt">₹500 / mo</div><div class="tier-what">Covers <strong>one student's study materials for an entire year</strong> — books, stationery, and learning resources they would otherwise go without.</div></article>
+      <article class="tier-row"><div class="tier-amt">₹1,500 / mo</div><div class="tier-what">Pays for <strong>one field visit to a remote government school</strong> — fuel, transport, and coordination costs for a week of on-ground work in Krishnagiri.</div></article>
+      <article class="tier-row feat"><div class="tier-amt">₹5,000 / mo</div><div class="tier-what"><strong>Partially sponsors a School Companion for a month</strong> — contributing directly to the salary of a person who shows up for students every single day.</div></article>
+      <article class="tier-row"><div class="tier-amt">₹15,000 / mo</div><div class="tier-what"><strong>Fully funds one School Companion for one month</strong> — one trained person, one rural school, every school day of the year.</div></article>
+      <article class="tier-row"><div class="tier-amt">₹2–3L / yr</div><div class="tier-what"><strong>Sponsors an entire school for a year</strong> — Companion salary, field coordination, study materials, career guidance sessions, and inter-school events for one rural school community.</div></article>
+    </div>
+
+    <div class="don-breakdown">
+      <div class="db-item"><h3 class="db-lbl">School Companion Salary</h3><div class="db-amt">₹15–20K</div><div class="db-desc">Per month, per school. Present every single school day — full year.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Field Coordinator Salary</h3><div class="db-amt">₹25–35K</div><div class="db-desc">Per month. Manages Companions across multiple schools; weekly visits and training.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Travel &amp; Field Costs</h3><div class="db-amt">Variable</div><div class="db-desc">Fuel, transport, and stay for reaching remote hill schools in Krishnagiri.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Materials &amp; Training</h3><div class="db-amt">Variable</div><div class="db-desc">Student assessment kits, study resources, and career guidance sessions.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Student Programs</h3><div class="db-amt">Variable</div><div class="db-desc">NCSC science projects, ITI preparation, inter-school competitions, and stage speech activities.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Program Expansion</h3><div class="db-amt">10 Schools · 2026</div><div class="db-desc">Setting up and sustaining each new rural government school with a full Companion and Coordinator.</div></div>
+    </div>
+
+    <div class="don-widgets">
+      <article>
+        <h3 class="dw-title">One-Time Donation</h3>
+        <div class="dw-sub">Any amount. Goes directly towards School Companions, field visits, and student materials. Every rupee is tracked and reported.</div>
+        <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_Qwp1n9PkcR8tKi" async></script></form>
+      </article>
+      <article>
+        <div class="dw-toggle" onclick="toggleMonthly()" aria-expanded="false" aria-controls="dwbody">
+          <h3 class="dw-title">Monthly Giving</h3>
+          <div class="dw-chev" id="dwchev">▾</div>
+        </div>
+        <div class="dw-sub">The most effective way to support a rural education NGO — predictable monthly income lets us hire, plan, and commit to schools a full year ahead.</div>
+        <div class="dw-body" id="dwbody">
+          <form id="rzp-sub-form"><script src="https://cdn.razorpay.com/static/widget/subscription-button.js"
+                                          data-subscription_button_id="pl_SnE7xSxS7tFLxU"
+                                          data-button_theme="brand-color" async></script></form>
+        </div>
+      </article>
+    </div>
+
+    <div class="don-share">
+      <span class="don-share-lbl">Can't donate right now? Share Vazhai instead.</span>
+      <a class="s-btn" href="https://wa.me/?text=I%20came%20across%20Vazhai%20NGO%20%E2%80%94%20they%20place%20dedicated%20companions%20in%20remote%20government%20schools%20in%20Tamil%20Nadu.%20https%3A%2F%2Fvazhai.in" target="_blank">WhatsApp</a>
+      <button class="s-btn" onclick="copyLink('c2')">Copy Link</button>
+      <span class="copied" id="c2" style="color:var(--gold-lt);">Copied.</span>
+    </div>
+  </section>
+
+  <section id="contact-us" class="pg" aria-label="Contact Vazhai NGO">
+    <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity3.jpg?raw=true" alt="Contact Vazhai NGO to support rural education projects in Tamil Nadu" class="ct-hero">
+    <header class="ct-mh">
+      <h2 class="ct-title">Contact<br>Us</h2>
+      <div class="ct-reach">
+        <p>Want to volunteer, donate, explore CSR education projects in Tamil Nadu, or simply learn more about Vazhai? Use any of the channels below — or fill our Join Form to get the conversation started.</p>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeEGwx0oQ6Fk1GGHJP17l7Nrw99FF2CwqDa73NM8g8P19kXBQ/viewform?usp=header" target="_blank" class="cta-btn filled">Join Form →</a>
+        <a href="mailto:vazhai.connect@gmail.com" class="cta-btn" style="display:inline-block;margin-top:8px;">Email Us →</a>
+      </div>
+    </header>
+    <div class="ct-grid">
+      <div class="ct-cell"><h3 class="cc-lbl">Email</h3><div class="cc-val"><a href="mailto:vazhai.connect@gmail.com">vazhai.connect@gmail.com</a></div></div>
+      <div class="ct-cell"><h3 class="cc-lbl">Website</h3><div class="cc-val"><a href="https://vazhai.in" target="_blank">vazhai.in</a></div></div>
+      <div class="ct-cell"><h3 class="cc-lbl">Facebook</h3><div class="cc-val"><a href="https://facebook.com/vazhai" target="_blank">facebook.com/vazhai</a></div></div>
+      <div class="ct-cell"><h3 class="cc-lbl">Registration</h3><div class="cc-val">NGO Reg. No. 296/05, Tamil Nadu</div></div>
+      <div class="ct-cell" style="grid-column:span 2">
+        <h3 class="cc-lbl">Registered Address</h3>
+        <address class="cc-val" style="font-style:normal;"># 341/157, T.H. Road, Kaladipet, Thiruvottiyur, Chennai – 600 019, Tamil Nadu, India</address>
       </div>
     </div>
-  </div>
-</div>
+    <div class="visit-block">
+      <h3 class="vb-lbl">Visit Our Schools</h3>
+      <div class="vb-body">
+        <p>We welcome visits from donors, corporate partners, and anyone who wants to see rural education work up close. If you'd like to visit our school programs in the Denkanikottai–Aiyur area of Krishnagiri, contact us in advance to plan the trip.</p>
+        <p>A field visit is the fastest way to understand what this work actually looks like — the terrain, the schools, the students, and the School Companion who shows up for them every day.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="vazhai-events" class="pg" aria-label="Vazhai NGO Events">
+    <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity12a.jpg?raw=true" alt="Vazhai NGO field events for government school students in rural Tamil Nadu" class="ev-hero">
+    <header class="ev-mh">
+      <h2 class="ev-title">Vazhai Events</h2>
+      <div class="ev-sub">On the ground and online · 2025</div>
+    </header>
+    <div class="ev-body">
+      <article class="ev-col">
+        <h3 class="evg-head">Field Events</h3>
+        <div class="ev-entry"><div class="ev-date">Aug 2025</div><div><h4 class="ev-ttl">School Identification — Krishnagiri District</h4><div class="ev-desc">Planned visits to assess rural government schools in the Krishnagiri area for inclusion in the School Companion program.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Jul 2025</div><div><h4 class="ev-ttl">School Identification — Aiyur Forest Area</h4><div class="ev-desc">Visited government schools near the Ayyur forest in Denkanikottai. Met headmasters, assessed student needs, and gathered field data.</div></div></div>
+        <h3 class="evg-head">Recurring · On-site</h3>
+        <div class="ev-entry"><div class="ev-date">Monthly</div><div><h4 class="ev-ttl">Life Skills Workshops</h4><div class="ev-desc">Sessions on communication, leadership, digital literacy, and career awareness — run by Vazhai volunteers at partner schools in Dharmapuri and Villupuram.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Quarterly</div><div><h4 class="ev-ttl">Student &amp; Family Visits</h4><div class="ev-desc">Field visits to understand each student's home situation, build family trust, and identify anything pulling them away from school.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">3× / Year</div><div><h4 class="ev-ttl">Student Level Assessments</h4><div class="ev-desc">Structured reading, writing, and speaking assessments at the start, midpoint, and end of the academic year — to measure growth and adjust support.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Annual</div><div><h4 class="ev-ttl">Career Guidance Sessions</h4><div class="ev-desc">In-person career exposure sessions at every partner school — covering higher education options, vocational training, and real-world career paths.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Annual</div><div><h4 class="ev-ttl">Inter-School Competition</h4><div class="ev-desc">Sports and cultural competitions — speech, writing, and more — across schools. Planned carefully to work around the challenging terrain of hill-area schools.</div></div></div>
+      </article>
+      <article class="ev-col">
+        <h3 class="evg-head">Recurring · Online</h3>
+        <div class="ev-entry"><div class="ev-date">Monthly</div><div><h4 class="ev-ttl">Volunteer Connect</h4><div class="ev-desc">The full Vazhai volunteer group comes together — in person or online — to share field updates, reflect on what is working, and plan the month ahead.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Every Friday</div><div><h4 class="ev-ttl">Weekly Status Call</h4><div class="ev-desc">School Companions, Field Coordinators, and volunteers check in together. Open to new volunteers who want to understand the work before committing.</div></div></div>
+        <div class="ev-cta">
+          <h3 class="ev-cta-h">Join us at the next event.</h3>
+          <div class="ev-cta-b">Our Friday calls are the easiest way in. No application needed — just show up, listen, and ask questions. If you feel the work is for you, we'll take it from there.</div>
+          <button class="ev-btn menu-item" data-section="join-vazhai">Join Vazhai →</button>
+          <button class="ev-btn muted menu-item" data-section="contact-us">Contact Us →</button>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
 
 <script>
   const menuItems = document.querySelectorAll('.menu-item');
@@ -1137,9 +1168,13 @@ body::before {
   function toggleMonthly() {
     const body = document.getElementById('dwbody');
     const chev = document.getElementById('dwchev');
+    const toggleBtn = document.querySelector('.dw-toggle');
     const isOpening = !body.classList.contains('open');
+    
     body.classList.toggle('open');
     chev.classList.toggle('open');
+    toggleBtn.setAttribute('aria-expanded', isOpening);
+
     if (isOpening && !rzpSubLoaded) {
       rzpSubLoaded = true;
       const form = document.getElementById('rzp-sub-form');
