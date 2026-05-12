@@ -402,11 +402,32 @@ body::before {
 }
 .live-dot {
   width:7px; height:7px; border-radius:50%;
-  background:#5fca5f; flex-shrink:0;
+  background:#72E08A; flex-shrink:0;
   animation:blink 1.8s infinite;
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 .live-strip strong { color:var(--gold-lt); }
+
+/* mission strip */
+.mission-strip {
+  background:var(--dew);
+  border-bottom:3px solid var(--forest);
+  padding:28px 5vw;
+  display:flex; align-items:flex-start; gap:20px;
+}
+.mission-rule {
+  width:4px; flex-shrink:0;
+  background:var(--gold);
+  align-self:stretch;
+  border-radius:2px;
+}
+.mission-text {
+  font-family:'Libre Baskerville', Georgia, serif;
+  font-size:clamp(.88rem, 1.4vw, 1.05rem);
+  line-height:1.8;
+  color:var(--forest);
+  font-style:italic;
+}
 
 /* 3-col grid */
 .home-grid { display:grid; grid-template-columns:1fr 1fr 1fr; flex:1; }
@@ -716,14 +737,67 @@ body::before {
 .db-amt { font-family:'Bebas Neue', sans-serif; font-size:1.65rem; color:var(--gold); line-height:1; margin-bottom:6px; }
 .db-desc { font-size:.75rem; line-height:1.55; color:#3a4a2e; }
 
-.don-widgets { background:var(--paper); padding:40px 5vw; border-top:3px solid var(--forest); display:grid; grid-template-columns:1fr 1fr; gap:40px; }
-.dw-title { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; color:var(--forest); margin-bottom:5px; font-weight:normal;}
-.dw-sub { font-size:.75rem; color:#3a4a2e; margin-bottom:16px; line-height:1.55; }
-.dw-toggle { cursor:pointer; display:flex; align-items:center; gap:9px; }
-.dw-chev { font-size:.77rem; color:var(--gold); transition:transform .25s; }
-.dw-chev.open { transform:rotate(180deg); }
-.dw-body { display:none; margin-top:13px; }
+.don-widgets {
+  background:var(--paper);
+  padding:40px 5vw;
+  border-top:3px solid var(--forest);
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:48px;
+  align-items:start;
+}
+
+.dw-title {
+  font-family:'Bebas Neue', sans-serif;
+  font-size:1.6rem; font-weight:normal; line-height:1;
+  color:var(--forest); margin-bottom:6px;
+}
+.dw-sub { font-size:.78rem; color:#3a4a2e; margin-bottom:18px; line-height:1.6; }
+
+/* "Donate Monthly" dropdown toggle button */
+.dw-monthly-btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background:#72E08A;
+  color:#111;
+  border:none;
+  border-radius:5px;
+  padding:9px 16px;
+  cursor:pointer;
+  font-size:.78rem;
+  font-weight:600;
+  font-style:italic;
+  font-family:sans-serif;
+  letter-spacing:.01em;
+  box-shadow:0 1px 4px rgba(0,0,0,.12);
+  transition:background .18s;
+  line-height:1.25;
+  min-width:200px;
+}
+.dw-monthly-btn:hover { background:#4db84d; }
+.dw-monthly-btn-label { display:flex; flex-direction:column; }
+.dw-monthly-btn-label span:first-child { font-size:.78rem; color:#111; }
+.dw-monthly-btn-label span:last-child {
+  font-size:.62rem; font-weight:400; font-style:normal;
+  color:#333; letter-spacing:.02em;
+}
+.dw-monthly-chev {
+  font-size:.7rem;
+  color:#111;
+  transition:transform .25s;
+  flex-shrink:0;
+}
+.dw-monthly-chev.open { transform:rotate(180deg); }
+
+/* expandable Razorpay widget area */
+.dw-body { display:none; margin-top:14px; }
 .dw-body.open { display:block; }
+
+@media (max-width:860px) {
+  .don-widgets { grid-template-columns:1fr; gap:32px; }
+}
 
 .don-share { padding:22px 5vw; background:rgba(0,0,0,.12); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .don-share-lbl { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.55); }
@@ -895,15 +969,14 @@ body::before {
       </div>
     </header>
 
-    <div class="live-strip">
-      <div class="live-dot"></div>
-      <span>Active now — <strong>School Companion deployed at Kodakarai Secondary School, Krishnagiri, 2025.</strong> &nbsp;Target for 2026: <strong>10 rural government schools + one Field Coordinator.</strong></span>
+    <div class="mission-strip">
+      <div class="mission-rule"></div>
+      <p class="mission-text">VAZHAI believes education is the path to a more equal society. We work towards a future where a child's opportunities are not decided by their village, background, or family income. We believe that when education becomes accessible and empowering for every child, lasting social change becomes possible.</p>
     </div>
 
     <div class="home-grid">
       <article class="hcol">
         <h2 class="col-label">Why We Exist</h2>
-        <p class="col-body"><strong>VAZHAI believes education is the path to a more equal society. We work towards a future where a child's opportunities are not decided by their village, background, or family income. We believe that when education becomes accessible and empowering for every child, lasting social change becomes possible.</strong></p>
         <p class="col-body">Twenty to thirty kilometres past Aiyur, deep in the forests of Krishnagiri district, Tamil Nadu, government schools serve children who rarely appear in policy conversations about education equity.</p>
         <p class="col-body">Teachers commute hours each way through forest roads. Parents migrate for daily wages, sometimes taking their children along. Dropout is quiet — it doesn't announce itself.</p>
         <p class="col-body"><strong>VAZHAI is a rural education NGO that puts a trained, full-time School Companion inside each of these schools.</strong> Every single school day, the whole year to ensure foundational literacy.</p>
@@ -962,6 +1035,10 @@ body::before {
       <div class="ss"><div class="ss-n">19+</div><div class="ss-l">Years on the Ground</div></div>
       <div class="ss"><div class="ss-n">2</div><div class="ss-l">Districts · Expanding</div></div>
       <div class="ss"><div class="ss-n">10</div><div class="ss-l">Schools Target · 2026</div></div>
+    </div>
+    <div class="live-strip" style="border-top:1px solid rgba(255,255,255,0.08);">
+      <div class="live-dot"></div>
+      <span>Active now — <strong>School Companion deployed at Kodakarai Secondary School, Krishnagiri, 2025.</strong> &nbsp;Target for 2026: <strong>10 rural government schools + one Field Coordinator.</strong></span>
     </div>
 
     <div class="model-split">
@@ -1256,23 +1333,32 @@ body::before {
     </div>
 
     <div class="don-widgets">
+
+      <!-- ONE-TIME DONATION -->
       <article>
         <h3 class="dw-title">One-Time Donation</h3>
-        <div class="dw-sub">Any amount. Goes directly towards School Companions, field visits, and student materials. Every rupee is tracked and reported.</div>
+        <p class="dw-sub">Any amount. Goes directly towards School Companions, field visits, and student materials. Every rupee is tracked and reported.</p>
         <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_Qwp1n9PkcR8tKi" async></script></form>
       </article>
+
+      <!-- MONTHLY GIVING -->
       <article>
-        <div class="dw-toggle" onclick="toggleMonthly()" aria-expanded="false" aria-controls="dwbody">
-          <h3 class="dw-title">Monthly Giving</h3>
-          <div class="dw-chev" id="dwchev">▾</div>
-        </div>
-        <div class="dw-sub">The most effective way to support a rural education NGO — predictable monthly income lets us hire, plan, and commit to schools a full year ahead.</div>
+        <h3 class="dw-title">Monthly Giving</h3>
+        <p class="dw-sub">The most effective way to support a rural education NGO — predictable monthly income lets us hire, plan, and commit to schools a full year ahead.</p>
+        <button class="dw-monthly-btn" onclick="toggleMonthly()" aria-expanded="false" aria-controls="dwbody">
+          <span class="dw-monthly-btn-label">
+            <span>Donate Monthly</span>
+            <span>Secured by Razorpay</span>
+          </span>
+          <span class="dw-monthly-chev" id="dwchev">▾</span>
+        </button>
         <div class="dw-body" id="dwbody">
           <form id="rzp-sub-form"><script src="https://cdn.razorpay.com/static/widget/subscription-button.js"
-                                          data-subscription_button_id="pl_SnE7xSxS7tFLxU"
-                                          data-button_theme="brand-color" async></script></form>
+            data-subscription_button_id="pl_SnE7xSxS7tFLxU"
+            data-button_theme="brand-color" async></script></form>
         </div>
       </article>
+
     </div>
 
     <div class="don-share">
@@ -1439,13 +1525,12 @@ body::before {
   let rzpSubLoaded = false;
   function toggleMonthly() {
     const body = document.getElementById('dwbody');
+    const btn  = document.querySelector('.dw-monthly-btn');
     const chev = document.getElementById('dwchev');
-    const toggleBtn = document.querySelector('.dw-toggle');
     const isOpening = !body.classList.contains('open');
-
     body.classList.toggle('open');
     chev.classList.toggle('open');
-    toggleBtn.setAttribute('aria-expanded', isOpening);
+    btn.setAttribute('aria-expanded', isOpening);
 
     if (isOpening && !rzpSubLoaded) {
       rzpSubLoaded = true;
