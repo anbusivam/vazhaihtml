@@ -1,1526 +1,1470 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vazhai NGO - Light a Lamp. Light a Life.</title>
-    <link rel="icon" type="image/x-icon"       href="https://github.com/anbusivam/vazhaiimages/blob/main/images/favicon_io/favicon.ico?raw=true">
-    <link rel="icon" type="image/png" sizes="16x16" href="https://github.com/anbusivam/vazhaiimages/blob/main/images/favicon_io/favicon-16x16.png?raw=true">
-    <link rel="icon" type="image/png" sizes="32x32" href="https://github.com/anbusivam/vazhaiimages/blob/main/images/favicon_io/favicon-32x32.png?raw=true">
-    <link rel="apple-touch-icon"               href="https://github.com/anbusivam/vazhaiimages/blob/main/images/favicon_io/apple-touch-icon.png?raw=true">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --green-deep: #1a3a0a;
-            --green-mid: #2d5016;
-            --green-soft: #4a7c59;
-            --green-light: #7aad8a;
-            --gold: #e6b800;
-            --gold-light: #ffd700;
-            --gold-pale: #fff8dc;
-            --cream: #faf8f3;
-            --text-dark: #1a1a1a;
-            --text-mid: #444;
-            --text-light: #777;
-            --white: #fff;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
-            --shadow-lg: 0 8px 40px rgba(0,0,0,0.15);
-            --radius: 12px;
-            --nav-height: 64px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+<!-- Primary Meta -->
+<title>Vazhai NGO — Rural Education NGO Tamil Nadu | Krishnagiri, Dharmapuri, Villupuram</title>
+<meta name="description" content="Vazhai is an impact-focused education NGO placing full-time School Companions in rural government schools across Tamil Nadu — Krishnagiri, Dharmapuri, and Villupuram. Donate to rural education, sponsor a child's education, or volunteer.">
+<meta name="keywords" content="rural education NGO Tamil Nadu, education NGO Krishnagiri, NGO Dharmapuri, NGO Villupuram, donate rural education India, volunteer Tamil Nadu NGO, government school support Tamil Nadu, Vazhai NGO, school companion program, education equity Tamil Nadu, CSR education Tamil Nadu">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Vazhai NGO">
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--cream);
-            color: var(--text-dark);
-            line-height: 1.7;
-            -webkit-font-smoothing: antialiased;
-        }
+<!-- Canonical -->
+<link rel="canonical" href="https://vazhai.in/">
 
-        /* ─── TOP NAV (mobile) ─── */
-        .topbar {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: var(--nav-height);
-            background: var(--green-deep);
-            z-index: 200;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 18px;
-            box-shadow: var(--shadow-md);
-        }
-        .topbar-brand { display: flex; align-items: center; gap: 10px; }
-        .topbar-brand .brand-tamil { font-size: 1.3rem; color: var(--gold-light); line-height:1; }
-        .topbar-brand .brand-en { font-family: 'Playfair Display', serif; color: var(--white); font-size: 1.1rem; letter-spacing: 2px; }
-        .hamburger {
-            background: none; border: none; cursor: pointer;
-            display: flex; flex-direction: column; gap: 5px; padding: 6px;
-        }
-        .hamburger span {
-            display: block; width: 24px; height: 2px;
-            background: var(--gold-light); border-radius: 2px; transition: all 0.3s;
-        }
-        .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px,5px); }
-        .hamburger.open span:nth-child(2) { opacity: 0; }
-        .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px,-5px); }
+<!-- Geo / Local SEO -->
+<meta name="geo.region" content="IN-TN">
+<meta name="geo.placename" content="Krishnagiri, Tamil Nadu, India">
+<meta name="geo.position" content="12.5186;78.2137">
+<meta name="ICBM" content="12.5186, 78.2137">
 
-        /* ─── MOBILE DRAWER ─── */
-        .drawer-overlay {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.55);
-            z-index: 190; opacity: 0; transition: opacity 0.3s;
-        }
-        .drawer-overlay.show { opacity: 1; }
-        .drawer {
-            position: fixed;
-            top: 0; right: -280px; bottom: 0;
-            width: 280px;
-            background: linear-gradient(160deg, var(--green-deep) 0%, var(--green-mid) 100%);
-            z-index: 195;
-            transition: right 0.35s cubic-bezier(.4,0,.2,1);
-            padding-top: var(--nav-height);
-            overflow-y: auto;
-        }
-        .drawer.open { right: 0; }
-        .drawer-logo {
-            text-align: center;
-            padding: 24px 20px 20px;
-            border-bottom: 1px solid rgba(255,215,0,0.25);
-            margin-bottom: 12px;
-        }
-        .drawer-logo .d-tamil { font-size: 2rem; color: var(--gold-light); }
-        .drawer-logo .d-en { font-family: 'Playfair Display', serif; color: var(--white); font-size: 1.4rem; letter-spacing: 3px; }
-        .drawer-logo .d-tagline { font-size: 0.72rem; color: rgba(255,255,255,0.6); margin-top: 4px; }
-        .d-motto { font-style: italic; color: var(--gold); font-size: 0.78rem; margin-top: 4px; }
+<!-- Language -->
+<link rel="alternate" hreflang="en" href="https://vazhai.in/">
+<link rel="alternate" hreflang="ta" href="https://vazhai.in/">
+<link rel="alternate" hreflang="x-default" href="https://vazhai.in/">
 
-        /* ─── DESKTOP SIDEBAR ─── */
-        .sidebar {
-            width: 260px;
-            background: linear-gradient(160deg, var(--green-deep) 0%, var(--green-mid) 60%, var(--green-soft) 100%);
-            color: var(--white);
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-            overflow-y: auto;
-            z-index: 100;
-            display: flex; flex-direction: column;
-        }
-        .sidebar-logo {
-            text-align: center;
-            padding: 32px 20px 24px;
-            border-bottom: 1px solid rgba(255,215,0,0.3);
-        }
-        .logo-tamil { font-size: 2.2rem; color: var(--gold-light); margin-bottom: 2px; }
-        .logo-en { font-family: 'Playfair Display', serif; font-size: 1.8rem; letter-spacing: 4px; color: var(--white); }
-        .logo-sub { font-size: 0.7rem; color: rgba(255,255,255,0.55); margin-top: 6px; letter-spacing: 0.5px; }
-        .logo-motto { font-style: italic; color: var(--gold); font-size: 0.8rem; margin-top: 10px; line-height: 1.4; }
+<!-- Sitemap -->
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
 
-        .nav-menu { list-style: none; padding: 18px 0; flex: 1; }
-        .nav-menu a {
-            display: flex; align-items: center; gap: 12px;
-            padding: 13px 24px;
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            font-size: 0.9rem; font-weight: 400; letter-spacing: 0.3px;
-            border-left: 3px solid transparent;
-            transition: all 0.25s;
-        }
-        .nav-menu a .nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
-        .nav-menu a:hover, .nav-menu a.active {
-            background: rgba(255,215,0,0.1);
-            border-left-color: var(--gold-light);
-            color: var(--gold-light);
-        }
-        .sidebar-footer {
-            padding: 20px;
-            border-top: 1px solid rgba(255,215,0,0.2);
-            font-size: 0.72rem; color: rgba(255,255,255,0.4); text-align: center;
-        }
+<!-- Open Graph -->
+<meta property="og:title" content="Vazhai NGO — Rural Education, Tamil Nadu">
+<meta property="og:description" content="We place full-time School Companions in remote government schools in Krishnagiri, Dharmapuri, and Villupuram — so every child in rural Tamil Nadu has a trained adult present every school day. Donate, volunteer, or sponsor a school.">
+<meta property="og:url" content="https://vazhai.in/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vazhai NGO">
+<meta property="og:image" content="images/school1.jpg">
+<meta property="og:image:alt" content="Students in a rural Tamil Nadu government school supported by Vazhai NGO">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_IN">
 
-        .menu-list { list-style: none; padding: 10px 0; }
-        .menu-list a {
-            display: flex; align-items: center; gap: 12px;
-            padding: 13px 24px;
-            color: rgba(255,255,255,0.8);
-            text-decoration: none; font-size: 0.92rem;
-            border-right: 3px solid transparent;
-            transition: all 0.25s;
-        }
-        .menu-list a .nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
-        .menu-list a:hover, .menu-list a.active {
-            background: rgba(255,215,0,0.1);
-            border-right-color: var(--gold-light);
-            color: var(--gold-light);
-        }
+<!-- Twitter / X Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Vazhai NGO — Rural Education, Tamil Nadu">
+<meta name="twitter:description" content="We place full-time School Companions in remote government schools in Krishnagiri, Dharmapuri, and Villupuram. Donate, volunteer, or sponsor a school.">
+<meta name="twitter:image" content="images/school1.jpg">
+<meta name="twitter:image:alt" content="Students in a rural Tamil Nadu government school supported by Vazhai NGO">
 
-        /* ─── MAIN CONTENT ─── */
-        .main { margin-left: 260px; min-height: 100vh; }
-        .content-section { display: none; }
-        .content-section.active { display: block; animation: fadeUp 0.45s ease; }
+<!-- Favicon -->
+<link rel="icon" href="images/favicon_io/favicon.ico">
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(18px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 
-        /* ─── PAGE HERO ─── */
-        .page-hero { position: relative; height: 280px; overflow: hidden; }
-        .page-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center center; display: block; }
-        #donation .page-hero img { object-position: left center; }
-        .page-hero-overlay {
-            position: absolute; inset: 0;
-            background: linear-gradient(to bottom, rgba(26,58,10,0.3) 0%, rgba(26,58,10,0.7) 100%);
-        }
-        .page-hero-text { position: absolute; bottom: 24px; left: 28px; color: var(--white); }
-        .page-hero-text h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem; line-height: 1.2;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
-        }
-        .page-hero-text .hero-sub { font-size: 0.85rem; color: var(--gold-light); letter-spacing: 1px; margin-top: 4px; }
-        .page-hero-text .hero-orgline { font-size: 0.72rem; color: rgba(255,255,255,0.9); letter-spacing: 0.4px; margin-top: 4px; }
+<!-- Schema: NGO Organization -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NGO",
+  "name": "Vazhai NGO",
+  "alternateName": "வாழை",
+  "url": "https://vazhai.in",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "images/vazahi-logo.gif",
+    "width": 120,
+    "height": 120
+  },
+  "image": "images/school1.jpg",
+  "description": "Vazhai is an impact-focused education NGO placing full-time School Companions in rural government schools across Tamil Nadu, ensuring education equity in Krishnagiri, Dharmapuri, and Villupuram districts.",
+  "foundingDate": "2005-04",
+  "email": "vazhai.connect@gmail.com",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "# 341/157, T.H. Road, Kaladipet, Thiruvottiyur",
+    "addressLocality": "Chennai",
+    "addressRegion": "Tamil Nadu",
+    "postalCode": "600019",
+    "addressCountry": "IN"
+  },
+  "areaServed": [
+    { "@type": "City", "name": "Krishnagiri", "containedInPlace": { "@type": "State", "name": "Tamil Nadu" } },
+    { "@type": "City", "name": "Dharmapuri", "containedInPlace": { "@type": "State", "name": "Tamil Nadu" } },
+    { "@type": "City", "name": "Villupuram", "containedInPlace": { "@type": "State", "name": "Tamil Nadu" } }
+  ],
+  "knowsAbout": ["Rural Education", "Government School Support", "Education Equity", "Tamil Nadu", "School Companion Program"],
+  "potentialAction": {
+    "@type": "DonateAction",
+    "target": "https://vazhai.in/#donation",
+    "name": "Donate to Vazhai NGO"
+  },
+  "sameAs": [
+    "https://facebook.com/vazhai"
+  ]
+}
+</script>
 
-        /* ─── PAGE BODY ─── */
-        .page-body { padding: 32px 32px 48px; max-width: 860px; }
+<!-- Schema: School Companion JobPosting -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "JobPosting",
+  "title": "School Companion",
+  "description": "A full-time, in-school role supporting students in a remote government school in Krishnagiri, Tamil Nadu. Build foundational literacy, track attendance, support the headmaster, and ensure no student falls through the cracks. Present every school day of the year.",
+  "hiringOrganization": {
+    "@type": "NGO",
+    "name": "Vazhai NGO",
+    "sameAs": "https://vazhai.in"
+  },
+  "employmentType": "FULL_TIME",
+  "jobLocation": {
+    "@type": "Place",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Krishnagiri",
+      "addressRegion": "Tamil Nadu",
+      "addressCountry": "IN"
+    }
+  },
+  "baseSalary": {
+    "@type": "MonetaryAmount",
+    "currency": "INR",
+    "value": {
+      "@type": "QuantitativeValue",
+      "minValue": 15000,
+      "maxValue": 20000,
+      "unitText": "MONTH"
+    }
+  },
+  "datePosted": "2025-01-01",
+  "validThrough": "2026-12-31",
+  "url": "https://vazhai.in/#join-vazhai",
+  "applicationContact": {
+    "@type": "ContactPoint",
+    "contactType": "HR",
+    "email": "vazhai.connect@gmail.com"
+  }
+}
+</script>
 
-        /* ─── MOTTO BANNER ─── */
-        .motto-banner {
-            background: linear-gradient(135deg, var(--gold-pale), var(--white));
-            border: 1.5px solid var(--gold);
-            border-radius: var(--radius);
-            text-align: center;
-            padding: 18px 24px; margin-bottom: 28px;
-            font-family: 'Playfair Display', serif;
-            font-style: italic; font-size: 1.2rem;
-            color: var(--green-mid);
-        }
+<!-- Schema: Field Coordinator JobPosting -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "JobPosting",
+  "title": "Field Coordinator",
+  "description": "A full-time field role managing School Companions across multiple rural government schools in Tamil Nadu. Visit each school weekly, organise career guidance, identify new schools for the program, and support fundraising and CSR partnerships.",
+  "hiringOrganization": {
+    "@type": "NGO",
+    "name": "Vazhai NGO",
+    "sameAs": "https://vazhai.in"
+  },
+  "employmentType": "FULL_TIME",
+  "jobLocation": {
+    "@type": "Place",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Krishnagiri",
+      "addressRegion": "Tamil Nadu",
+      "addressCountry": "IN"
+    }
+  },
+  "baseSalary": {
+    "@type": "MonetaryAmount",
+    "currency": "INR",
+    "value": {
+      "@type": "QuantitativeValue",
+      "minValue": 25000,
+      "maxValue": 35000,
+      "unitText": "MONTH"
+    }
+  },
+  "datePosted": "2025-01-01",
+  "validThrough": "2026-12-31",
+  "url": "https://vazhai.in/#join-vazhai",
+  "applicationContact": {
+    "@type": "ContactPoint",
+    "contactType": "HR",
+    "email": "vazhai.connect@gmail.com"
+  }
+}
+</script>
 
-        /* ─── CARDS ─── */
-        .card {
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-            border-left: 4px solid var(--green-soft);
-            padding: 24px 26px;
-            margin-bottom: 22px;
-        }
-        .card h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--green-mid); font-size: 1.3rem;
-            margin-bottom: 14px; padding-bottom: 10px;
-            border-bottom: 2px solid var(--gold-pale);
-        }
-        .card h3 { font-family: 'Playfair Display', serif; color: var(--green-mid); font-size: 1.05rem; margin-bottom: 10px; }
-        .card p { color: var(--text-mid); margin-bottom: 12px; font-size: 0.93rem; }
-        .card p:last-child { margin-bottom: 0; }
-        .card strong { color: var(--green-deep); }
-        .card a { color: var(--green-soft); font-weight: 500; }
-        .card.gold-accent { border-left-color: var(--gold); }
+<!-- Schema: Recurring Weekly Event -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Event",
+  "name": "Vazhai Weekly Status Call",
+  "description": "Weekly open call for School Companions, Field Coordinators, and volunteers. Open to new volunteers who want to understand the work before committing.",
+  "organizer": {
+    "@type": "NGO",
+    "name": "Vazhai NGO",
+    "url": "https://vazhai.in"
+  },
+  "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+  "eventStatus": "https://schema.org/EventScheduled",
+  "location": {
+    "@type": "VirtualLocation",
+    "url": "https://vazhai.in/#vazhai-events"
+  },
+  "url": "https://vazhai.in/#vazhai-events",
+  "image": "images/activity12a.jpg"
+}
+</script>
 
-        /* ─── OPENING STORY ─── */
-        .opening-story {
-            background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
-            border-radius: var(--radius);
-            padding: 28px 28px 24px;
-            margin-bottom: 24px;
-            position: relative; overflow: hidden;
-        }
-        .opening-story::before {
-            content: '"';
-            position: absolute; top: -10px; left: 18px;
-            font-family: 'Playfair Display', serif;
-            font-size: 8rem; line-height: 1;
-            color: rgba(255,215,0,0.1);
-            pointer-events: none;
-        }
-        .opening-story-text {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.08rem; font-style: italic;
-            color: var(--white); line-height: 1.75;
-            margin-bottom: 16px; position: relative; z-index: 1;
-        }
-        .opening-story-context {
-            font-size: 0.86rem; color: rgba(255,255,255,0.75);
-            line-height: 1.65; position: relative; z-index: 1;
-        }
-        .opening-story-tag {
-            display: block; margin-top: 16px;
-            font-size: 0.72rem; font-weight: 600; letter-spacing: 1.5px;
-            text-transform: uppercase; color: var(--gold-light);
-            border-top: 1px solid rgba(255,215,0,0.25); padding-top: 12px;
-        }
+<!-- Schema: FAQPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is a School Companion at Vazhai NGO?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A School Companion is a full-time Vazhai employee placed inside a rural government school in Tamil Nadu. They are present every school day of the year, build foundational literacy, track student attendance, support the headmaster, and visit families to prevent dropout."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How can I donate to Vazhai NGO?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You can make a one-time or monthly donation at vazhai.in/#donation via Razorpay. ₹15,000/month fully funds one School Companion for a month. ₹500/month covers study materials for a student for a year. Note: Vazhai does not currently hold 80G exemption; donations are not eligible for Indian income tax deduction."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How can I volunteer with Vazhai NGO?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Any working professional can volunteer with Vazhai by giving as little as one day per month, mostly remotely. Volunteers create learning materials, run career sessions, mentor students, and support fundraising. Apply at vazhai.in/#join-vazhai."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which districts does Vazhai NGO work in?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Vazhai operates in Krishnagiri, Dharmapuri, and Villupuram districts of Tamil Nadu. Current focus is on forest and hill-area government schools near Denkanikottai and Aiyur in Krishnagiri district."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Vazhai a registered NGO?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Vazhai is a registered NGO in Tamil Nadu, India. Registration Number: 296/05. Founded in April 2005. Registered address: # 341/157, T.H. Road, Kaladipet, Thiruvottiyur, Chennai – 600 019, Tamil Nadu, India."
+      }
+    }
+  ]
+}
+</script>
 
-        /* ─── PLACEHOLDER NOTICE ─── */
-        .placeholder-notice {
-            background: rgba(230,184,0,0.07);
-            border: 1.5px dashed var(--gold);
-            border-radius: 6px; padding: 10px 14px;
-            font-size: 0.78rem; color: #8a6800;
-            margin-top: -14px; margin-bottom: 22px;
-            display: flex; align-items: flex-start; gap: 8px;
-        }
-        .placeholder-notice span { line-height: 1.5; }
+<style>
+:root {
+  --forest:  #0f2d0a;
+  --canopy:  #1e4d10;
+  --leaf:    #2e7018;
+  --sage:    #4a8a3a;
+  --mint:    #7aba6a;
+  --dew:     #e4f0de;
+  --gold:    #c8a800;
+  --gold-lt: #f0cc00;
+  --gold-pl: #fdf7d0;
+  --cream:   #f5f2ea;
+  --paper:   #faf8f2;
+  --ink:     #0e1c0a;
+  --muted:   #8aaa7a;
+  --khaki:   #a0b890;
+  --faint:   #e0ead8;
+  --white:   #ffffff;
+}
 
-        /* ─── PROBLEM BLOCK ─── */
-        .problem-block {
-            background: linear-gradient(135deg, #1a1a0a, #2d2d10);
-            border-radius: var(--radius); padding: 24px 26px; margin-bottom: 22px;
-        }
-        .problem-block h3 {
-            font-family: 'Playfair Display', serif;
-            color: var(--gold-light); font-size: 1.1rem; margin-bottom: 14px;
-        }
-        .problem-facts { display: flex; flex-direction: column; gap: 12px; }
-        .problem-fact { display: flex; gap: 12px; align-items: flex-start; }
-        .problem-fact-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
-        .problem-fact-text { font-size: 0.88rem; color: rgba(255,255,255,0.82); line-height: 1.6; }
-        .problem-fact-text strong { color: var(--gold-light); }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
 
-        /* ─── TESTIMONIAL ─── */
-        .testimonial {
-            border-radius: var(--radius); padding: 22px 24px; margin-bottom: 8px;
-        }
-        .testimonial.student-voice { background: linear-gradient(135deg, #f0f8e8, var(--white)); border-left: 4px solid var(--green-soft); }
-        .testimonial.volunteer-voice { background: linear-gradient(135deg, var(--gold-pale), var(--white)); border-left: 4px solid var(--gold); }
-        .testimonial.companion-voice { background: linear-gradient(135deg, #e8f4ff, var(--white)); border-left: 4px solid #4a7cb8; }
-        .testimonial-quote {
-            font-family: 'Playfair Display', serif;
-            font-style: italic; font-size: 1rem; line-height: 1.75;
-            color: var(--green-deep); margin-bottom: 14px;
-        }
-        .testimonial-quote::before { content: '"'; }
-        .testimonial-quote::after  { content: '"'; }
-        .testimonial-person { display: flex; align-items: center; gap: 10px; }
-        .testimonial-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; flex-shrink: 0;
-        }
-        .student-voice .testimonial-avatar { background: rgba(74,124,89,0.15); }
-        .volunteer-voice .testimonial-avatar { background: rgba(230,184,0,0.2); }
-        .companion-voice .testimonial-avatar { background: rgba(74,124,184,0.15); }
-        .testimonial-name { font-size: 0.83rem; font-weight: 600; color: var(--green-deep); }
-        .testimonial-role { font-size: 0.75rem; color: var(--text-light); }
+body {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  background: var(--paper);
+  color: var(--ink);
+  overflow-x: hidden;
+  cursor: crosshair;
+}
 
-        /* ─── LIVE IMPACT ─── */
-        .live-impact {
-            background: linear-gradient(135deg, var(--green-deep), #0e2205);
-            border-radius: var(--radius); padding: 16px 22px; margin-bottom: 22px;
-            display: flex; align-items: center; gap: 14px;
-        }
-        .live-dot {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: #4ade80; flex-shrink: 0;
-            animation: pulse-green 2s infinite;
-        }
-        @keyframes pulse-green {
-            0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
-            70%  { box-shadow: 0 0 0 8px rgba(74,222,128,0); }
-            100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
-        }
-        .live-text { font-size: 0.86rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
-        .live-text strong { color: #4ade80; }
+/* grain */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  background-size: 180px;
+  pointer-events:none; z-index:1000;
+  mix-blend-mode: multiply; opacity:.55;
+}
 
-        /* ─── TRANSITION BANNER ─── */
-        .model-transition {
-            display: grid; grid-template-columns: 1fr auto 1fr;
-            gap: 0; margin-bottom: 24px;
-            border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm);
-        }
-        .model-box { padding: 20px 22px; }
-        .model-box.old { background: #f5f5f0; border-left: 4px solid var(--green-light); }
-        .model-box.new { background: linear-gradient(135deg, #f0f8e8, var(--white)); border-right: 4px solid var(--green-mid); }
-        .model-arrow { background: var(--green-soft); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--white); padding: 0 14px; }
-        .model-arrow .arrow-mobile { display: none; }
-        .model-box-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
-        .model-box.old .model-box-label { color: var(--text-light); }
-        .model-box.new .model-box-label { color: var(--green-soft); }
-        .model-box-title { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 8px; }
-        .model-box.old .model-box-title { color: var(--text-mid); }
-        .model-box.new .model-box-title { color: var(--green-deep); }
-        .model-box ul { list-style: none; }
-        .model-box ul li { font-size: 0.83rem; color: var(--text-mid); padding: 3px 0; }
-        .model-box.old ul li::before { content: "·  "; color: var(--green-light); }
-        .model-box.new ul li::before { content: "✓  "; color: var(--green-soft); font-weight: 600; }
+/* ── FLOATING NAV ── */
+.fnav {
+  position:fixed; top:18px; left:50%;
+  transform:translateX(-50%);
+  z-index:900;
+  display:flex; align-items:center; gap:2px;
+  background:var(--forest);
+  padding:5px 6px;
+  border-radius:100px;
+  box-shadow:0 6px 32px rgba(0,0,0,0.35);
+  white-space:nowrap;
+  border:1px solid rgba(255,255,255,0.07);
+}
+.fnav-logo {
+  display:flex; align-items:center; gap:8px;
+  padding:4px 14px 4px 8px;
+  border-right:1px solid rgba(255,255,255,0.1);
+  margin-right:2px; cursor:pointer;
+}
+.fnav-logo img {
+  height:32px; width:32px;
+  object-fit:contain;
+  border-radius:6px;
+  background:white;
+}
+.fnav-logo-text {
+  font-family:'Bebas Neue', sans-serif;
+  font-size:1rem; color:var(--gold-lt);
+  letter-spacing:.04em; line-height:1;
+}
+.fnav-item {
+  font-family:'DM Mono', monospace;
+  font-size:.57rem; font-weight:400;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:rgba(255,255,255,.5);
+  padding:7px 12px; border-radius:100px;
+  cursor:pointer; border:none; background:none;
+  transition:all .2s;
+}
+.fnav-item:hover { color:rgba(255,255,255,.9); }
+.fnav-item.active { background:var(--gold); color:var(--forest); font-weight:500; }
 
-        /* ─── ROLE CARDS ─── */
-        .role-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-        .role-card { border-radius: var(--radius); padding: 20px 18px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
-        .role-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
-        .role-card.companion { background: linear-gradient(135deg, #f0f8e8, var(--white)); }
-        .role-card.companion::before { background: var(--green-soft); }
-        .role-card.coordinator { background: linear-gradient(135deg, #e8f4ff, var(--white)); }
-        .role-card.coordinator::before { background: #4a7cb8; }
-        .role-card.volunteer { background: linear-gradient(135deg, var(--gold-pale), var(--white)); }
-        .role-card.volunteer::before { background: var(--gold); }
-        .role-icon { font-size: 1.6rem; margin-bottom: 8px; }
-        .role-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
-        .role-card.companion .role-title { color: var(--green-deep); }
-        .role-card.coordinator .role-title { color: #2a4a70; }
-        .role-card.volunteer .role-title { color: #7a5800; }
-        .role-type {
-            font-size: 0.68rem; font-weight: 600; letter-spacing: 1.5px;
-            text-transform: uppercase; margin-bottom: 10px; padding: 2px 8px;
-            border-radius: 20px; display: inline-block;
-        }
-        .role-card.companion .role-type { background: rgba(74,124,89,0.12); color: var(--green-soft); }
-        .role-card.coordinator .role-type { background: rgba(74,124,184,0.12); color: #4a7cb8; }
-        .role-card.volunteer .role-type { background: rgba(230,184,0,0.15); color: #8a6800; }
-        .role-desc { font-size: 0.82rem; color: var(--text-mid); line-height: 1.5; }
+/* ── PAGES ── */
+.pg { min-height:100vh; display:none; flex-direction:column; }
+.pg.active { display:flex; }
 
-        /* ─── ROLE DETAIL ─── */
-        .role-detail { border-radius: var(--radius); margin-bottom: 22px; overflow: hidden; box-shadow: var(--shadow-sm); }
-        .role-detail-header { padding: 18px 22px; display: flex; align-items: center; gap: 14px; }
-        .role-detail.companion .role-detail-header { background: linear-gradient(135deg, var(--green-mid), var(--green-soft)); }
-        .role-detail.coordinator .role-detail-header { background: linear-gradient(135deg, #2a4a70, #4a7cb8); }
-        .role-detail.volunteer .role-detail-header { background: linear-gradient(135deg, #7a5800, #c49800); }
-        .role-detail-icon { font-size: 1.5rem; }
-        .role-detail-htitle { font-family: 'Playfair Display', serif; color: var(--white); font-size: 1.15rem; }
-        .role-detail-htag { font-size: 0.7rem; color: rgba(255,255,255,0.7); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
-        .role-detail-body { background: var(--white); padding: 22px; }
-        .role-detail-body p { font-size: 0.88rem; color: var(--text-mid); margin-bottom: 14px; }
-        .task-list { list-style: none; }
-        .task-list li {
-            font-size: 0.88rem; color: var(--text-mid);
-            padding: 8px 0; border-bottom: 1px solid #f0f0ea;
-            display: flex; gap: 10px; align-items: flex-start;
-        }
-        .task-list li:last-child { border-bottom: none; }
-        .task-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
-        .companion .task-dot { background: var(--green-soft); }
-        .coordinator .task-dot { background: #4a7cb8; }
-        .volunteer .task-dot { background: var(--gold); }
-        .task-list .mandatory {
-            font-size: 0.68rem; font-weight: 600; letter-spacing: 1px;
-            text-transform: uppercase; padding: 1px 6px; border-radius: 10px;
-            margin-left: 6px; vertical-align: middle; display: inline-block; white-space: nowrap;
-        }
-        .companion .mandatory { background: rgba(74,124,89,0.12); color: var(--green-soft); }
-        .coordinator .mandatory { background: rgba(74,124,184,0.12); color: #4a7cb8; }
-        .volunteer .mandatory { background: rgba(230,184,0,0.15); color: #8a6800; }
+/* ════════════════════════════════
+   HOME
+════════════════════════════════ */
+#home { background:var(--paper); padding-top:88px; }
 
-        /* ─── STATS ─── */
-        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 28px 0; }
-        .stats-row.three { grid-template-columns: repeat(3, 1fr); }
-        .stat-box {
-            background: linear-gradient(135deg, var(--green-soft), var(--green-deep));
-            border-radius: var(--radius); padding: 20px 12px;
-            text-align: center; color: var(--white); box-shadow: var(--shadow-sm);
-        }
-        .stat-num { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold-light); font-weight: 700; }
-        .stat-label { font-size: 0.78rem; color: rgba(255,255,255,0.8); margin-top: 4px; }
+/* masthead */
+.masthead {
+  padding:0 5vw 24px;
+  border-bottom:3px solid var(--forest);
+}
+.mh-top {
+  display:flex; justify-content:space-between; align-items:flex-end;
+  border-bottom:1px solid var(--khaki);
+  padding-bottom:7px; margin-bottom:12px;
+}
+.mh-dateline {
+  font-family:'DM Mono', monospace; font-size:.6rem;
+  letter-spacing:.1em; color:var(--leaf); text-transform:uppercase;
+}
+.mh-reg { font-family:'DM Mono', monospace; font-size:.57rem; color:var(--khaki); letter-spacing:.06em; }
 
-        /* ─── HIGHLIGHT ─── */
-        .highlight {
-            background: var(--gold-pale); border-left: 4px solid var(--gold);
-            border-radius: 6px; padding: 14px 16px; margin: 16px 0; font-size: 0.9rem; color: var(--text-mid);
-        }
+.mh-inner { display:flex; align-items:flex-end; gap:28px; }
+.mh-logo-wrap { flex-shrink:0; }
+.mh-logo {
+  width:120px; height:120px;
+  object-fit:contain; border-radius:12px;
+  background:white;
+  border:2px solid var(--faint);
+  display:block;
+}
+.mh-title-wrap { flex:1; }
+.mh-title {
+  font-family:'Bebas Neue', sans-serif;
+  font-size:clamp(4.5rem,11vw,11rem);
+  line-height:.88; color:var(--forest);
+  letter-spacing:-.01em;
+  font-weight: normal; /* Override default h1 weight for Bebas */
+}
+.mh-title .tamil { color:var(--gold); }
+.mh-kicker {
+  font-family:'DM Mono', monospace; font-size:.67rem;
+  letter-spacing:.15em; text-transform:uppercase;
+  color:var(--khaki); margin-top:12px;
+  display:flex; align-items:center; gap:12px;
+}
+.mh-kicker::before,.mh-kicker::after { content:''; flex:1; height:1px; background:var(--khaki); }
 
-        /* ─── SECTION DIVIDER ─── */
-        .section-label {
-            font-size: 0.75rem; font-weight: 600; letter-spacing: 2px;
-            color: var(--green-soft); text-transform: uppercase; margin: 30px 0 12px;
-        }
+/* live strip */
+.live-strip {
+  background:var(--forest);
+  color:rgba(255,255,255,.85);
+  padding:13px 5vw;
+  display:flex; align-items:center; gap:14px;
+  font-family:'DM Mono', monospace; font-size:.68rem;
+  letter-spacing:.04em;
+}
+.live-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:#5fca5f; flex-shrink:0;
+  animation:blink 1.8s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.live-strip strong { color:var(--gold-lt); }
 
-        /* ─── INLINE IMAGE ─── */
-        .inline-img { width: 100%; height: 220px; object-fit: cover; border-radius: var(--radius); margin-bottom: 22px; box-shadow: var(--shadow-sm); }
+/* 3-col grid */
+.home-grid { display:grid; grid-template-columns:1fr 1fr 1fr; flex:1; }
+.hcol { padding:32px 28px; border-right:1px solid var(--forest); }
+.hcol:last-child { border-right:none; }
 
-        /* ─── EVENT CARDS ─── */
-        .event-item {
-            background: linear-gradient(135deg, var(--gold-pale), var(--white));
-            border-left: 4px solid var(--gold); border-radius: var(--radius);
-            padding: 18px 20px; margin-bottom: 14px;
-        }
-        .event-date { color: var(--green-mid); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .event-title { font-family: 'Playfair Display', serif; color: var(--green-deep); font-size: 1.05rem; margin-bottom: 6px; }
-        .event-desc { color: var(--text-mid); font-size: 0.88rem; }
+.col-label {
+  font-family:'DM Mono', monospace; font-size:.58rem;
+  letter-spacing:.18em; text-transform:uppercase;
+  color:var(--leaf); display:block;
+  margin-bottom:14px; padding-bottom:9px;
+  border-bottom:1px solid var(--faint);
+  font-weight: normal; /* for h2/h3 usage */
+}
+.col-body { font-size:.9rem; line-height:1.82; color:#2a3a22; }
+.col-body+.col-body { margin-top:12px; }
+.col-body strong { color:var(--forest); }
 
-        /* ─── JOIN STEPS ─── */
-        .steps { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
-        .step { display: flex; gap: 16px; align-items: flex-start; }
-        .step-num {
-            background: var(--green-mid); color: var(--gold-light);
-            font-family: 'Playfair Display', serif; font-size: 1.1rem;
-            width: 36px; height: 36px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .step-content strong { color: var(--green-deep); font-size: 0.93rem; }
-        .step-content p { color: var(--text-mid); font-size: 0.88rem; margin-top: 2px; }
+/* stat column */
+.stat-col {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:32px 20px;
+  border-right:1px solid var(--forest);
+  background:var(--forest);
+}
+.sg-num {
+  font-family:'Bebas Neue', sans-serif;
+  font-size:clamp(3.2rem,6.5vw,6.5rem);
+  line-height:.92; color:var(--white);
+}
+.sg-num.accent { color:var(--gold-lt); font-size:clamp(2.2rem,4.5vw,4.5rem); margin-top:18px; }
+.sg-div { width:28px; height:2px; background:var(--gold); margin:9px 0; }
+.sg-label {
+  font-family:'DM Mono', monospace; font-size:.57rem;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:rgba(255,255,255,.55); text-align:center;
+}
 
-        /* ─── CTA BUTTON ─── */
-        .cta-btn {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--green-soft), var(--green-deep));
-            color: #ffffff !important; padding: 13px 28px; border-radius: 8px;
-            text-decoration: none; font-weight: 600; font-size: 0.95rem;
-            box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s; margin-top: 6px;
-            letter-spacing: 0.2px;
-        }
-        .cta-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); color: #ffffff !important; }
+/* voice column */
+.voice-blk { padding:13px 0; border-bottom:1px solid var(--faint); }
+.voice-blk:last-child { border-bottom:none; }
+.vb-tamil { font-style:italic; font-size:.82rem; line-height:1.7; color:var(--forest); margin-bottom:5px; }
+.vb-en { font-family:'DM Mono', monospace; font-size:.62rem; color:var(--khaki); line-height:1.5; margin-bottom:6px; }
+.vb-attr { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.06em; text-transform:uppercase; color:var(--leaf); }
 
-        /* ─── ACTION BAR ─── */
-        .action-bar {
-            background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
-            border-radius: var(--radius); padding: 26px 28px; margin-bottom: 22px; text-align: center;
-        }
-        .action-bar h3 { font-family: 'Playfair Display', serif; color: var(--white); font-size: 1.2rem; margin-bottom: 8px; }
-        .action-bar p { color: rgba(255,255,255,0.72); font-size: 0.88rem; margin-bottom: 20px; }
-        .action-bar-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        .action-bar-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 11px 22px; border-radius: 8px;
-            font-weight: 500; font-size: 0.9rem; text-decoration: none;
-            cursor: pointer; border: none; transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .action-bar-btn.primary { background: var(--gold); color: var(--green-deep); font-weight: 600; }
-        .action-bar-btn.secondary { background: rgba(255,255,255,0.15); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.5); font-weight: 500; }
-        .action-bar-btn.outline { background: rgba(255,215,0,0.12); color: var(--gold-light); border: 1.5px solid rgba(255,215,0,0.6); font-weight: 500; }
-        .action-bar-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+/* photo strip */
+.photo-strip {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--forest); border-bottom:3px double var(--forest);
+  height:200px;
+}
+.photo-cell { overflow:hidden; border-right:1px solid var(--forest); position:relative; }
+.photo-cell:last-child { border-right:none; }
+.photo-cell img {
+  width:100%; height:100%; object-fit:cover;
+  display:block; transition:transform .5s ease;
+  filter:saturate(.85) brightness(.92);
+}
+.photo-cell:hover img { transform:scale(1.04); filter:saturate(1) brightness(1); }
+.photo-cap {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:8px 12px;
+  background:linear-gradient(transparent,rgba(14,28,10,.75));
+  font-family:'DM Mono', monospace; font-size:.56rem;
+  letter-spacing:.1em; text-transform:uppercase;
+  color:rgba(255,255,255,.8);
+}
 
-        /* ─── SHARE BLOCK ─── */
-        .share-block {
-            background: linear-gradient(135deg, var(--gold-pale), #fff9e0);
-            border: 1.5px solid var(--gold); border-radius: var(--radius);
-            padding: 22px 24px; margin-bottom: 22px; text-align: center;
-        }
-        .share-block h3 { font-family: 'Playfair Display', serif; color: var(--green-deep); font-size: 1.05rem; margin-bottom: 6px; }
-        .share-block p { color: var(--text-mid); font-size: 0.86rem; margin-bottom: 16px; }
-        .share-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        .share-btn {
-            display: inline-flex; align-items: center; gap: 7px;
-            padding: 9px 18px; border-radius: 8px;
-            font-size: 0.84rem; font-weight: 500; text-decoration: none;
-            cursor: pointer; border: none; transition: transform 0.2s;
-        }
-        .share-btn:hover { transform: translateY(-2px); }
-        .share-btn.whatsapp { background: #25D366; color: white; }
-        .share-btn.copy { background: var(--green-soft); color: white; }
-        .share-btn.email-share { background: var(--green-mid); color: white; }
-        .share-copied { display: none; font-size: 0.78rem; color: var(--green-soft); margin-top: 10px; font-weight: 600; }
+/* stats strip */
+.stats-strip {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  border-bottom:3px double var(--forest);
+}
+.ss { padding:20px 22px; border-right:1px solid var(--forest); text-align:center; }
+.ss:last-child { border-right:none; }
+.ss-n { font-family:'Bebas Neue', sans-serif; font-size:2.5rem; color:var(--gold); line-height:1; }
+.ss-l { font-family:'DM Mono', monospace; font-size:.56rem; letter-spacing:.12em; text-transform:uppercase; color:var(--khaki); margin-top:4px; }
 
-        /* ─── FUND BREAKDOWN ─── */
-        .fund-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
-        .fund-item { background: var(--white); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-sm); border-top: 3px solid var(--green-soft); }
-        .fund-item.highlight-item { border-top-color: var(--gold); }
-        .fund-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; }
-        .fund-amount { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--green-deep); font-weight: 700; }
-        .fund-desc { font-size: 0.8rem; color: var(--text-light); margin-top: 4px; }
+/* model split */
+.model-split { display:grid; grid-template-columns:1fr 1fr; border-top:1px solid var(--forest); }
+.ms-half { padding:40px 5vw; }
+.ms-half.light { background:var(--dew); border-right:1px solid var(--forest); }
+.ms-half.dark { background:var(--forest); }
+.ms-era { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.2em; text-transform:uppercase; margin-bottom:8px; display:block; }
+.ms-half.light .ms-era { color:var(--sage); }
+.ms-half.dark  .ms-era { color:var(--gold-lt); }
+.ms-head { font-family:'Bebas Neue', sans-serif; font-size:2rem; line-height:1.05; margin-bottom:18px; font-weight:normal; }
+.ms-half.light .ms-head { color:var(--forest); }
+.ms-half.dark  .ms-head { color:var(--gold); }
+.ms-list { list-style:none; display:flex; flex-direction:column; gap:9px; }
+.ms-list li { font-size:.82rem; line-height:1.55; padding-left:14px; position:relative; }
+.ms-half.light .ms-list li { color:#2e4a22; }
+.ms-half.dark  .ms-list li { color:rgba(255,255,255,.7); }
+.ms-list li::before { content:'—'; position:absolute; left:0; color:var(--gold); font-size:.68rem; }
 
-        /* ─── IMPACT TIERS ─── */
-        .impact-tiers { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
-        .impact-tier {
-            display: flex; align-items: center; gap: 16px;
-            background: var(--white); border-radius: var(--radius);
-            padding: 14px 18px; box-shadow: var(--shadow-sm);
-            border-left: 4px solid var(--green-soft);
-        }
-        .impact-tier.featured { border-left-color: var(--gold); background: linear-gradient(135deg, var(--gold-pale), var(--white)); }
-        .impact-amount { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: var(--green-deep); min-width: 130px; flex-shrink: 0; }
-        .impact-tier.featured .impact-amount { color: #7a5800; }
-        .impact-what { font-size: 0.86rem; color: var(--text-mid); line-height: 1.5; }
-        .impact-what strong { color: var(--green-deep); }
+/* roles strip */
+.roles-strip {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  border-top:3px solid var(--forest); border-bottom:3px solid var(--forest);
+}
+.role-tile {
+  padding:36px 28px; border-right:1px solid var(--forest);
+  position:relative; overflow:hidden; transition:background .2s;
+}
+.role-tile:last-child { border-right:none; }
+.role-tile:hover { background:var(--dew); }
+.rt-bg {
+  font-family:'Bebas Neue', sans-serif; font-size:5rem;
+  color:var(--faint); position:absolute; top:-6px; right:10px;
+  line-height:1; pointer-events:none; transition:color .3s;
+}
+.role-tile:hover .rt-bg { color:var(--khaki); }
+.rt-type { font-family:'DM Mono', monospace; font-size:.56rem; letter-spacing:.14em; text-transform:uppercase; color:var(--leaf); display:block; margin-bottom:9px; }
+.rt-title { font-family:'Bebas Neue', sans-serif; font-size:1.8rem; line-height:1.05; color:var(--forest); margin-bottom:11px; font-weight:normal; }
+.rt-body { font-size:.79rem; line-height:1.65; color:#2e4a22; }
+.rt-salary { font-family:'DM Mono', monospace; font-size:.65rem; color:var(--leaf); margin-top:11px; display:block; }
 
-        /* ─── DONATE BOXES ─── */
-        .donate-box { border-radius: 16px; margin-bottom: 18px; overflow: hidden; box-shadow: var(--shadow-sm); border: 1.5px solid transparent; }
-        .donate-onetime { border-color: var(--gold); background: linear-gradient(135deg, #fffdf0, var(--white)); }
-        .donate-monthly { border-color: var(--green-soft); background: linear-gradient(135deg, #f0f8ed, var(--white)); }
-        .donate-box-header { display: flex; align-items: center; gap: 14px; padding: 20px 22px; }
-        .donate-toggle { cursor: pointer; user-select: none; }
-        .donate-toggle:hover { background: rgba(0,0,0,0.02); }
-        .donate-icon { font-size: 1.1rem; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .donate-onetime .donate-icon { background: var(--gold-pale); color: var(--gold); }
-        .donate-monthly .donate-icon { background: rgba(74,124,89,0.12); color: var(--green-soft); }
-        .donate-box-title { font-family: 'Playfair Display', serif; color: var(--green-deep); font-size: 1.1rem; line-height: 1.2; }
-        .donate-box-sub { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
-        .donate-chevron { font-size: 1.1rem; color: var(--green-soft); transition: transform 0.3s; }
-        .donate-chevron.open { transform: rotate(180deg); }
-        .donate-widget-wrap { padding: 0 22px 20px; }
-        .donate-collapsible { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(.4,0,.2,1); }
-        .donate-collapsible.open { max-height: 700px; }
+/* cta double */
+.cta-double { display:grid; grid-template-columns:1fr 1fr; border-top:1px solid var(--forest); }
+.cta-pane { padding:44px 5vw; border-right:1px solid var(--forest); }
+.cta-pane.gold { background:var(--gold); border-right:none; }
+.cta-pane.gold .cta-ey { color:var(--forest); }
+.cta-pane.gold .cta-h,.cta-pane.gold .cta-b { color:var(--forest); }
+.cta-pane.gold .cta-btn { border-color:var(--forest); color:var(--forest); }
+.cta-pane.gold .cta-btn:hover { background:var(--forest); color:var(--white); }
+.cta-pane.gold .s-btn { border-color:var(--forest); color:var(--forest); }
+.cta-pane.gold .s-btn:hover { background:var(--forest); color:var(--white); border-color:var(--forest); }
 
-        /* ─── STICKY BOTTOM BAR (mobile only) ─── */
-        .bottom-bar { display: none; }
+.cta-ey { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.18em; text-transform:uppercase; color:var(--leaf); display:block; margin-bottom:12px; font-weight:normal; }
+.cta-h { font-family:'Bebas Neue', sans-serif; font-size:2.4rem; line-height:1.05; margin-bottom:12px; color:var(--forest); font-weight:normal; }
+.cta-b { font-size:.85rem; line-height:1.75; color:#2e4a22; margin-bottom:20px; }
+.cta-btn {
+  display:inline-block; font-family:'DM Mono', monospace;
+  font-size:.61rem; letter-spacing:.14em; text-transform:uppercase;
+  padding:10px 20px; border:1.5px solid var(--forest);
+  color:var(--forest); text-decoration:none;
+  cursor:pointer; background:none; transition:all .2s;
+  margin:0 7px 7px 0;
+}
+.cta-btn:hover { background:var(--forest); color:var(--paper); }
+.cta-btn.filled { background:var(--forest); color:var(--paper); }
+.cta-btn.filled:hover { background:var(--leaf); border-color:var(--leaf); }
 
-        /* ─── LOGO IMAGES ─── */
-        .drawer-logo-img { width: 120px; height: 120px; object-fit: contain; border-radius: 10px; display: block; margin: 0 auto 8px; background: white; }
-        .sidebar-logo-img { width: 160px; height: 160px; object-fit: contain; border-radius: 12px; display: block; margin: 0 auto 4px; background: white; }
-        .topbar-logo-img { height: 44px; width: auto; max-width: 160px; object-fit: contain; border-radius: 6px; background: white; }
+.share-row { display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
+.s-btn {
+  font-family:'DM Mono', monospace; font-size:.59rem; letter-spacing:.1em; text-transform:uppercase;
+  padding:8px 14px; border:1px solid var(--khaki);
+  color:var(--ink); text-decoration:none; cursor:pointer; background:none; transition:all .18s;
+}
+.s-btn:hover { background:var(--forest); color:var(--paper); border-color:var(--forest); }
+.copied { font-family:'DM Mono', monospace; font-size:.57rem; color:var(--leaf); display:none; margin-top:7px; }
 
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 900px) {
-            .bottom-bar {
-                display: flex; position: fixed; bottom: 0; left: 0; right: 0;
-                z-index: 180; background: var(--green-deep);
-                border-top: 1px solid rgba(255,215,0,0.2);
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
-            }
-            .bottom-bar-btn {
-                flex: 1; display: flex; flex-direction: column;
-                align-items: center; justify-content: center;
-                gap: 4px; padding: 10px 8px;
-                text-decoration: none; font-size: 0.7rem; font-weight: 500;
-                cursor: pointer; border: none; background: none; transition: background 0.2s;
-            }
-            .bottom-bar-btn:first-child  { border-right: 1px solid rgba(255,215,0,0.1); color: rgba(255,255,255,0.75); }
-            .bottom-bar-btn:nth-child(2) { border-right: 1px solid rgba(255,215,0,0.1); color: rgba(255,255,255,0.75); }
-            .bottom-bar-btn:nth-child(3) { border-right: 1px solid rgba(255,215,0,0.1); color: #a8d8b8; }
-            .bottom-bar-btn:last-child   { color: var(--gold-light); background: linear-gradient(135deg, rgba(230,184,0,0.15), rgba(230,184,0,0.05)); }
-            .bottom-bar-btn:active { background: rgba(255,255,255,0.08); }
-            .bottom-bar-icon { font-size: 1.3rem; line-height: 1; }
-            .sidebar { display: none; }
-            .topbar { display: flex; }
-            .drawer-overlay { display: block; pointer-events: none; }
-            .main { margin-left: 0; padding-top: var(--nav-height); padding-bottom: 60px; }
-            .page-body { padding: 24px 18px 40px; }
-            .page-hero { height: 220px; }
-            .page-hero-text h1 { font-size: 1.5rem; }
-            .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .stats-row.three { grid-template-columns: repeat(3, 1fr); }
-            .stat-num { font-size: 1.5rem; }
-            .role-grid { grid-template-columns: 1fr; }
-            .model-transition { grid-template-columns: 1fr; }
-            .model-arrow { padding: 10px 0; font-size: 1.2rem; min-height: 52px; }
-            .model-arrow .arrow-desktop { display: none; }
-            .model-arrow .arrow-mobile { display: inline; }
-            .fund-grid { grid-template-columns: 1fr; }
-            .action-bar-btns { flex-direction: column; align-items: center; }
-        }
-        @media (max-width: 480px) {
-            .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .stat-box { padding: 14px 8px; }
-            .stat-num { font-size: 1.3rem; }
-            .stat-label { font-size: 0.7rem; }
-            .page-hero { height: 190px; }
-            .page-hero-text h1 { font-size: 1.3rem; }
-            .card { padding: 18px 16px; }
-            .impact-tier { flex-direction: column; gap: 4px; }
-            .impact-amount { min-width: unset; }
-            .page-hero-text .hero-orgline { font-size: 0.64rem; }
-        }
+/* ════════════════════════════════
+   WHO WE ARE
+════════════════════════════════ */
+#who-we-are { background:var(--forest); padding-top:88px; }
 
-        .sidebar::-webkit-scrollbar { width: 4px; }
-        .sidebar::-webkit-scrollbar-track { background: transparent; }
-        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 4px; }
-    </style>
+.dark-mh { padding:0 5vw 32px; border-bottom:1px solid rgba(255,255,255,.1); }
+.dark-ey { font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:12px; }
+.dark-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3.5rem,9vw,8.5rem); line-height:.9; color:var(--paper); font-weight:normal; }
+.dark-title em { color:var(--gold-lt); font-style:normal; }
+
+.wwa-hero {
+  width:100%; height:280px; object-fit:cover;
+  display:block; filter:brightness(.6) saturate(.8);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.wwa-grid { display:grid; grid-template-columns:3fr 2fr; }
+.wwa-col { padding:44px 5vw; border-right:1px solid rgba(255,255,255,.08); color:rgba(255,255,255,.72); font-size:.9rem; line-height:1.85; }
+.wwa-col:last-child { border-right:none; }
+.wwa-col strong { color:var(--paper); }
+.wwa-col .col-label { color:var(--gold); border-bottom-color:rgba(255,255,255,.08); }
+.wwa-col p+p { margin-top:13px; }
+
+.pq-dark { border-left:3px solid var(--gold); padding:18px 24px; margin:22px 0; background:rgba(255,255,255,.04); }
+.pq-text { font-style:italic; font-size:1.02rem; line-height:1.72; color:var(--paper); margin-bottom:9px; }
+.pq-attr { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); }
+
+.meaning-strip { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid rgba(255,255,255,.08); }
+.meaning-tile { padding:34px 26px; border-right:1px solid rgba(255,255,255,.08); }
+.meaning-tile:last-child { border-right:none; }
+.mt-icon { font-family:'Bebas Neue', sans-serif; font-size:2.6rem; color:var(--gold); line-height:1; margin-bottom:10px; }
+.mt-title { font-family:'Bebas Neue', sans-serif; font-size:1.3rem; color:var(--paper); margin-bottom:9px; font-weight:normal;}
+.mt-body { font-size:.79rem; line-height:1.7; color:rgba(255,255,255,.55); }
+
+/* ════════════════════════════════
+   WHAT WE DO
+════════════════════════════════ */
+#what-we-do { background:var(--paper); padding-top:88px; }
+
+.wwd-hero-strip {
+  width:100%; height:240px; object-fit:cover;
+  display:block; object-position:center 60%;
+  filter:saturate(.9) brightness(.88);
+  border-bottom:3px solid var(--forest);
+}
+
+.wwd-mh {
+  padding:28px 5vw 28px;
+  border-bottom:3px solid var(--forest);
+  display:flex; align-items:flex-end;
+  justify-content:space-between; gap:24px;
+}
+.wwd-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3rem,8vw,7rem); line-height:.9; color:var(--forest); font-weight:normal;}
+.wwd-intro { max-width:340px; font-size:.83rem; line-height:1.75; color:#2e4a22; padding-bottom:5px; }
+
+.prog-block { display:grid; grid-template-columns:195px 1fr; border-bottom:1px solid var(--faint); }
+.prog-bar { background:var(--dew); padding:28px 22px; border-right:1px solid var(--forest); }
+.pb-type { font-family:'DM Mono', monospace; font-size:.55rem; letter-spacing:.16em; text-transform:uppercase; color:var(--leaf); display:block; margin-bottom:9px; }
+.pb-name { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; line-height:1.05; color:var(--forest); margin-bottom:11px; font-weight:normal;}
+.pb-meta { font-family:'DM Mono', monospace; font-size:.59rem; line-height:1.7; color:var(--khaki); }
+.prog-content { padding:28px 32px; }
+.prog-intro { font-size:.86rem; line-height:1.82; color:#2e3a22; margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--faint); }
+.task-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px 26px; }
+.task-item { font-size:.77rem; line-height:1.55; color:#3a4a2e; padding-left:13px; position:relative; }
+.task-item::before { content:'↗'; position:absolute; left:0; color:var(--leaf); font-size:.6rem; top:2px; }
+.task-item strong { color:var(--forest); }
+.mtag { font-family:'DM Mono', monospace; font-size:.51rem; letter-spacing:.08em; text-transform:uppercase; background:var(--leaf); color:white; padding:1px 5px; margin-left:3px; vertical-align:middle; border-radius:2px; }
+
+.geo-block { padding:40px 5vw; border-top:3px double var(--forest); display:grid; grid-template-columns:1fr 2.5fr; gap:40px; }
+.geo-lbl { font-family:'Bebas Neue', sans-serif; font-size:2.6rem; line-height:1; color:var(--gold); font-weight:normal;}
+.geo-body { font-size:.87rem; line-height:1.82; color:#2e3a22; }
+.geo-body strong { color:var(--forest); }
+.geo-body p+p { margin-top:11px; }
+
+/* ════════════════════════════════
+   JOIN
+════════════════════════════════ */
+#join-vazhai { background:var(--paper); padding-top:88px; }
+
+.join-hero { width:100%; height:220px; object-fit:cover; object-position:center 30%; display:block; filter:saturate(.85) brightness(.78); border-bottom:3px solid var(--forest); }
+
+.join-mh { padding:0 5vw; position:relative; overflow:hidden; border-bottom:3px solid var(--forest); padding-bottom:0; }
+.join-bg { font-family:'Bebas Neue', sans-serif; font-size:clamp(5rem,15vw,15rem); line-height:.85; color:var(--faint); user-select:none; white-space:nowrap; }
+.join-overlay { position:absolute; bottom:16px; left:5vw; }
+.join-ov-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(2.6rem,5.5vw,5rem); color:var(--forest); line-height:1; font-weight:normal;}
+.join-ov-sub { font-family:'DM Mono', monospace; font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; color:var(--khaki); margin-top:5px; }
+
+.join-roles { display:grid; grid-template-columns:repeat(3,1fr); border-bottom:3px solid var(--forest); }
+.jr { padding:36px 28px; border-right:1px solid var(--forest); transition:background .2s; }
+.jr:last-child { border-right:none; }
+.jr:hover { background:var(--dew); }
+.jr-num { font-family:'Bebas Neue', sans-serif; font-size:3.5rem; line-height:1; color:var(--gold); margin-bottom:7px; }
+.jr-kind { font-family:'DM Mono', monospace; font-size:.55rem; letter-spacing:.14em; text-transform:uppercase; color:var(--khaki); display:block; margin-bottom:6px; }
+.jr-title { font-family:'Bebas Neue', sans-serif; font-size:1.7rem; color:var(--forest); margin-bottom:10px; line-height:1; font-weight:normal;}
+.jr-body { font-size:.79rem; line-height:1.65; color:#2e4a22; margin-bottom:9px; }
+.jr-sal { font-family:'DM Mono', monospace; font-size:.63rem; color:var(--leaf); }
+
+.vol-split { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--forest); }
+.vc { padding:40px 5vw; border-right:1px solid var(--forest); }
+.vc:last-child { border-right:none; background:var(--dew); }
+.vc-title { font-family:'Bebas Neue', sans-serif; font-size:1.8rem; margin-bottom:20px; color:var(--forest); font-weight:normal;}
+.vtask { padding:11px 0; border-bottom:1px solid var(--faint); }
+.vtask:last-child { border-bottom:none; }
+.vtask-t { font-size:.82rem; font-weight:700; color:var(--forest); margin-bottom:3px; }
+.vtask-b { font-size:.77rem; line-height:1.6; color:#3a4a2e; }
+.vquote { padding:12px 0; border-bottom:1px solid rgba(0,0,0,.06); }
+.vquote:last-child { border-bottom:none; }
+.vq-t { font-style:italic; font-size:.82rem; line-height:1.65; color:#2e3a22; margin-bottom:5px; }
+.vq-a { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.08em; text-transform:uppercase; color:var(--leaf); }
+
+.mentor-img { width:100%; height:200px; object-fit:cover; object-position:center 40%; display:block; border-top:1px solid var(--faint); filter:saturate(.85); }
+
+.steps-bar { display:grid; grid-template-columns:repeat(4,1fr); border-top:3px solid var(--forest); border-bottom:3px double var(--forest); }
+.step { padding:28px 22px; border-right:1px solid var(--forest); }
+.step:last-child { border-right:none; }
+.step-n { font-family:'Bebas Neue', sans-serif; font-size:3rem; color:var(--gold); line-height:1; margin-bottom:7px; }
+.step-t { font-size:.83rem; font-weight:700; color:var(--forest); margin-bottom:4px; }
+.step-b { font-size:.75rem; line-height:1.6; color:#3a4a2e; }
+
+.join-apply { padding:40px 5vw; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; border-bottom:1px solid var(--faint); }
+.ja-t { font-family:'Bebas Neue', sans-serif; font-size:2rem; color:var(--forest); line-height:1.05; font-weight:normal;}
+.ja-s { font-size:.8rem; color:#3a4a2e; margin-top:4px; }
+
+/* ════════════════════════════════
+   DONATION
+════════════════════════════════ */
+#donation { background:var(--forest); padding-top:88px; }
+
+.don-hero { width:100%; height:260px; object-fit:cover; object-position:center; display:block; filter:brightness(.55) saturate(.75); border-bottom:3px solid rgba(255,255,255,.1); }
+
+.don-mh { padding:28px 5vw 32px; border-bottom:3px solid rgba(200,168,0,.3); }
+.don-ey { font-family:'DM Mono', monospace; font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:9px; font-weight:normal;}
+.don-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3.5rem,9vw,8rem); line-height:.9; color:var(--white); font-weight:normal;}
+.don-tagline { font-style:italic; font-size:1.02rem; color:rgba(255,255,255,.82); margin-top:12px; max-width:540px; line-height:1.65; }
+.don-note { padding:13px 5vw; background:rgba(0,0,0,.18); font-family:'DM Mono', monospace; font-size:.62rem; color:rgba(255,255,255,.6); letter-spacing:.04em; }
+
+.tiers { background:var(--paper); border-top:3px solid rgba(200,168,0,.3); }
+.tier-row { display:grid; grid-template-columns:190px 1fr; border-bottom:1px solid var(--faint); transition:background .15s; }
+.tier-row:last-child { border-bottom:none; }
+.tier-row:hover { background:var(--dew); }
+.tier-row.feat { background:var(--canopy); }
+.tier-row.feat:hover { background:var(--leaf); }
+.tier-amt { padding:19px 20px; border-right:1px solid var(--faint); font-family:'Bebas Neue', sans-serif; font-size:1.4rem; color:var(--gold); display:flex; align-items:center; line-height:1; }
+.tier-row.feat .tier-amt { color:var(--gold-lt); border-right-color:rgba(255,255,255,.12); }
+.tier-what { padding:19px 24px; font-size:.81rem; line-height:1.6; color:#2e3a22; display:flex; align-items:center; }
+.tier-what strong { color:var(--forest); }
+.tier-row.feat .tier-what { color:rgba(255,255,255,.8); }
+.tier-row.feat .tier-what strong { color:var(--white); }
+
+.don-breakdown { display:grid; grid-template-columns:repeat(3,1fr); background:var(--dew); border-top:3px double var(--forest); }
+.db-item { padding:26px 22px; border-right:1px solid var(--forest); }
+.db-item:last-child { border-right:none; }
+.db-lbl { font-family:'DM Mono', monospace; font-size:.55rem; letter-spacing:.14em; text-transform:uppercase; color:var(--khaki); margin-bottom:5px; display:block; }
+.db-amt { font-family:'Bebas Neue', sans-serif; font-size:1.65rem; color:var(--gold); line-height:1; margin-bottom:6px; }
+.db-desc { font-size:.75rem; line-height:1.55; color:#3a4a2e; }
+
+.don-widgets { background:var(--paper); padding:40px 5vw; border-top:3px solid var(--forest); display:grid; grid-template-columns:1fr 1fr; gap:40px; }
+.dw-title { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; color:var(--forest); margin-bottom:5px; font-weight:normal;}
+.dw-sub { font-size:.75rem; color:#3a4a2e; margin-bottom:16px; line-height:1.55; }
+.dw-toggle { cursor:pointer; display:flex; align-items:center; gap:9px; }
+.dw-chev { font-size:.77rem; color:var(--gold); transition:transform .25s; }
+.dw-chev.open { transform:rotate(180deg); }
+.dw-body { display:none; margin-top:13px; }
+.dw-body.open { display:block; }
+
+.don-share { padding:22px 5vw; background:rgba(0,0,0,.12); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.don-share-lbl { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.55); }
+.don-share .s-btn { border-color:rgba(255,255,255,.3); color:rgba(255,255,255,.8); }
+.don-share .s-btn:hover { background:var(--gold); border-color:var(--gold); color:var(--forest); }
+
+/* ════════════════════════════════
+   CONTACT
+════════════════════════════════ */
+#contact-us { background:var(--paper); padding-top:88px; }
+
+.ct-hero { width:100%; height:220px; object-fit:cover; object-position:center 40%; display:block; filter:saturate(.85) brightness(.82); border-bottom:3px solid var(--forest); }
+
+.ct-mh { padding:28px 5vw 32px; border-bottom:3px solid var(--forest); display:flex; align-items:flex-end; justify-content:space-between; gap:24px; }
+.ct-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3rem,8vw,7rem); line-height:.9; color:var(--forest); font-weight:normal;}
+.ct-reach { max-width:260px; text-align:right; }
+.ct-reach p { font-size:.81rem; line-height:1.72; color:#2e4a22; margin-bottom:12px; }
+
+.ct-grid { display:grid; grid-template-columns:repeat(3,1fr); border-bottom:3px double var(--forest); }
+.ct-cell { padding:26px 22px; border-right:1px solid var(--forest); }
+.ct-cell:last-child { border-right:none; }
+.cc-lbl { font-family:'DM Mono', monospace; font-size:.55rem; letter-spacing:.15em; text-transform:uppercase; color:var(--leaf); display:block; margin-bottom:6px; }
+.cc-val { font-size:.85rem; color:var(--forest); line-height:1.6; }
+.cc-val a { color:var(--forest); text-underline-offset:3px; }
+.cc-val a:hover { color:var(--leaf); }
+
+.visit-block { padding:44px 5vw; display:grid; grid-template-columns:1fr 2.5fr; gap:40px; border-bottom:1px solid var(--faint); }
+.vb-lbl { font-family:'Bebas Neue', sans-serif; font-size:2rem; color:var(--gold); line-height:1; font-weight:normal;}
+.vb-body { font-size:.85rem; line-height:1.82; color:#2e3a22; }
+.vb-body p+p { margin-top:11px; }
+
+/* ════════════════════════════════
+   EVENTS
+════════════════════════════════ */
+#vazhai-events { background:var(--paper); padding-top:88px; }
+
+.ev-hero { width:100%; height:220px; object-fit:cover; object-position:center 35%; display:block; filter:saturate(.85) brightness(.8); border-bottom:3px solid var(--forest); }
+
+.ev-mh { padding:28px 5vw 24px; border-bottom:3px solid var(--forest); }
+.ev-title { font-family:'Bebas Neue', sans-serif; font-size:clamp(3rem,8vw,7rem); line-height:.9; color:var(--forest); font-weight:normal;}
+.ev-sub { font-family:'DM Mono', monospace; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--khaki); margin-top:9px; }
+
+.ev-body { display:grid; grid-template-columns:1fr 1fr; }
+.ev-col { padding:40px 5vw; border-right:1px solid var(--forest); }
+.ev-col:last-child { border-right:none; background:var(--dew); }
+
+.evg-head { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.18em; text-transform:uppercase; color:var(--leaf); display:flex; align-items:center; gap:10px; margin-bottom:16px; margin-top:26px; font-weight:normal;}
+.evg-head:first-child { margin-top:0; }
+.evg-head::after { content:''; flex:1; height:1px; background:var(--khaki); }
+
+.ev-entry { display:grid; grid-template-columns:74px 1fr; gap:13px; padding:13px 0; border-bottom:1px solid var(--faint); }
+.ev-entry:last-child { border-bottom:none; }
+.ev-date { font-family:'DM Mono', monospace; font-size:.57rem; letter-spacing:.05em; text-transform:uppercase; color:var(--khaki); padding-top:2px; }
+.ev-ttl { font-size:.84rem; font-weight:700; color:var(--forest); margin-bottom:3px; }
+.ev-desc { font-size:.75rem; line-height:1.55; color:#3a4a2e; }
+
+.ev-cta { margin-top:28px; padding:28px 24px; background:var(--forest); }
+.ev-cta-h { font-family:'Bebas Neue', sans-serif; font-size:1.6rem; color:var(--gold); margin-bottom:9px; font-weight:normal;}
+.ev-cta-b { font-size:.81rem; color:rgba(255,255,255,.65); line-height:1.7; margin-bottom:16px; }
+.ev-btn {
+  display:inline-block; font-family:'DM Mono', monospace;
+  font-size:.6rem; letter-spacing:.13em; text-transform:uppercase;
+  padding:10px 18px; border:1.5px solid var(--gold);
+  color:var(--gold); background:none; cursor:pointer;
+  transition:all .2s; margin:0 7px 7px 0;
+}
+.ev-btn:hover { background:var(--gold); color:var(--forest); }
+.ev-btn.muted { border-color:rgba(255,255,255,.25); color:rgba(255,255,255,.55); }
+.ev-btn.muted:hover { background:rgba(255,255,255,.1); }
+
+/* ════ RESPONSIVE ════ */
+@media (max-width:860px) {
+  .fnav-item[data-section="who-we-are"],
+  .fnav-item[data-section="contact-us"],
+  .fnav-item[data-section="vazhai-events"] { display:none; }
+  .fnav-logo-text { display:none; }
+
+  .mh-inner { flex-direction:column; align-items:flex-start; gap:14px; }
+  .mh-logo { width:80px; height:80px; }
+  .home-grid { grid-template-columns:1fr; }
+  .hcol,.stat-col { border-right:none; border-bottom:1px solid var(--faint); }
+  .photo-strip { grid-template-columns:1fr; height:auto; }
+  .photo-cell { height:180px; border-right:none; border-bottom:1px solid var(--forest); }
+  .photo-cell:last-child { border-bottom:none; }
+  .stats-strip { grid-template-columns:repeat(2,1fr); }
+  .model-split { grid-template-columns:1fr; }
+  .ms-half.light { border-right:none; border-bottom:1px solid var(--faint); }
+  .roles-strip { grid-template-columns:1fr; }
+  .role-tile { border-right:none; border-bottom:1px solid var(--forest); }
+  .cta-double { grid-template-columns:1fr; }
+  .cta-pane { border-right:none; border-bottom:1px solid var(--faint); }
+
+  .wwa-grid { grid-template-columns:1fr; }
+  .wwa-col { border-right:none; border-bottom:1px solid rgba(255,255,255,.08); }
+  .meaning-strip { grid-template-columns:1fr; }
+  .meaning-tile { border-right:none; border-bottom:1px solid rgba(255,255,255,.08); }
+
+  .wwd-mh { flex-direction:column; align-items:flex-start; }
+  .wwd-intro { max-width:100%; }
+  .prog-block { grid-template-columns:1fr; }
+  .prog-bar { border-right:none; border-bottom:1px solid var(--forest); }
+  .task-grid { grid-template-columns:1fr; }
+  .geo-block { grid-template-columns:1fr; gap:10px; }
+
+  .join-roles { grid-template-columns:1fr; }
+  .jr { border-right:none; border-bottom:1px solid var(--forest); }
+  .vol-split { grid-template-columns:1fr; }
+  .vc { border-right:none; border-bottom:1px solid var(--faint); }
+  .steps-bar { grid-template-columns:repeat(2,1fr); }
+  .step:nth-child(even) { border-right:none; }
+  .join-apply { flex-direction:column; align-items:flex-start; }
+
+  .tiers .tier-row { grid-template-columns:1fr; }
+  .tier-amt { border-right:none; border-bottom:1px solid var(--faint); }
+  .don-breakdown { grid-template-columns:1fr; }
+  .db-item { border-right:none; border-bottom:1px solid var(--forest); }
+  .don-widgets { grid-template-columns:1fr; gap:22px; }
+
+  .ct-mh { flex-direction:column; align-items:flex-start; }
+  .ct-reach { text-align:left; max-width:100%; }
+  .ct-grid { grid-template-columns:1fr; }
+  .ct-cell { border-right:none; border-bottom:1px solid var(--faint); }
+  .visit-block { grid-template-columns:1fr; gap:10px; }
+
+  .ev-body { grid-template-columns:1fr; }
+  .ev-col { border-right:none; border-bottom:1px solid var(--faint); }
+}
+
+@media (max-width:520px) {
+  .steps-bar { grid-template-columns:1fr; }
+  .step { border-right:none !important; border-bottom:1px solid var(--faint); }
+}
+</style>
 </head>
 <body>
 
-<!-- ═══ MOBILE TOP BAR ═══ -->
-<header class="topbar" id="topbar">
-    <div class="topbar-brand">
-        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true"
-             alt="Vazhai NGO" class="topbar-logo-img"
-             onerror="this.style.display='none';document.getElementById('topbar-logo-fallback').style.display='flex';">
-        <div id="topbar-logo-fallback" style="display:none;align-items:center;gap:8px;">
-            <span class="brand-tamil">வாழை</span>
-            <span class="brand-en">VAZHAI</span>
-        </div>
-    </div>
-    <button class="hamburger" id="hamburger" aria-label="Menu">
-        <span></span><span></span><span></span>
-    </button>
-</header>
-
-<!-- ═══ MOBILE DRAWER ═══ -->
-<div class="drawer-overlay" id="overlay"></div>
-<nav class="drawer" id="drawer">
-    <div class="drawer-logo">
-        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true"
-             alt="Vazhai NGO Logo" class="drawer-logo-img"
-             onerror="this.style.display='none';document.getElementById('drawer-logo-fallback').style.display='block';">
-        <div id="drawer-logo-fallback" style="display:none;">
-            <div class="d-tamil">வாழை</div>
-            <div class="d-en">VAZHAI</div>
-        </div>
-        <div class="d-tagline">தலைமுறை வளர்ச்சியின் அடையாளம்</div>
-        <div class="d-motto">Light a Lamp. Light a Life.</div>
-    </div>
-    <ul class="menu-list" id="drawer-menu">
-        <li><a href="#" class="menu-item active" data-section="home"><span class="nav-icon">🏠</span>Home</a></li>
-        <li><a href="#" class="menu-item" data-section="who-we-are"><span class="nav-icon">🌱</span>Who We Are</a></li>
-        <li><a href="#" class="menu-item" data-section="what-we-do"><span class="nav-icon">📚</span>What We Do</a></li>
-        <li><a href="#" class="menu-item" data-section="join-vazhai"><span class="nav-icon">🤝</span>Join Vazhai</a></li>
-        <li><a href="#" class="menu-item" data-section="donation"><span class="nav-icon">💛</span>Donate</a></li>
-        <li><a href="#" class="menu-item" data-section="contact-us"><span class="nav-icon">✉️</span>Contact Us</a></li>
-        <li><a href="#" class="menu-item" data-section="vazhai-events"><span class="nav-icon">📅</span>Vazhai Events</a></li>
-    </ul>
+<nav class="fnav" aria-label="Main Navigation">
+  <div class="fnav-logo menu-item" data-section="home">
+    <img src="images/vazahi-logo.gif" alt="Vazhai NGO Logo - Rural Education in Tamil Nadu" loading="eager" decoding="async" fetchpriority="high"
+         onerror="this.style.display='none'">
+    <span class="fnav-logo-text">வாழை VAZHAI</span>
+  </div>
+  <button class="fnav-item active menu-item" data-section="home">Home</button>
+  <button class="fnav-item menu-item" data-section="who-we-are">Who We Are</button>
+  <button class="fnav-item menu-item" data-section="what-we-do">What We Do</button>
+  <button class="fnav-item menu-item" data-section="join-vazhai">Join</button>
+  <button class="fnav-item menu-item" data-section="donation">Donate</button>
+  <button class="fnav-item menu-item" data-section="contact-us">Contact</button>
+  <button class="fnav-item menu-item" data-section="vazhai-events">Events</button>
 </nav>
 
-<!-- ═══ DESKTOP SIDEBAR ═══ -->
-<aside class="sidebar">
-    <div class="sidebar-logo">
-        <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/vazahi-logo.gif?raw=true"
-             alt="Vazhai NGO Logo" class="sidebar-logo-img"
-             onerror="this.style.display='none';document.getElementById('sidebar-logo-fallback').style.display='block';">
-        <div id="sidebar-logo-fallback" style="display:none">
-            <div class="logo-tamil">வாழை</div>
-            <div class="logo-en">VAZHAI</div>
-            <div class="logo-sub">தலைமுறை வளர்ச்சியின் அடையாளம்</div>
+<main>
+  <section id="home" class="pg active" aria-label="Home">
+    <header class="masthead">
+      <div class="mh-top">
+        <span class="mh-dateline">Tamil Nadu · Est. April 2005 · Reg No. 296/05</span>
+        <span class="mh-reg">vazhai.in</span>
+      </div>
+      <div class="mh-inner">
+        <div class="mh-logo-wrap">
+          <img src="images/vazahi-logo.gif"
+               alt="Vazhai NGO Logo - Education NGO in Tamil Nadu" class="mh-logo" loading="eager" decoding="async" fetchpriority="high"
+               onerror="this.style.display='none'">
         </div>
-        <div class="logo-motto">Light a Lamp. Light a Life.</div>
+        <div class="mh-title-wrap">
+          <h1 class="mh-title"><span class="tamil">வாழை</span> VAZHAI</h1>
+          <div class="mh-kicker">Rural Education NGO · Tamil Nadu &nbsp;·&nbsp; Krishnagiri · Dharmapuri · Villupuram</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="live-strip">
+      <div class="live-dot"></div>
+      <span>Active now — <strong>School Companion deployed at Kodakarai Secondary School, Krishnagiri, 2025.</strong> &nbsp;Target for 2026: <strong>10 rural government schools + one Field Coordinator.</strong></span>
     </div>
-    <ul class="nav-menu" id="sidebar-menu">
-        <li><a href="#" class="menu-item active" data-section="home"><span class="nav-icon">🏠</span>Home</a></li>
-        <li><a href="#" class="menu-item" data-section="who-we-are"><span class="nav-icon">🌱</span>Who We Are</a></li>
-        <li><a href="#" class="menu-item" data-section="what-we-do"><span class="nav-icon">📚</span>What We Do</a></li>
-        <li><a href="#" class="menu-item" data-section="join-vazhai"><span class="nav-icon">🤝</span>Join Vazhai</a></li>
-        <li><a href="#" class="menu-item" data-section="donation"><span class="nav-icon">💛</span>Donate</a></li>
-        <li><a href="#" class="menu-item" data-section="contact-us"><span class="nav-icon">✉️</span>Contact Us</a></li>
-        <li><a href="#" class="menu-item" data-section="vazhai-events"><span class="nav-icon">📅</span>Vazhai Events</a></li>
-    </ul>
-    <div class="sidebar-footer">Founded April 2005 · Tamil Nadu</div>
-</aside>
 
-<!-- ═══ MAIN ═══ -->
-<main class="main">
+    <div class="home-grid">
+      <article class="hcol">
+        <h2 class="col-label">Why We Exist</h2>
+        <p class="col-body">Twenty to thirty kilometres past Aiyur, deep in the forests of Krishnagiri district, Tamil Nadu, government schools serve children who rarely appear in policy conversations about education equity.</p>
+        <p class="col-body">Teachers commute hours each way through forest roads. Parents migrate for daily wages, sometimes taking their children along. Dropout is quiet — it doesn't announce itself.</p>
+        <p class="col-body"><strong>VAZHAI is a rural education NGO that puts a trained, full-time School Companion inside each of these schools.</strong> Every single school day, the whole year to ensure foundational literacy.</p>
+        <p class="col-body">We began in Dharmapuri and Villupuram. We are now expanding into Krishnagiri. One school at a time, one companion at a time — until no child in rural Tamil Nadu goes without support.</p>
+      </article>
 
-    <!-- ══════════════════════════════════════
-         HOME
-    ══════════════════════════════════════ -->
-    <section id="home" class="content-section active">
-        <div class="page-hero">
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/workshop1.jpg?raw=true" alt="Workshop">
-            <div class="page-hero-overlay"></div>
-            <div class="page-hero-text">
-                <h1>Light a Lamp. Light a Life.</h1>
-                <div class="hero-sub">Tamil Nadu · Since 2005</div>
-                <div class="hero-orgline">VAZHAI வாழை · An Educational NGO (Reg No. 296/05)</div>
-            </div>
+      <div class="stat-col">
+        <h2 class="col-label" style="align-self:flex-start;width:100%;color:var(--gold);border-bottom-color:rgba(255,255,255,.1);">Impact at a Glance</h2>
+        <div class="sg-num">500+</div>
+        <div class="sg-div"></div>
+        <div class="sg-label">Students supported across<br>rural Tamil Nadu</div>
+        <div class="sg-num accent">19+</div>
+        <div class="sg-div"></div>
+        <div class="sg-label">Years of unbroken<br>field presence</div>
+        <div class="sg-num accent" style="font-size:clamp(2rem,4vw,4rem);margin-top:16px;">2 Districts</div>
+        <div class="sg-div"></div>
+        <div class="sg-label">Served — Dharmapuri,<br>Villupuram &amp; growing</div>
+      </div>
+
+      <article class="hcol">
+        <h2 class="col-label">In Their Own Words · 2025</h2>
+        <div class="voice-blk">
+          <div class="vb-tamil">நான் கஷ்டமான வாக்கியங்களை படிக்க சிரமப்படுவேன். பள்ளித் தோழர் தினமும் படிக்கவும் எழுதவும் உதவுகிறார்கள்.</div>
+          <div class="vb-en">I used to find difficult sentences hard to read. Our School Companion sits with us every day and helps us read and write better.</div>
+          <div class="vb-attr">Student · Kodakarai Secondary School</div>
         </div>
-
-        <div class="page-body">
-
-            <!-- EMOTIONAL HOOK — comes before everything else -->
-            <div class="opening-story">
-                <div class="opening-story-text">
-                    Deep inside the forests of the Krishnagiri district, beyond Denkanikottai and further still past Aiyur, lie small villages where government schools quietly do their best. Teachers make long daily commutes through forest routes because settling here isn't easy. Parents travel far for work, and children sometimes go with them. The nearest town for essentials can be hours away.
-                </div>
-                <div class="opening-story-context">
-                    The children growing up here are no different from children anywhere — curious, playful, full of potential. What they need is someone who shows up every day, stays, and believes in them. That is what a Vazhai School Companion does. We are working to place one in every school that needs it — starting now, growing every year.
-                </div>
-                <span class="opening-story-tag">✦ Bringing equality through education · Since 2005</span>
-            </div>
-
-            <!-- LIVE STATUS -->
-            <div class="live-impact">
-                <div class="live-dot"></div>
-                <div class="live-text"><strong>On the ground now:</strong> School Companion placed at Kodakarai Secondary School (2025). <strong>Goal for 2026: 10 schools &amp; one Field Coordinator.</strong></div>
-            </div>
-
-            <div class="stats-row">
-                <div class="stat-box"><div class="stat-num">500+</div><div class="stat-label">Students Reached</div></div>
-                <div class="stat-box"><div class="stat-num">19+</div><div class="stat-label">Years of Service</div></div>
-                <div class="stat-box"><div class="stat-num">2</div><div class="stat-label">Districts Served</div></div>
-                <div class="stat-box"><div class="stat-num">10</div><div class="stat-label">Schools Goal '26</div></div>
-            </div>
-
-            <!-- THE CONTEXT — accurate and respectful -->
-            <div class="problem-block">
-                <h3>The context these children grow up in</h3>
-                <div class="problem-facts">
-                    <div class="problem-fact">
-                        <span class="problem-fact-icon">🌲</span>
-                        <span class="problem-fact-text">Villages like Kodakarai lie <strong>20–30 km inside forest areas</strong> beyond Aiyur — with limited or no public transport. Some areas have one bus a day; some have none at all.</span>
-                    </div>
-                    <div class="problem-fact">
-                        <span class="problem-fact-icon">🏫</span>
-                        <span class="problem-fact-text">Teachers who are posted here often <strong>commute from towns like Denkanikottai or Hosur</strong> because settling in the forest is not practical — meaning the school does not always have a stable, daily adult presence.</span>
-                    </div>
-                    <div class="problem-fact">
-                        <span class="problem-fact-icon">👨‍👩‍👧</span>
-                        <span class="problem-fact-text">With limited local livelihoods, many parents <strong>travel to nearby towns or nurseries for work</strong> — and children sometimes go with them, breaking the rhythm of schooling.</span>
-                    </div>
-                    <div class="problem-fact">
-                        <span class="problem-fact-icon">💡</span>
-                        <span class="problem-fact-text">The children here are curious and playful. What they need is <strong>a consistent, caring presence</strong> — someone who shows up every day, knows their name, and keeps the spark of learning alive.</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VOICES -->
-            <div class="section-label">From the field · 2025</div>
-
-            <div class="testimonial student-voice">
-                <div class="testimonial-quote">
-                    நான் கஷ்டமான வாக்கியங்களை படிக்க சிரமப்படுவேன். பள்ளித் தோழர் தினமும் படிக்கவும் எழுதவும் உதவுகிறார்கள்.
-                    <br><span style="font-size:0.88rem; color: var(--green-soft); font-style:normal;">I used to struggle with complex sentences. Our School Companion (பள்ளித் தோழர்) helps us every day with reading and writing.</span>
-                </div>
-                <div class="testimonial-person">
-                    <div class="testimonial-avatar">🎓</div>
-                    <div>
-                        <div class="testimonial-name">A student · Kodakarai Secondary School</div>
-                        <div class="testimonial-role">Denkanikottai area, 2025</div>
-                    </div>
-                </div>
-            </div>
-            <div class="testimonial student-voice">
-                <div class="testimonial-quote">
-                    வாழை நடத்திய career guidance session அட்டெண்ட் பண்ணதுக்கப்புறம், என்னென்ன படிப்புகள் இருக்குன்னு புரிஞ்சது. எனக்கும் என்ன பண்ணலாம்னு கொஞ்சம் idea கிடைத்தது.
-                    <br><span style="font-size:0.88rem; color: var(--green-soft); font-style:normal;">After attending the career guidance session conducted by Vazhai, I understood what all courses are available. I also got some idea about what I can do next.</span>
-                </div>
-                <div class="testimonial-person">
-                    <div class="testimonial-avatar">🎓</div>
-                    <div>
-                        <div class="testimonial-name">A student · Kodakarai Secondary School</div>
-                        <div class="testimonial-role">Denkanikottai area, 2025</div>
-                    </div>
-                </div>
-            </div>
-            <div class="testimonial companion-voice">
-                <div class="testimonial-quote">
-                    நானும் இந்த ஊர்ல தான் வளர்ந்தேன். இவங்களுக்கு என்ன கஷ்டம் இருக்குனு எனக்கு தெரியும். தினமும் அவங்களோட இருந்து படிக்க உதவுறது எனக்கு ரொம்ப சந்தோஷம்.
-                </div>
-                <div class="testimonial-person">
-                    <div class="testimonial-avatar">🏫</div>
-                    <div>
-                        <div class="testimonial-name">Sevvanthi · School Companion</div>
-                        <div class="testimonial-role">Kodakarai Secondary School, 2025</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MODEL TRANSITION -->
-            <div class="section-label">Our Evolving Model</div>
-            <div class="model-transition">
-                <div class="model-box old">
-                    <div class="model-box-label">Then  2005–2024</div>
-                    <div class="model-box-title">Direct Mentoring &amp; Workshops</div>
-                    <ul>
-                        <li>Continuous mentoring relationships</li>
-                        <li>Life-skills &amp; career workshops</li>
-                        <li>Student &amp; home visits for bonding</li>
-                        <li>Volunteer-led programs across districts</li>
-                    </ul>
-                </div>
-                <div class="model-arrow" aria-label="Then to now transition">
-                    <span class="arrow-desktop" aria-hidden="true">→</span>
-                    <span class="arrow-mobile" aria-hidden="true">↓</span>
-                </div>
-                <div class="model-box new">
-                    <div class="model-box-label">Now  2025 Onwards</div>
-                    <div class="model-box-title">Grassroots School Support Model</div>
-                    <ul>
-                        <li>School Companions placed full-time in schools</li>
-                        <li>Field Coordinators for on-ground management</li>
-                        <li>Forest &amp; hill region government schools</li>
-                        <li>Built for scale — one model, many schools</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="role-grid">
-                <div class="role-card companion">
-                    <div class="role-icon">🏫</div>
-                    <div class="role-title">School Companion</div>
-                    <span class="role-type">Employee  In-School</span>
-                    <div class="role-desc">Placed full-time in a school. Builds reading, writing and speaking skills daily. Reports weekly to the Vazhai network.</div>
-                </div>
-                <div class="role-card coordinator">
-                    <div class="role-icon">🗺️</div>
-                    <div class="role-title">Field Coordinator</div>
-                    <span class="role-type">Employee  Field</span>
-                    <div class="role-desc">Visits schools weekly, tracks progress, identifies new schools, coordinates career guidance and inter-school events.</div>
-                </div>
-                <div class="role-card volunteer">
-                    <div class="role-icon">🤝</div>
-                    <div class="role-title">Vazhai Volunteer</div>
-                    <span class="role-type">Volunteer  Remote &amp; On-site</span>
-                    <div class="role-desc">Prepares materials, supports companions, mentors students. Any professional can contribute meaningfully.</div>
-                </div>
-            </div>
-
-            <!-- THREE-WAY CTA -->
-            <div class="action-bar">
-                <h3>Three ways to be part of this</h3>
-                <p>Every contribution — time, money, or a shared post — helps a child in a hill village get the support they deserve.</p>
-                <div class="action-bar-btns">
-                    <button class="action-bar-btn primary menu-item" data-section="join-vazhai">🤝 Volunteer or Join</button>
-                    <button class="action-bar-btn secondary menu-item" data-section="donation">💛 Donate</button>
-                    <button class="action-bar-btn outline" onclick="scrollToShare()">📢 Spread the Word</button>
-                </div>
-            </div>
-
-            <!-- SHARE SECTION -->
-            <div class="share-block" id="share-section">
-                <h3>Not ready to volunteer or donate yet? That's okay.</h3>
-                <p>Sharing Vazhai with one person who might care is just as important. It takes 10 seconds.</p>
-                <div class="share-btns">
-                    <a class="share-btn whatsapp"
-                       href="https://wa.me/?text=I%20came%20across%20Vazhai%20NGO%20%E2%80%94%20they%20place%20dedicated%20companions%20in%20remote%20government%20schools%20in%20Tamil%20Nadu%20to%20support%20children%20who%20have%20no%20other%20help.%20Worth%20looking%20at%3A%20https%3A%2F%2Fvazhai.in"
-                       target="_blank">📱 Share on WhatsApp</a>
-                    <button class="share-btn copy" onclick="copyLink('share-copied-home')">🔗 Copy Link</button>
-                    <a class="share-btn email-share"
-                       href="mailto:?subject=Vazhai%20NGO%20%E2%80%94%20Supporting%20children%20in%20remote%20Tamil%20Nadu%20schools&body=I%20wanted%20to%20share%20Vazhai%20NGO%20with%20you.%20They%20place%20dedicated%20School%20Companions%20in%20remote%20government%20schools%20in%20Tamil%20Nadu%20hill%20regions%20where%20children%20have%20very%20little%20support.%0A%0Ahttps%3A%2F%2Fvazhai.in">✉️ Share via Email</a>
-                </div>
-                <div class="share-copied" id="share-copied-home">✓ Link copied to clipboard!</div>
-            </div>
-
+        <div class="voice-blk">
+          <div class="vb-tamil">வாழை நடத்திய career guidance session அட்டெண்ட் பண்ணதுக்கப்புறம், என்னென்ன படிப்புகள் இருக்குன்னு புரிஞ்சது.</div>
+          <div class="vb-en">After attending Vazhai's career guidance session, I finally understood what courses are available to me and what I can work towards.</div>
+          <div class="vb-attr">Student · Kodakarai Secondary School</div>
         </div>
-    </section>
-
-    <!-- ══════════════════════════════════════
-         WHO WE ARE
-    ══════════════════════════════════════ -->
-    <section id="who-we-are" class="content-section">
-        <div class="page-hero">
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity11.jpg?raw=true" alt="Activity">
-            <div class="page-hero-overlay"></div>
-            <div class="page-hero-text">
-                <h1>Who We Are</h1>
-                <div class="hero-sub">Our story, values &amp; people</div>
-                <div class="hero-orgline">VAZHAI வாழை · An Educational NGO (Reg No. 296/05)</div>
-            </div>
+        <div class="voice-blk">
+          <div class="vb-tamil">நானும் இந்த ஊர்ல தான் வளர்ந்தேன். தினமும் அவங்களோட இருந்து படிக்க உதவுறது எனக்கு ரொம்ப சந்தோஷம்.</div>
+          <div class="vb-attr">Sevvanthi · School Companion, Kodakarai, 2025</div>
         </div>
+      </article>
+    </div>
 
-        <div class="page-body">
-            <div class="card">
-                <h2>Our Genesis</h2>
-                <p>Vazhai was born out of gratitude and a deep sense of responsibility. Founded in April 2005 by First Generation College Graduates from Presidency College, Chennai — people who had walked the difficult path from rural disadvantage to higher education, and chose to pay that forward.</p>
-                <p>Many of our team members are themselves from similar backgrounds. That lived experience shapes everything: how we speak to students, what we mentor them on, and why we never give up on a child others might have written off.</p>
-            </div>
+    <div class="photo-strip">
+      <div class="photo-cell">
+        <img src="images/workshop1.jpg" alt="Vazhai NGO life skills workshop for rural students in Dharmapuri" loading="lazy" decoding="async">
+        <div class="photo-cap">Skills workshop · Dharmapuri</div>
+      </div>
+      <div class="photo-cell">
+        <img src="images/school1.jpg" alt="Government school students learning with a Vazhai School Companion in Krishnagiri, Tamil Nadu" loading="lazy" decoding="async">
+        <div class="photo-cap">Kodakarai Secondary School · Krishnagiri</div>
+      </div>
+      <div class="photo-cell">
+        <img src="images/activity11.jpg" alt="Rural government school students participating in a learning activity in Tamil Nadu" loading="lazy" decoding="async">
+        <div class="photo-cap">Learning in action · Government school, Tamil Nadu</div>
+      </div>
+    </div>
 
-            <div class="testimonial companion-voice">
-                <div class="testimonial-quote">
-                    We were first generation graduates ourselves. We knew what it felt like to be the first in a family to reach college, the confusion, the lack of guidance, and the moments where you almost felt like giving up. We started Vazhai so other children wouldn’t have to go through that alone.
-                </div>
-                <div class="testimonial-person">
-                    <div class="testimonial-avatar">🌱</div>
-                    <div>
-                        <div class="testimonial-name">Vazhai Founding Team</div>
-                        <div class="testimonial-role">First Generation Graduates, Presidency College Chennai · Est. April 2005</div>
-                    </div>
-                </div>
-            </div>
+    <div class="stats-strip">
+      <div class="ss"><div class="ss-n">500+</div><div class="ss-l">Students Supported</div></div>
+      <div class="ss"><div class="ss-n">19+</div><div class="ss-l">Years on the Ground</div></div>
+      <div class="ss"><div class="ss-n">2</div><div class="ss-l">Districts · Expanding</div></div>
+      <div class="ss"><div class="ss-n">10</div><div class="ss-l">Schools Target · 2026</div></div>
+    </div>
 
-            <div class="card gold-accent">
-                <h2>The Meaning of Vazhai</h2>
-                <p>வாழை (Vazhai) — the Tamil word for the banana tree — carries deep symbolism for us. At its heart, Vazhai stands for <strong>bringing equality through education</strong> to rural government school students who deserve the same opportunities as anyone else.</p>
-                <p><strong>Generational Growth:</strong> Just as a banana tree produces offshoots that carry the lineage forward, education creates a continuous cycle of growth across generations — one child who gets support eventually helps the next.</p>
-                <p><strong>Nourishment:</strong> Every part of the banana tree serves a purpose. Our holistic approach nourishes every aspect of a child's development — academic, social, and personal.</p>
-                <p><strong>Sustainability:</strong> The banana tree regenerates. Our School Companion model is built to do the same — a system that scales to new schools year after year, not events that happen once and leave.</p>
-            </div>
+    <div class="model-split">
+      <article class="ms-half light">
+        <span class="ms-era">Then · 2005–2024</span>
+        <h2 class="ms-head">Mentoring &amp; Community Programs</h2>
+        <ul class="ms-list">
+          <li>Long-term mentoring for government school students</li>
+          <li>Life-skills, career, and communication workshops</li>
+          <li>Home visits to build family trust</li>
+          <li>Volunteer-driven programs in Dharmapuri &amp; Villupuram</li>
+          <li>500+ students supported across 19 years</li>
+        </ul>
+      </article>
+      <article class="ms-half dark">
+        <span class="ms-era">Now · 2025 Onwards</span>
+        <h2 class="ms-head">Full-Time School Companions</h2>
+        <ul class="ms-list">
+          <li>One trained School Companion placed per rural school</li>
+          <li>Field Coordinators managing multiple schools</li>
+          <li>Focus: forest and hill-area government schools, Krishnagiri</li>
+          <li>Designed to scale — same model, more schools each year</li>
+          <li>Target: 10 schools covered by end of 2026</li>
+        </ul>
+      </article>
+    </div>
 
-            <div class="card">
-                <h2>Our Philosophy</h2>
-                <p>Vazhai's core belief is simple: <strong>every child deserves an equal chance at education</strong> — regardless of where they were born, how remote their village is, or what their parents do for a living. We exist to bring that equality to rural government schools in Tamil Nadu, one school at a time.</p>
-                <p>Our team consists of volunteers from diverse professional backgrounds — engineers, doctors, teachers, entrepreneurs, and social workers — united by the conviction that geography should not determine destiny.</p>
-            </div>
+    <div class="roles-strip">
+      <article class="role-tile">
+        <div class="rt-bg">01</div>
+        <span class="rt-type">Employee · In-School · Full-time</span>
+        <h3 class="rt-title">School Companion</h3>
+        <div class="rt-body">Lives and works alongside students in a remote government school. Builds foundational literacy, tracks attendance, and supports the headmaster — every day of the school year. Our first Companion at Kodakarai is from the same village as the students.</div>
+        <span class="rt-salary">₹15,000–20,000 / month</span>
+      </article>
+      <article class="role-tile">
+        <div class="rt-bg">02</div>
+        <span class="rt-type">Employee · Field · Full-time</span>
+        <h3 class="rt-title">Field Coordinator</h3>
+        <div class="rt-body">Manages School Companions across multiple schools. Visits each school weekly, spots problems early, brings in career guidance experts, and identifies new schools ready for the program.</div>
+        <span class="rt-salary">₹25,000–35,000 / month</span>
+      </article>
+      <article class="role-tile">
+        <div class="rt-bg">03</div>
+        <span class="rt-type">Volunteer · Remote or On-site</span>
+        <h3 class="rt-title">Volunteer</h3>
+        <div class="rt-body">Working professionals who give one day a month. You create learning materials, run career sessions, or mentor students online. No teaching degree needed — just your skills and willingness to show up.</div>
+        <span class="rt-salary">Time, expertise &amp; presence</span>
+      </article>
+    </div>
 
-            <div class="card">
-                <h2>Our Journey: Then &amp; Now</h2>
-                <p>From 2005 to 2024, Vazhai ran continuous mentoring programs in Dharmapuri and Villupuram — building deep relationships with students through workshops, home visits, and career guidance. Over 500 students benefited, and many went on to pursue higher education and careers they hadn't imagined before.</p>
-                <p>As Vazhai matured, we asked: how do we reach more children, more deeply, more sustainably? The answer was a new model — placing <strong>School Companions</strong> full-time inside government schools in remote hill and forest regions, where the need is greatest and the reach is hardest. A model built not just for impact, but for <strong>scale</strong>.</p>
-            </div>
+    <div class="cta-double">
+      <div class="cta-pane">
+        <span class="cta-ey">Get Involved · Education Equity Starts Here</span>
+        <h2 class="cta-h">You can help<br>in three ways</h2>
+        <p class="cta-b">Give your time as a volunteer, donate to support a School Companion's salary, or simply share Vazhai with someone who cares about rural education in Tamil Nadu. Every form of support keeps a child in school.</p>
+        <button class="cta-btn filled menu-item" data-section="join-vazhai">Volunteer or Join →</button>
+        <button class="cta-btn menu-item" data-section="donation">Donate to Vazhai →</button>
+      </div>
+      <div class="cta-pane gold">
+        <span class="cta-ey">Spread the Word</span>
+        <h2 class="cta-h">Not ready yet?<br>Share Vazhai.</h2>
+        <p class="cta-b">Knowing one person who might donate or volunteer is just as valuable. Sharing our work takes ten seconds — and could be the reason a child in Krishnagiri stays in school.</p>
+        <div class="share-row">
+          <a class="s-btn" href="https://wa.me/?text=I%20came%20across%20Vazhai%20NGO%20%E2%80%94%20they%20place%20dedicated%20companions%20in%20remote%20government%20schools%20in%20Tamil%20Nadu.%20https%3A%2F%2Fvazhai.in" target="_blank">WhatsApp</a>
+          <button class="s-btn" onclick="copyLink('c1')">Copy Link</button>
+          <a class="s-btn" href="mailto:?subject=Vazhai%20NGO&body=https%3A%2F%2Fvazhai.in">Email</a>
         </div>
-    </section>
+        <div class="copied" id="c1">Link copied.</div>
+      </div>
+    </div>
+  </section>
 
-    <!-- ══════════════════════════════════════
-         WHAT WE DO
-    ══════════════════════════════════════ -->
-    <section id="what-we-do" class="content-section">
-        <div class="page-hero">
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/school1.jpg?raw=true" alt="School">
-            <div class="page-hero-overlay"></div>
-            <div class="page-hero-text">
-                <h1>What We Do</h1>
-                <div class="hero-sub">Our programs &amp; how we work</div>
-                <div class="hero-orgline">VAZHAI வாழை · An Educational NGO (Reg No. 296/05)</div>
-            </div>
+  <section id="who-we-are" class="pg" aria-label="Who We Are">
+    <img src="images/activity11.jpg" alt="Vazhai NGO activity demonstrating education equity for rural government school students in Tamil Nadu" class="wwa-hero" loading="lazy" decoding="async">
+    <header class="dark-mh">
+      <span class="dark-ey">Our Story · Our Values · Our People</span>
+      <h2 class="dark-title">Who We <em>Are</em></h2>
+    </header>
+    <div class="wwa-grid">
+      <article class="wwa-col">
+        <h3 class="col-label">How We Started</h3>
+        <p>VAZHAI is a registered NGO for government school students in rural Tamil Nadu, founded in April 2005 by first-generation college graduates from Presidency College, Chennai. They knew what it cost to be the first person in a family to reach higher education — and chose to lower that cost for the next generation.</p>
+        <p>Many of our team members grew up in the same conditions as the students we now serve. That lived understanding shapes how we speak, what we teach, and why we stay.</p>
+        <div class="pq-dark">
+          <div class="pq-text">We were first-generation graduates ourselves. We knew the confusion, the lack of guidance, the moments where you almost gave up. We started Vazhai so other children wouldn't have to go through that alone.</div>
+          <div class="pq-attr">Vazhai Founding Team · Presidency College, Chennai · Est. April 2005</div>
         </div>
+        <h3 class="col-label" style="margin-top:22px;">What We Believe</h3>
+        <p>Education equity is not a distant goal — it is a daily practice. VAZHAI believes that every child in rural Tamil Nadu deserves a fair shot at education, regardless of which village they were born in, how far their school is from a town, or what their parents do for a living.</p>
+        <p>Our team includes engineers, doctors, teachers, entrepreneurs, and social workers. Between 2005 and 2024, we ran sustained mentoring programs across Dharmapuri and Villupuram districts, supporting over <strong>500 students</strong>. In 2025, we shifted to a deeper model — placing full-time School Companions directly inside schools in Krishnagiri.</p>
+      </article>
+      <article class="wwa-col">
+        <h3 class="col-label">The Name: Vazhai</h3>
+        <p><strong>வாழை (Vazhai)</strong> is the Tamil word for the banana tree. We chose it deliberately. The banana tree gives completely — fruit, leaf, flower, stem, and root. It regenerates on its own. And every new shoot carries the same strength as the one before it.</p>
+        <p>That is what we want education to do for rural communities in Tamil Nadu: give fully, sustain itself, and carry forward from one generation to the next.</p>
+      </article>
+    </div>
+    <div class="meaning-strip">
+      <div class="meaning-tile">
+        <div class="mt-icon">I</div>
+        <h3 class="mt-title">Generational Growth</h3>
+        <div class="mt-body">A banana tree sends out new shoots that carry the same strength as the parent. One child who gets an education passes that possibility on to the next. That is the cycle we are building — in Krishnagiri, Dharmapuri, Villupuram, and beyond.</div>
+      </div>
+      <div class="meaning-tile">
+        <div class="mt-icon">II</div>
+        <h3 class="mt-title">Complete Nourishment</h3>
+        <div class="mt-body">Every part of the banana tree serves a purpose. Our program doesn't focus on one subject or one exam. We build literacy, confidence, career awareness, and community trust — because a child needs all of it to thrive.</div>
+      </div>
+      <div class="meaning-tile">
+        <div class="mt-icon">III</div>
+        <h3 class="mt-title">Built to Last</h3>
+        <div class="mt-body">The banana tree regenerates year after year without being replanted. Our School Companion model works the same way — one framework, many schools, sustained presence. Not a project. A permanent commitment to rural education equity.</div>
+      </div>
+    </div>
+  </section>
 
-        <div class="page-body">
-            <div class="section-label">New Model  2025 Onwards</div>
+  <section id="what-we-do" class="pg" aria-label="What We Do">
+    <img src="images/school1.jpg" alt="A remote government school building in the Krishnagiri district of Tamil Nadu where Vazhai operates" class="wwd-hero-strip" loading="lazy" decoding="async">
+    <header class="wwd-mh">
+      <h2 class="wwd-title">What<br>We Do</h2>
+      <div class="wwd-intro">Three roles. One mission. Getting trained, committed people into rural government schools in Tamil Nadu — and keeping them there, every day.</div>
+    </header>
 
-            <div class="role-detail companion">
-                <div class="role-detail-header">
-                    <span class="role-detail-icon">🏫</span>
-                    <div>
-                        <div class="role-detail-htitle">School Companions</div>
-                        <div class="role-detail-htag">Employee  Placed directly in rural government schools</div>
-                    </div>
-                </div>
-                <div class="role-detail-body companion">
-                    <p>School Companions are Vazhai's most direct link to students. Placed full-time inside schools in remote forest and hill regions, they work alongside teachers and the community, and report weekly to the Vazhai network. Our first companion at Kodakarai Secondary School (2025) is from the same community as the students — which has made a real difference in trust and connection.</p>
-                    <ul class="task-list">
-                        <li><span class="task-dot"></span><span><strong>Reading, Writing &amp; Speaking:</strong> Improve foundational literacy and communication skills <span class="mandatory">Mandatory</span> — assessed at the start, middle, and end of the year, targeting 25% improvement or a score above 70%</span></li>
-                        <li><span class="task-dot"></span><span><strong>Student Stage Speech:</strong> Build confidence through classroom presentations <span class="mandatory">Mandatory</span> — each student speaks at least once a year, recorded and shared with the Vazhai network</span></li>
-                        <li><span class="task-dot"></span><span><strong>Assist the Headmaster:</strong> Support day-to-day school functioning — taking classes, assisting in special sessions, and helping organise school events <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span><strong>Baseline Assessment:</strong> Conduct initial evaluations of each student's academic level to plan targeted support <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span><strong>Dropout Tracking:</strong> Identify students who have stopped attending; engage with families to understand reasons and support re-enrolment <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span><strong>House Visits:</strong> Regularly visit students' homes to build family rapport, encourage attendance, and address issues affecting education</span></li>
-                        <li><span class="task-dot"></span><span><strong>Enrolment Support:</strong> Help new students — especially from underserved communities or first-generation learner families — enrol and settle into school</span></li>
-                        <li><span class="task-dot"></span><span><strong>Bridge Course:</strong> Run short-term catch-up programs for students who are academically behind or rejoining after a break</span></li>
-                        <li><span class="task-dot"></span><span><strong>Library &amp; Reading:</strong> Manage a school book corner and run regular reading sessions to build the habit of reading</span></li>
-                        <li><span class="task-dot"></span><span><strong>NMMS Preparation:</strong> Identify eligible students and support their preparation for the National Means-cum-Merit Scholarship exam</span></li>
-                        <li><span class="task-dot"></span><span><strong>School Annual Day:</strong> Assist in planning and executing school functions, involving students, teachers, and families</span></li>
-                        <li><span class="task-dot"></span><span><strong>NGO Collaboration:</strong> Coordinate with other NGOs or organisations to bring additional resources, volunteers, or programs to the school</span></li>
-                        <li><span class="task-dot"></span><span><strong>Weekly Report:</strong> Submit an activity report every Friday and attend the Vazhai weekly status call <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span><strong>Yearly Report:</strong> Prepare a comprehensive annual report covering student progress, school activities, and key challenges <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span><strong>School Cleaning &amp; Tree Plantation:</strong> Participate in cleanliness drives and tree-planting activities with student involvement — building ownership of the school environment</span></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="role-detail coordinator">
-                <div class="role-detail-header">
-                    <span class="role-detail-icon">🗺️</span>
-                    <div>
-                        <div class="role-detail-htitle">Field Coordinators</div>
-                        <div class="role-detail-htag">Employee  On-ground management across multiple schools</div>
-                    </div>
-                </div>
-                <div class="role-detail-body coordinator">
-                    <p>Field Coordinators are Vazhai's on-ground managers. They visit schools weekly, ensure School Companions are on track, identify new schools, and bridge the gap between schools and the broader Vazhai volunteer network.</p>
-                    <ul class="task-list">
-                        <li><span class="task-dot"></span><span>Visit at least one school per week — speak with the Headmaster, identify gaps, and review the School Companion's weekly report against goals <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span>Identify and visit new schools in surrounding areas; fill school identification forms and gather contact details, requirements, images and videos <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span>Train teachers and School Companions for student level identification (3× a year); coordinate with Aid India and other experts <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span>Conduct career guidance sessions every year in every school we work with — hire required experts <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span>Plan and conduct inter-school competitions including sports and activities like speech and writing <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span>Enable skill training visits for students (e.g., visits to TVS and similar organisations) <span class="mandatory">Mandatory</span></span></li>
-                        <li><span class="task-dot"></span><span>Visit potential donors and assist with fundraising; keep the Vazhai Volunteer Group updated on all field activities <span class="mandatory">Mandatory</span></span></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="role-detail volunteer">
-                <div class="role-detail-header">
-                    <span class="role-detail-icon">🤝</span>
-                    <div>
-                        <div class="role-detail-htitle">Vazhai Volunteer Group</div>
-                        <div class="role-detail-htag">Volunteer  Remote &amp; on-site support</div>
-                    </div>
-                </div>
-                <div class="role-detail-body volunteer">
-                    <p>Volunteers are the backbone of Vazhai's operations — creating materials, preparing students for opportunities, and scaling the program's reach through their professional skills.</p>
-                    <ul class="task-list">
-                        <li><span class="task-dot"></span><span>Prepare and standardise level identification materials (AID India framework) <span class="mandatory">Before June 2026</span>; maintain class-wise student lists and records</span></li>
-                        <li><span class="task-dot"></span><span>Develop a school identification form with structured fields — contact details, requirements, images and videos — <span class="mandatory">Before June 2026</span></span></li>
-                        <li><span class="task-dot"></span><span>Provide ideas, examples and videos for student stage speeches; prepare content handouts for School Companions</span></li>
-                        <li><span class="task-dot"></span><span>Prepare 10th standard students for the Ashok Leyland ITI Integrated Course — identify knowledge gaps and address them</span></li>
-                        <li><span class="task-dot"></span><span>Guide and prepare students for the National Children's Science Congress (NCSC) projects</span></li>
-                        <li><span class="task-dot"></span><span>“I helped students practice simple English conversations through weekly online sessions.” — Volunteers can take spoken English, reading, or communication sessions</span></li>
-                        <li><span class="task-dot"></span><span>“We created simple worksheets and games to make learning fun for younger children.” — Volunteers can prepare activity materials and teaching aids</span></li>
-                        <li><span class="task-dot"></span><span>“I spoke to students about my job and college life. They asked many questions.” — Volunteers can conduct career talks and exposure sessions</span></li>
-                        <li><span class="task-dot"></span><span>“We organised drawing, sports and science activity days in the school.” — Volunteers can help conduct special events and competitions</span></li>
-                        <li><span class="task-dot"></span><span>“I helped review weekly reports and suggested ideas to improve student participation.” — Volunteers can support planning, reporting and coordination remotely</span></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="section-label">Our Earlier Programs · Still Active</div>
-            <div class="card">
-                <h2>Direct Mentoring &amp; Life Skills</h2>
-                <p>From 2005 to 2024, Vazhai ran continuous mentoring programs in Dharmapuri and Villupuram — building real relationships with students through workshops, home visits, and career guidance sessions. Over 500 students benefited, many going on to higher education and careers they hadn't imagined before. These programs continue to complement our new school support model.</p>
-            </div>
-
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity23.jpg?raw=true" alt="Activity" class="inline-img">
-
-            <div class="card">
-                <h2>Geographic Focus</h2>
-                <p>Our earlier work covered <strong>Dharmapuri</strong> and <strong>Villupuram</strong> districts. Our new school support initiative begins in the remote hill and forest areas beyond <strong>Aiyur</strong> near Denkanikottai (Krishnagiri district) — villages lying 20–30 km inside forest routes with limited or no transport. We started with Kodakarai Secondary School in 2025 and plan to expand to 10 schools in 2026, with more regions to follow.</p>
-                <div class="highlight">
-                    Each school added means a School Companion present every day — not a one-off visit, but a sustained, year-round relationship with students, teachers, and families.
-                </div>
-            </div>
+    <article class="prog-block">
+      <div class="prog-bar">
+        <span class="pb-type">Employee · Full-time · In-School</span>
+        <h3 class="pb-name">School Companions</h3>
+        <div class="pb-meta">One per school<br>Present every school day<br>Weekly progress reports<br>Salary: ₹15,000–20,000/mo</div>
+      </div>
+      <div class="prog-content">
+        <p class="prog-intro">A School Companion is Vazhai's most direct investment in a child. Based full-time inside a government school in a remote forest or hill area, they work alongside teachers, build trust with families, and make sure no student is quietly slipping through the cracks. Our first Companion at Kodakarai Secondary School, Krishnagiri (2025) grew up in the same village — and that local connection has made all the difference.</p>
+        <div class="task-grid">
+          <div class="task-item"><strong>Reading, Writing &amp; Speaking</strong> <span class="mtag">Mandatory</span> — assessed 3× a year; target: 25% improvement or a score above 70%</div>
+          <div class="task-item"><strong>Student Stage Speech</strong> <span class="mtag">Mandatory</span> — every student speaks at least once a year; sessions are recorded and shared with Vazhai</div>
+          <div class="task-item"><strong>Support the Headmaster</strong> <span class="mtag">Mandatory</span> — take classes, assist in special sessions, help run school events</div>
+          <div class="task-item"><strong>Baseline Assessment</strong> <span class="mtag">Mandatory</span> — evaluate each student's starting level at the beginning of the year</div>
+          <div class="task-item"><strong>Dropout Tracking</strong> <span class="mtag">Mandatory</span> — identify absent students early; work with families to bring them back</div>
+          <div class="task-item"><strong>Weekly &amp; Annual Reports</strong> <span class="mtag">Mandatory</span> — submit every Friday; full annual report at year-end</div>
+          <div class="task-item"><strong>Home Visits</strong> — meet parents, build trust, understand what is keeping a child from school</div>
+          <div class="task-item"><strong>Library &amp; Reading Sessions</strong> — manage the school book corner; make reading a daily habit</div>
+          <div class="task-item"><strong>Bridge Course</strong> — run focused catch-up lessons for students who are behind grade level</div>
+          <div class="task-item"><strong>NMMS Preparation</strong> — guide eligible students through the National Means-cum-Merit Scholarship process</div>
         </div>
-    </section>
+      </div>
+    </article>
 
-    <!-- ══════════════════════════════════════
-         JOIN VAZHAI
-    ══════════════════════════════════════ -->
-    <section id="join-vazhai" class="content-section">
-        <div class="page-hero">
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/beavolunteer.jpg?raw=true" alt="Volunteers">
-            <div class="page-hero-overlay"></div>
-            <div class="page-hero-text">
-                <h1>Join Vazhai</h1>
-                <div class="hero-sub">There is a role for you here</div>
-                <div class="hero-orgline">VAZHAI வாழை · An Educational NGO (Reg No. 296/05)</div>
-            </div>
+    <article class="prog-block">
+      <div class="prog-bar">
+        <span class="pb-type">Employee · Full-time · Field</span>
+        <h3 class="pb-name">Field Coordinators</h3>
+        <div class="pb-meta">Multi-school management<br>Weekly school visits<br>Program expansion<br>Salary: ₹25,000–35,000/mo</div>
+      </div>
+      <div class="prog-content">
+        <p class="prog-intro">A Field Coordinator is the connective tissue of the program. They travel to each school weekly, check that School Companions have what they need, and bring in outside resources — career experts, skill training partners, inter-school competitions. They also scout new government schools ready to join the program.</p>
+        <div class="task-grid">
+          <div class="task-item">Visit at least one school every week; review Companion reports on the ground <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Identify, visit, and document new rural schools for the program <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Train teachers and Companions in student level identification — three times a year <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Organise career guidance sessions in every partner school, every year <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Plan and run inter-school sports and cultural competitions <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Coordinate skill exposure visits for students — e.g., TVS plant tours <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Meet potential donors; support fundraising and CSR partnerships <span class="mtag">Mandatory</span></div>
+          <div class="task-item">Keep the Vazhai volunteer network updated on all field developments</div>
         </div>
+      </div>
+    </article>
 
-        <div class="page-body">
-            <div class="card gold-accent">
-                <h2>You don't need to quit your job or move to a forest.</h2>
-                <p>Vazhai works through three kinds of people — <strong>Volunteers</strong> who contribute their skills and time, <strong>School Companions</strong> who live and work in schools, and <strong>Field Coordinators</strong> who manage on-ground operations. You just need to show up, in whatever way you can.</p>
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeEGwx0oQ6Fk1GGHJP17l7Nrw99FF2CwqDa73NM8g8P19kXBQ/viewform?usp=header" class="cta-btn" target="_blank">Apply to Join Vazhai →</a>
-            </div>
-
-            <div class="role-grid">
-                <div class="role-card volunteer">
-                    <div class="role-icon">🤝</div>
-                    <div class="role-title">Volunteer</div>
-                    <span class="role-type">Part-time · Remote &amp; On-site</span>
-                    <div class="role-desc">Professionals from any field. Contribute skills, create materials, guide students. Minimum 1 day/month. Join weekly Friday calls.</div>
-                </div>
-                <div class="role-card companion">
-                    <div class="role-icon">🏫</div>
-                    <div class="role-title">School Companion</div>
-                    <span class="role-type">Full-time Employee · In-School</span>
-                    <div class="role-desc">Work full-time in a rural government school. Build student skills and support the headmaster daily. Salary: ₹15,000–₹20,000/month.</div>
-                </div>
-                <div class="role-card coordinator">
-                    <div class="role-icon">🗺️</div>
-                    <div class="role-title">Field Coordinator</div>
-                    <span class="role-type">Full-time Employee · Field</span>
-                    <div class="role-desc">Manage multiple schools and companions. Weekly visits, new school identification, career guidance coordination. Salary: ₹25,000–₹35,000/month.</div>
-                </div>
-            </div>
-
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/mentor1.jpg?raw=true" alt="Mentor" class="inline-img">
-
-
-            <div class="section-label">Ways to contribute</div>
-            <div class="card">
-                <h2>What Volunteers Work On</h2>
-                <p><strong>Level Identification Materials:</strong> Review and standardise student assessment sheets using the AID India framework — a focused 2–4 hour task, done remotely, needed before June 2026.</p>
-                <p><strong>School Identification Form:</strong> Design a structured field visit form — school profile, infrastructure, staff count, student strength, needs, contact details. A one-time contribution used by every coordinator going forward.</p>
-                <p><strong>Stage Speech Content:</strong> Create topic suggestions, sample scripts, and short demo videos for student stage speeches — directly used by School Companions week to week.</p>
-                <p><strong>Career Exposure Sessions:</strong> Share your professional journey in a 30-minute session — via video call or in person. Engineers, doctors, teachers, tradespeople — every profession opens a new horizon for children who have rarely met anyone from outside their village.</p>
-                <p><strong>Bridge Course Materials:</strong> Develop simple Tamil-medium catch-up content for students behind grade level — especially in reading comprehension and basic numeracy.</p>
-                <p><strong>ITI &amp; NCSC Preparation:</strong> Help 10th standard students apply for the Ashok Leyland ITI Integrated Course, or mentor students through National Children's Science Congress project work.</p>
-                <p><strong>Digital Skills for Companions:</strong> Help School Companions get comfortable with reporting tools, Google Forms for data collection, or basic spreadsheets — small training sessions with large operational benefit.</p>
-                <p><strong>Fundraising &amp; Donor Outreach:</strong> Use your professional network to identify donors, corporate CSR opportunities, or grant programs — and help us make the case for Vazhai.</p>
-                <p><strong>Photography &amp; Storytelling:</strong> Visiting a school? Document it — photos, short videos, student moments. Every authentic piece of content helps communicate our work to people who haven't been there.</p>
-                <div class="highlight">
-                    <strong>First Generation Graduates are especially welcome.</strong> Your journey — from where you started to where you are — is the most powerful story you can share with a child standing at the same crossroads.
-                </div>
-            </div>
-
-            <div class="section-label">Volunteers in action · 2025</div>
-            <div class="card">
-                <p>“Being part of Vazhai has made us feel connected to something meaningful. Even small things like joining calls and reviewing materials feel important when you know it helps keep the work moving.”<br><strong>— Narayanasamy &amp; Indhumathi</strong></p>
-
-                <p>“The school visits in the Denkanikottai area were not easy, but meeting the headmasters and seeing the situation directly gave us a better understanding of where support is really needed.”<br><strong>— Mani &amp; Patterson</strong></p>
-
-                <p>“Talking with the students at Kodakarai Secondary School was a memorable experience. Many of them had so many doubts about careers and higher studies, and they were genuinely curious to learn more.”<br><strong>— Priya</strong></p>
-
-                <p>“Putting up teacher-wanted posters across villages felt like a small effort from our side, but we knew it could help find the right people for the children and schools.”<br><strong>— Sathya &amp; Sindhu</strong></p>
-
-                <p>“The volunteer get-together reminded me how many people still care deeply about this work. It was nice to reconnect and see old volunteers becoming active again.”<br><strong>— Sridevi</strong></p>
-
-                <p>“Even a simple phone call can make someone feel supported. Staying in touch with Sevvanthi helped me understand the challenges School Companions face in remote areas.”<br><strong>— Pramila</strong></p>
-
-                <p>“Interviewing candidates for the Field Coordinator role made me realise how important the right people are for Vazhai’s future plans and expansion.”<br><strong>— Balakumar</strong></p>
-            </div>
-<!--            <div class="card">-->
-<!--                <p><strong>Narayanasamy &amp; Indhumathi</strong> joined Vazhai and have been contributing their time to keep the volunteer network active — joining calls, reviewing materials, and keeping the momentum going between field visits.</p>-->
-<!--                <p><strong>Mani & Patterson</strong> did a field visit to schools in the Denkanikottai area for school identification — covering rough forest routes to meet headmasters, assess school needs, and gather the ground-level information that helps Vazhai decide where to go next.</p>-->
-<!--                <p><strong>Priya</strong> conducted the career guidance session at Kodakarai Secondary School — sitting with students, answering their questions about careers and opportunities, and opening up a conversation many of them had never had before.</p>-->
-<!--                <p><strong>Sathya & Sindhu</strong> designed and arranged for teacher-wanted posters to be put up across villages in the area — a simple but important step in finding the right people to become School Companions in the community.</p>-->
-<!--                <p><strong>Sridevi</strong> organised the Vazhai volunteer get-together, which brought together existing volunteers, rekindled connections, and got several members who had stepped back actively involved in the new school support work.</p>-->
-<!--                <p><strong>Pramila</strong> has been in regular touch with Sevvanthi, our School Companion at Kodakarai — talking through challenges, offering guidance, and making sure she feels supported even when the nearest Vazhai volunteer is hours away.</p>-->
-<!--                <p><strong>Balakumar</strong> led the interviews for the Field Coordinator position — a critical role that will oversee multiple schools once we expand in 2026, and one that needed careful thought to get right.</p>-->
-<!--            </div>-->
-
-            <div class="card">
-                <h2>How to Get Started</h2>
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-num">1</div>
-                        <div class="step-content">
-                            <strong>Apply Online</strong>
-                            <p>Fill out our join form — takes 5 minutes</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">2</div>
-                        <div class="step-content">
-                            <strong>Orientation Call</strong>
-                            <p>Join a short onboarding call to understand Vazhai's work and where you fit in</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">3</div>
-                        <div class="step-content">
-                            <strong>First Contribution</strong>
-                            <p>We'll match you to a specific task — not a vague nudge, but something concrete to do in your first week</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">4</div>
-                        <div class="step-content">
-                            <strong>Weekly Calls</strong>
-                            <p>Join our Friday status calls — hear what's happening on the ground and decide how you want to deepen your involvement</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <article class="prog-block">
+      <div class="prog-bar">
+        <span class="pb-type">Volunteer · Remote or On-site</span>
+        <h3 class="pb-name">Vazhai Volunteers</h3>
+        <div class="pb-meta">Min. 1 day per month<br>Mostly remote<br>Open to all professionals<br>Friday calls weekly</div>
+      </div>
+      <div class="prog-content">
+        <p class="prog-intro">Volunteers power everything that the field team cannot do alone. They create the materials School Companions use every day, open doors to careers students have never heard of, and expand the program's reach through their own professional networks. No teaching experience required — just your skills and a few hours a month.</p>
+        <div class="task-grid">
+          <div class="task-item">Build and standardise student assessment materials using the AID India framework</div>
+          <div class="task-item">Design school identification and field visit forms for Coordinators</div>
+          <div class="task-item">Develop stage speech guides and confidence-building content for Companions</div>
+          <div class="task-item">Lead career talks and exposure sessions — online or in person</div>
+          <div class="task-item">Mentor students through National Children's Science Congress (NCSC) projects</div>
+          <div class="task-item">Coach 10th standard students for the Ashok Leyland ITI Integrated Course</div>
+          <div class="task-item">Run spoken English and communication skill sessions</div>
+          <div class="task-item">Support fundraising, CSR outreach, and payroll giving programs for corporate partners</div>
         </div>
-    </section>
+      </div>
+    </article>
 
-    <!-- ══════════════════════════════════════
-         DONATION
-    ══════════════════════════════════════ -->
-    <section id="donation" class="content-section">
-        <div class="page-hero">
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/Donation.jpg?raw=true" alt="Donation">
-            <div class="page-hero-overlay"></div>
-            <div class="page-hero-text">
-                <h1>Support Vazhai</h1>
-                <div class="hero-sub">Your generosity changes lives</div>
-                <div class="hero-orgline">VAZHAI வாழை · An Educational NGO (Reg No. 296/05)</div>
-            </div>
+    <div class="geo-block">
+      <h2 class="geo-lbl">Where<br>We<br>Work</h2>
+      <div class="geo-body">
+        <p>Between 2005 and 2024, Vazhai served students in <strong>Dharmapuri</strong> and <strong>Villupuram</strong> districts. In 2025, we expanded into one of Tamil Nadu's most underserved areas: the forest and hill region beyond <strong>Aiyur</strong>, near Denkanikottai in <strong>Krishnagiri district</strong> — where some villages sit 20 to 30 km inside forest routes with little or no public transport.</p>
+        <p>We began with Kodakarai Secondary School. By the end of 2026, we aim to have <strong>10 rural government schools</strong> covered. Each new school means a School Companion present every single school day — not a workshop that comes and goes, but a person who stays.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="join-vazhai" class="pg" aria-label="Join Vazhai">
+    <img src="images/beavolunteer.jpg" alt="Volunteer engaging with rural students in Tamil Nadu, demonstrating how to join Vazhai NGO" class="join-hero" loading="lazy" decoding="async">
+    <header class="join-mh">
+      <div class="join-bg">JOIN</div>
+      <div class="join-overlay">
+        <h2 class="join-ov-title">Your skills belong<br>in a classroom</h2>
+        <div class="join-ov-sub">Vazhai · Volunteer, School Companion, or Field Coordinator</div>
+      </div>
+    </header>
+
+    <div class="join-roles">
+      <article class="jr">
+        <div class="jr-num">01</div>
+        <span class="jr-kind">Part-time · Mostly Remote</span>
+        <h3 class="jr-title">Volunteer</h3>
+        <div class="jr-body">Any working professional can contribute. Give one day a month — create learning materials, run a career session online, or mentor students in reading and communication. No field travel required for most tasks.</div>
+        <div class="jr-sal">Your time and expertise</div>
+      </article>
+      <article class="jr">
+        <div class="jr-num">02</div>
+        <span class="jr-kind">Full-time Employee · In-School</span>
+        <h3 class="jr-title">School Companion</h3>
+        <div class="jr-body">Be present every school day in a government school in the Krishnagiri forest area. Help students read, write, and speak with confidence. Support the headmaster. Build trust with families. A role for someone from — or close to — the local community.</div>
+        <div class="jr-sal">₹15,000–₹20,000 / month</div>
+      </article>
+      <article class="jr">
+        <div class="jr-num">03</div>
+        <span class="jr-kind">Full-time Employee · Field</span>
+        <h3 class="jr-title">Field Coordinator</h3>
+        <div class="jr-body">Visit multiple schools weekly, support School Companions, and identify new rural government schools ready for the program. Coordinate career guidance, skill visits, and inter-school events. A role for someone who leads well without a fixed desk.</div>
+        <div class="jr-sal">₹25,000–₹35,000 / month</div>
+      </article>
+    </div>
+
+    <div class="vol-split">
+      <article class="vc">
+        <h3 class="vc-title">What Volunteers Actually Do</h3>
+        <div class="vtask"><div class="vtask-t">Student Assessment Materials</div><div class="vtask-b">Review and standardise student level identification sheets using the AID India framework. A focused 2–4 hour task, done remotely. Needed before June 2026.</div></div>
+        <div class="vtask"><div class="vtask-t">Career Exposure Sessions</div><div class="vtask-b">Share what you do in a 30-minute call with students. Engineer, nurse, chef, accountant — any profession is valuable to a child who has never met someone from outside their village.</div></div>
+        <div class="vtask"><div class="vtask-t">Bridge Course Content</div><div class="vtask-b">Create simple Tamil-medium catch-up lessons for students who are one or two grades behind. Plain language, practical examples.</div></div>
+        <div class="vtask"><div class="vtask-t">ITI &amp; NCSC Support</div><div class="vtask-b">Help 10th standard students apply for the Ashok Leyland ITI Integrated Course, or guide them through National Children's Science Congress project work.</div></div>
+        <div class="vtask"><div class="vtask-t">Fundraising &amp; CSR Outreach</div><div class="vtask-b">Connect Vazhai to donors, corporate volunteering programs, payroll giving schemes, or CSR education projects in India. Your network is our reach.</div></div>
+      </article>
+      <article class="vc">
+        <h3 class="vc-title">What Volunteers Say · 2025</h3>
+        <div class="vquote"><div class="vq-t">"Being part of Vazhai makes us feel connected to something real. Even joining calls and reviewing materials matters — because you know it keeps the work going on the ground."</div><div class="vq-a">Narayanasamy &amp; Indhumathi · Volunteers</div></div>
+        <div class="vquote"><div class="vq-t">"The school visits past Denkanikottai were tough to reach. But seeing the headmasters and understanding the situation directly — that gave us clarity nothing else could."</div><div class="vq-a">Mani &amp; Patterson · Volunteers</div></div>
+        <div class="vquote"><div class="vq-t">"The students at Kodakarai had so many questions about careers. You could see they were hungry for information — just no one had brought it to them before."</div><div class="vq-a">Priya · Volunteer</div></div>
+        <div class="vquote"><div class="vq-t">"A regular phone call with Sevvanthi taught me more about what a School Companion really does than any report could. She's doing extraordinary work in an ordinary place."</div><div class="vq-a">Pramila · Volunteer</div></div>
+        <img src="images/activity23.jpg" alt="Vazhai volunteers working closely with rural students in Tamil Nadu" class="mentor-img" loading="lazy" decoding="async">
+      </article>
+    </div>
+
+    <div class="steps-bar">
+      <div class="step"><div class="step-n">01</div><h4 class="step-t">Apply Online</h4><div class="step-b">Fill out our join form — takes five minutes. Tell us your skills and availability. We read every response.</div></div>
+      <div class="step"><div class="step-n">02</div><h4 class="step-t">Orientation Call</h4><div class="step-b">We'll walk you through the program, answer your questions, and figure out where you fit best.</div></div>
+      <div class="step"><div class="step-n">03</div><h4 class="step-t">Your First Task</h4><div class="step-b">We assign you something concrete in your first week — a specific output, not a vague invite to "help out."</div></div>
+      <div class="step"><div class="step-n">04</div><h4 class="step-t">Friday Calls</h4><div class="step-b">Every Friday, the whole Vazhai network connects. Hear from the field. Share what you did. Stay part of the work.</div></div>
+    </div>
+
+    <div class="join-apply">
+      <div>
+        <h2 class="ja-t">Ready to start?</h2>
+        <div class="ja-s">We'll get back to you within a few days of your application.</div>
+      </div>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSeEGwx0oQ6Fk1GGHJP17l7Nrw99FF2CwqDa73NM8g8P19kXBQ/viewform?usp=header" target="_blank" class="cta-btn filled">Apply to Join Vazhai →</a>
+    </div>
+  </section>
+
+  <section id="donation" class="pg" aria-label="Donate to Vazhai NGO">
+    <img src="images/Donation.jpg" alt="Donation impact: A student in a rural Tamil Nadu government school supported by Vazhai NGO" class="don-hero" loading="lazy" decoding="async">
+    <header class="don-mh">
+      <span class="don-ey">Donate to Rural Education · Tamil Nadu &amp; India</span>
+      <h2 class="don-title">Support<br>Vazhai</h2>
+      <p class="don-tagline">A School Companion earns ₹15,000 a month. In return, children in a forest-area government school have a trained adult present every school day — someone who tracks their progress, follows up when they're absent, and refuses to let them fall through the cracks. Your donation funds that person. Nothing more, nothing less.</p>
+    </header>
+    <div class="don-note">Note: Vazhai does not currently hold 80G exemption. Donations to this education NGO are not eligible for income tax deduction.</div>
+
+    <div class="tiers">
+      <article class="tier-row"><div class="tier-amt">₹500 / mo</div><div class="tier-what">Covers <strong>one student's study materials for an entire year</strong> — books, stationery, and learning resources they would otherwise go without.</div></article>
+      <article class="tier-row"><div class="tier-amt">₹1,500 / mo</div><div class="tier-what">Pays for <strong>one field visit to a remote government school</strong> — fuel, transport, and coordination costs for a week of on-ground work in Krishnagiri.</div></article>
+      <article class="tier-row feat"><div class="tier-amt">₹5,000 / mo</div><div class="tier-what"><strong>Partially sponsors a School Companion for a month</strong> — contributing directly to the salary of a person who shows up for students every single day.</div></article>
+      <article class="tier-row"><div class="tier-amt">₹15,000 / mo</div><div class="tier-what"><strong>Fully funds one School Companion for one month</strong> — one trained person, one rural school, every school day of the year.</div></article>
+      <article class="tier-row"><div class="tier-amt">₹2–3L / yr</div><div class="tier-what"><strong>Sponsors an entire school for a year</strong> — Companion salary, field coordination, study materials, career guidance sessions, and inter-school events for one rural school community.</div></article>
+    </div>
+
+    <div class="don-breakdown">
+      <div class="db-item"><h3 class="db-lbl">School Companion Salary</h3><div class="db-amt">₹15–20K</div><div class="db-desc">Per month, per school. Present every single school day — full year.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Field Coordinator Salary</h3><div class="db-amt">₹25–35K</div><div class="db-desc">Per month. Manages Companions across multiple schools; weekly visits and training.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Travel &amp; Field Costs</h3><div class="db-amt">Variable</div><div class="db-desc">Fuel, transport, and stay for reaching remote hill schools in Krishnagiri.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Materials &amp; Training</h3><div class="db-amt">Variable</div><div class="db-desc">Student assessment kits, study resources, and career guidance sessions.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Student Programs</h3><div class="db-amt">Variable</div><div class="db-desc">NCSC science projects, ITI preparation, inter-school competitions, and stage speech activities.</div></div>
+      <div class="db-item"><h3 class="db-lbl">Program Expansion</h3><div class="db-amt">10 Schools · 2026</div><div class="db-desc">Setting up and sustaining each new rural government school with a full Companion and Coordinator.</div></div>
+    </div>
+
+    <div class="don-widgets">
+      <article>
+        <h3 class="dw-title">One-Time Donation</h3>
+        <div class="dw-sub">Any amount. Goes directly towards School Companions, field visits, and student materials. Every rupee is tracked and reported.</div>
+        <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_Qwp1n9PkcR8tKi" async></script></form>
+      </article>
+      <article>
+        <div class="dw-toggle" onclick="toggleMonthly()" aria-expanded="false" aria-controls="dwbody">
+          <h3 class="dw-title">Monthly Giving</h3>
+          <div class="dw-chev" id="dwchev">▾</div>
         </div>
-
-        <div class="page-body">
-
-            <div class="opening-story" style="margin-bottom:22px;">
-                <div class="opening-story-text">
-                    A School Companion earns ₹15,000 a month. For that, a child in a remote hill village has someone present every single school day — someone who knows their name, tracks their progress, and refuses to let them fall behind.
-                </div>
-                <div class="opening-story-context">
-                    That is what your donation funds. Not an event. Not a brochure. A person. Showing up. Every day.
-                </div>
-                <span class="opening-story-tag">✦ Where your money goes — concretely</span>
-            </div>
-
-            <!-- IMPACT TIERS — concrete anchoring -->
-            <div class="section-label">What your contribution does</div>
-            <div class="impact-tiers">
-                <div class="impact-tier">
-                    <div class="impact-amount">₹500 / month</div>
-                    <div class="impact-what">Funds <strong>one student's study materials for a year</strong> — books, stationery, and resources they cannot otherwise access.</div>
-                </div>
-                <div class="impact-tier">
-                    <div class="impact-amount">₹1,500 / month</div>
-                    <div class="impact-what">Covers <strong>one field visit to a remote hill school</strong> — fuel, transport, and coordination for a week of on-ground work.</div>
-                </div>
-                <div class="impact-tier featured">
-                    <div class="impact-amount">₹5,000 / month</div>
-                    <div class="impact-what"><strong>Co-sponsors a School Companion for a month</strong> — contributing to the salary of the person present in a school every day, building foundational skills in children.</div>
-                </div>
-                <div class="impact-tier">
-                    <div class="impact-amount">₹15,000 / month</div>
-                    <div class="impact-what"><strong>Fully funds one School Companion for a month</strong> — one dedicated person, one school, every school day.</div>
-                </div>
-                <div class="impact-tier">
-                    <div class="impact-amount">₹2–3 Lakhs / year</div>
-                    <div class="impact-what"><strong>Adopts an entire school for a year</strong> — companion salary, materials, field coordination, career guidance, and inter-school events for one school community.</div>
-                </div>
-            </div>
-
-            <div class="highlight">
-                <strong>We are fully transparent about costs.</strong> School Companion: ₹15,000–20,000/month. Field Coordinator: ₹25,000–35,000/month. Travel &amp; training: variable. Every rupee is tracked and reported back to our donor community.
-            </div>
-
-            <!-- FUND BREAKDOWN -->
-            <div class="section-label">Full cost breakdown</div>
-            <div class="fund-grid">
-                <div class="fund-item highlight-item">
-                    <div class="fund-label">School Companion Salary</div>
-                    <div class="fund-amount">₹15,000–20,000</div>
-                    <div class="fund-desc">Per month, per school. Full-time — present every school day.</div>
-                </div>
-                <div class="fund-item highlight-item">
-                    <div class="fund-label">Field Coordinator Salary</div>
-                    <div class="fund-amount">₹25,000–35,000</div>
-                    <div class="fund-desc">Per month. Manages multiple schools, weekly visits, training, and coordination.</div>
-                </div>
-                <div class="fund-item">
-                    <div class="fund-label">Travel &amp; Field Expenses</div>
-                    <div class="fund-amount">Variable</div>
-                    <div class="fund-desc">Fuel, transport, accommodation for reaching remote hill and forest area schools.</div>
-                </div>
-                <div class="fund-item">
-                    <div class="fund-label">Training &amp; Materials</div>
-                    <div class="fund-amount">Variable</div>
-                    <div class="fund-desc">Level identification kits, study materials, career guidance sessions, expert visits, inter-school events.</div>
-                </div>
-                <div class="fund-item">
-                    <div class="fund-label">Student Sessions</div>
-                    <div class="fund-amount">Variable</div>
-                    <div class="fund-desc">NCSC science projects, ITI coaching, stage confidence activities, skill development workshops.</div>
-                </div>
-                <div class="fund-item">
-                    <div class="fund-label">School Expansion</div>
-                    <div class="fund-amount">10 Schools · 2026</div>
-                    <div class="fund-desc">Onboarding and sustaining each new school with a companion, materials, and coordinator coverage.</div>
-                </div>
-            </div>
-
-            <div class="section-label">Make a Contribution</div>
-            <div class="highlight" style="margin-top:10px; margin-bottom:16px;">
-                <strong>Note:</strong> Vazhai currently does not have 80G exemption. Donations are not eligible for tax exemption.
-            </div>
-
-            <div class="donate-box donate-onetime">
-                <div class="donate-box-header">
-                    <span class="donate-icon">✦</span>
-                    <div>
-                        <div class="donate-box-title">One-Time Donation</div>
-                        <div class="donate-box-sub">Any amount. Directly funds companions, materials, and field work. (No 80G tax exemption available.)</div>
-                    </div>
-                </div>
-                <div class="donate-widget-wrap">
-                    <form>
-                        <script src="https://checkout.razorpay.com/v1/payment-button.js"
-                            data-payment_button_id="pl_Qwp1n9PkcR8tKi" async></script>
-                    </form>
-                </div>
-            </div>
-
-            <div class="donate-box donate-monthly" id="monthly-box">
-                <div class="donate-box-header donate-toggle" onclick="toggleMonthly()">
-                    <span class="donate-icon">↻</span>
-                    <div style="flex:1;">
-                        <div class="donate-box-title">Monthly Subscription</div>
-                        <div class="donate-box-sub">The most impactful way to help — lets us plan and commit ahead. (No 80G tax exemption available.)</div>
-                    </div>
-                    <span class="donate-chevron" id="monthly-chevron">▾</span>
-                </div>
-                <div class="donate-collapsible" id="monthly-body">
-                    <div class="donate-widget-wrap">
-                        <form>
-                            <script src="https://cdn.razorpay.com/static/widget/subscription-button.js"
-                                    data-subscription_button_id="pl_SnE7xSxS7tFLxU"
-                                    data-button_theme="brand-color" async></script>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stats-row three">
-                <div class="stat-box"><div class="stat-num">500+</div><div class="stat-label">Lives Touched</div></div>
-                <div class="stat-box"><div class="stat-num">19+</div><div class="stat-label">Years Active</div></div>
-                <div class="stat-box"><div class="stat-num">10</div><div class="stat-label">Schools Goal '26</div></div>
-            </div>
-
-            <!-- Share off-ramp -->
-            <div class="share-block">
-                <h3>Can't donate right now? Share instead.</h3>
-                <p>Knowing someone who might donate or volunteer is just as valuable. It takes 10 seconds.</p>
-                <div class="share-btns">
-                    <a class="share-btn whatsapp"
-                       href="https://wa.me/?text=I%20came%20across%20Vazhai%20NGO%20%E2%80%94%20they%20place%20dedicated%20companions%20in%20remote%20government%20schools%20in%20Tamil%20Nadu%20to%20support%20children%20who%20have%20no%20other%20help.%20Worth%20looking%20at%3A%20https%3A%2F%2Fvazhai.in"
-                       target="_blank">📱 Share on WhatsApp</a>
-                    <button class="share-btn copy" onclick="copyLink('share-copied-donate')">🔗 Copy Link</button>
-                </div>
-                <div class="share-copied" id="share-copied-donate">✓ Link copied!</div>
-            </div>
-
+        <div class="dw-sub">The most effective way to support a rural education NGO — predictable monthly income lets us hire, plan, and commit to schools a full year ahead.</div>
+        <div class="dw-body" id="dwbody">
+          <form id="rzp-sub-form"><script src="https://cdn.razorpay.com/static/widget/subscription-button.js"
+                                          data-subscription_button_id="pl_SnE7xSxS7tFLxU"
+                                          data-button_theme="brand-color" async></script></form>
         </div>
-    </section>
+      </article>
+    </div>
 
-    <!-- ══════════════════════════════════════
-         CONTACT
-    ══════════════════════════════════════ -->
-    <section id="contact-us" class="content-section">
-        <div class="page-hero">
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity3.jpg?raw=true" alt="Contact">
-            <div class="page-hero-overlay"></div>
-            <div class="page-hero-text">
-                <h1>Contact Us</h1>
-                <div class="hero-sub">We'd love to hear from you</div>
-                <div class="hero-orgline">VAZHAI வாழை · An Educational NGO (Reg No. 296/05)</div>
-            </div>
+    <div class="don-share">
+      <span class="don-share-lbl">Can't donate right now? Share Vazhai instead.</span>
+      <a class="s-btn" href="https://wa.me/?text=I%20came%20across%20Vazhai%20NGO%20%E2%80%94%20they%20place%20dedicated%20companions%20in%20remote%20government%20schools%20in%20Tamil%20Nadu.%20https%3A%2F%2Fvazhai.in" target="_blank">WhatsApp</a>
+      <button class="s-btn" onclick="copyLink('c2')">Copy Link</button>
+      <span class="copied" id="c2" style="color:var(--gold-lt);">Copied.</span>
+    </div>
+  </section>
+
+  <section id="contact-us" class="pg" aria-label="Contact Vazhai NGO">
+    <img src="images/activity3.jpg" alt="Contact Vazhai NGO to support rural education projects in Tamil Nadu" class="ct-hero" loading="lazy" decoding="async">
+    <header class="ct-mh">
+      <h2 class="ct-title">Contact<br>Us</h2>
+      <div class="ct-reach">
+        <p>Want to volunteer, donate, explore CSR education projects in Tamil Nadu, or simply learn more about Vazhai? Use any of the channels below — or fill our Join Form to get the conversation started.</p>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeEGwx0oQ6Fk1GGHJP17l7Nrw99FF2CwqDa73NM8g8P19kXBQ/viewform?usp=header" target="_blank" class="cta-btn filled">Join Form →</a>
+        <a href="mailto:vazhai.connect@gmail.com" class="cta-btn" style="display:inline-block;margin-top:8px;">Email Us →</a>
+      </div>
+    </header>
+    <div class="ct-grid">
+      <div class="ct-cell"><h3 class="cc-lbl">Email</h3><div class="cc-val"><a href="mailto:vazhai.connect@gmail.com">vazhai.connect@gmail.com</a></div></div>
+      <div class="ct-cell"><h3 class="cc-lbl">Website</h3><div class="cc-val"><a href="https://vazhai.in" target="_blank">vazhai.in</a></div></div>
+      <div class="ct-cell"><h3 class="cc-lbl">Facebook</h3><div class="cc-val"><a href="https://facebook.com/vazhai" target="_blank">facebook.com/vazhai</a></div></div>
+      <div class="ct-cell"><h3 class="cc-lbl">Registration</h3><div class="cc-val">NGO Reg. No. 296/05, Tamil Nadu</div></div>
+      <div class="ct-cell" style="grid-column:span 2">
+        <h3 class="cc-lbl">Registered Address</h3>
+        <address class="cc-val" style="font-style:normal;"># 341/157, T.H. Road, Kaladipet, Thiruvottiyur, Chennai – 600 019, Tamil Nadu, India</address>
+      </div>
+    </div>
+    <div class="visit-block">
+      <h3 class="vb-lbl">Visit Our Schools</h3>
+      <div class="vb-body">
+        <p>We welcome visits from donors, corporate partners, and anyone who wants to see rural education work up close. If you'd like to visit our school programs in the Denkanikottai–Aiyur area of Krishnagiri, contact us in advance to plan the trip.</p>
+        <p>A field visit is the fastest way to understand what this work actually looks like — the terrain, the schools, the students, and the School Companion who shows up for them every day.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="vazhai-events" class="pg" aria-label="Vazhai NGO Events">
+    <img src="images/activity12a.jpg" alt="Vazhai NGO field events for government school students in rural Tamil Nadu" class="ev-hero" loading="lazy" decoding="async">
+    <header class="ev-mh">
+      <h2 class="ev-title">Vazhai Events</h2>
+      <div class="ev-sub">On the ground and online · 2025</div>
+    </header>
+    <div class="ev-body">
+      <article class="ev-col">
+        <h3 class="evg-head">Field Events</h3>
+        <div class="ev-entry"><div class="ev-date">Aug 2025</div><div><h4 class="ev-ttl">School Identification — Krishnagiri District</h4><div class="ev-desc">Planned visits to assess rural government schools in the Krishnagiri area for inclusion in the School Companion program.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Jul 2025</div><div><h4 class="ev-ttl">School Identification — Aiyur Forest Area</h4><div class="ev-desc">Visited government schools near the Ayyur forest in Denkanikottai. Met headmasters, assessed student needs, and gathered field data.</div></div></div>
+        <h3 class="evg-head">Recurring · On-site</h3>
+        <div class="ev-entry"><div class="ev-date">Monthly</div><div><h4 class="ev-ttl">Life Skills Workshops</h4><div class="ev-desc">Sessions on communication, leadership, digital literacy, and career awareness — run by Vazhai volunteers at partner schools in Dharmapuri and Villupuram.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Quarterly</div><div><h4 class="ev-ttl">Student &amp; Family Visits</h4><div class="ev-desc">Field visits to understand each student's home situation, build family trust, and identify anything pulling them away from school.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">3× / Year</div><div><h4 class="ev-ttl">Student Level Assessments</h4><div class="ev-desc">Structured reading, writing, and speaking assessments at the start, midpoint, and end of the academic year — to measure growth and adjust support.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Annual</div><div><h4 class="ev-ttl">Career Guidance Sessions</h4><div class="ev-desc">In-person career exposure sessions at every partner school — covering higher education options, vocational training, and real-world career paths.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Annual</div><div><h4 class="ev-ttl">Inter-School Competition</h4><div class="ev-desc">Sports and cultural competitions — speech, writing, and more — across schools. Planned carefully to work around the challenging terrain of hill-area schools.</div></div></div>
+      </article>
+      <article class="ev-col">
+        <h3 class="evg-head">Recurring · Online</h3>
+        <div class="ev-entry"><div class="ev-date">Monthly</div><div><h4 class="ev-ttl">Volunteer Connect</h4><div class="ev-desc">The full Vazhai volunteer group comes together — in person or online — to share field updates, reflect on what is working, and plan the month ahead.</div></div></div>
+        <div class="ev-entry"><div class="ev-date">Every Friday</div><div><h4 class="ev-ttl">Weekly Status Call</h4><div class="ev-desc">School Companions, Field Coordinators, and volunteers check in together. Open to new volunteers who want to understand the work before committing.</div></div></div>
+        <div class="ev-cta">
+          <h3 class="ev-cta-h">Join us at the next event.</h3>
+          <div class="ev-cta-b">Our Friday calls are the easiest way in. No application needed — just show up, listen, and ask questions. If you feel the work is for you, we'll take it from there.</div>
+          <button class="ev-btn menu-item" data-section="join-vazhai">Join Vazhai →</button>
+          <button class="ev-btn muted menu-item" data-section="contact-us">Contact Us →</button>
         </div>
-
-        <div class="page-body">
-            <div class="card">
-                <h2>Get in Touch</h2>
-                <p>Whether you want to volunteer, join as a School Companion, partner with us as a donor, or simply learn more about Vazhai — we'd love to hear from you.</p>
-                <p>Kindly <a href="https://docs.google.com/forms/d/e/1FAIpQLSeEGwx0oQ6Fk1GGHJP17l7Nrw99FF2CwqDa73NM8g8P19kXBQ/viewform?usp=header" target="_blank">fill our Join Form</a> or reach us through any of the channels below.</p>
-                <a href="mailto:vazhai.connect@gmail.com" class="cta-btn" style="margin-top:14px;">Email Us →</a>
-            </div>
-
-            <div class="card">
-                <h2>Our Details</h2>
-                <p><strong>Email:</strong> <a href="mailto:vazhai.connect@gmail.com">vazhai.connect@gmail.com</a></p>
-                <p><strong>Website:</strong> <a href="https://vazhai.in" target="_blank">vazhai.in</a></p>
-                <p><strong>Facebook:</strong> <a href="https://facebook.com/vazhai" target="_blank">facebook.com/vazhai</a></p>
-                <p><strong>Address:</strong> #&nbsp;341/157, T.H.Road, Kaladipet, Thiruvottiyur, Chennai – 600&nbsp;019</p>
-                <div class="highlight" style="margin-top:14px;">
-                    Vazhai is run entirely by working volunteers — there is no full-time admin staff at the Chennai office. The best way to reach us quickly is by email or through the Join Form.
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Visit Our Programs</h2>
-                <p>We welcome visitors to observe our work firsthand. If you're interested in visiting school locations in the Denkanikottai–Aiyur forest area, please contact us in advance to coordinate. These trips offer a rare opportunity to see the terrain, meet students and the School Companion, and understand first-hand what sustained presence in a remote school looks like.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- ══════════════════════════════════════
-         EVENTS
-    ══════════════════════════════════════ -->
-    <section id="vazhai-events" class="content-section">
-        <div class="page-hero">
-            <img src="https://github.com/anbusivam/vazhaiimages/blob/main/images/activity12a.jpg?raw=true" alt="Event">
-            <div class="page-hero-overlay"></div>
-            <div class="page-hero-text">
-                <h1>Vazhai Events</h1>
-                <div class="hero-sub">What we've been up to</div>
-                <div class="hero-orgline">VAZHAI வாழை · An Educational NGO (Reg No. 296/05)</div>
-            </div>
-        </div>
-
-        <div class="page-body">
-            <div class="section-label">Recent · Adhoc Events</div>
-            <div class="card">
-                <div class="event-item">
-                    <div class="event-date">August 2025</div>
-                    <div class="event-title">School Identification — Krishnagiri Region</div>
-                    <div class="event-desc">Planning to visit remote schools in the Krishnagiri area to assess fit for the new school support model.</div>
-                </div>
-                <div class="event-item">
-                    <div class="event-date">July 2025</div>
-                    <div class="event-title">School Identification — Aiyur Forest Area</div>
-                    <div class="event-desc">Visited schools near Ayyur forest in the Denkanikottai area. Met headmasters, assessed needs, and gathered data for school identification forms.</div>
-                </div>
-            </div>
-
-            <div class="section-label">On-site Events · Recurring</div>
-            <div class="card">
-                <div class="event-item">
-                    <div class="event-date">Monthly</div>
-                    <div class="event-title">Life Skills Development Workshops</div>
-                    <div class="event-desc">Workshops covering communication, leadership, digital literacy, and career guidance at partner schools in Dharmapuri and Villupuram.</div>
-                </div>
-                <div class="event-item">
-                    <div class="event-date">Quarterly</div>
-                    <div class="event-title">Student &amp; Parent Visits</div>
-                    <div class="event-desc">Field visits to meet students and their parents, understand their home situation, and strengthen community relationships.</div>
-                </div>
-                <div class="event-item">
-                    <div class="event-date">3× a Year</div>
-                    <div class="event-title">Student Level Identification</div>
-                    <div class="event-desc">Structured assessments at the beginning, middle and end of the academic year to measure reading, writing and speaking progress.</div>
-                </div>
-                <div class="event-item">
-                    <div class="event-date">Annual</div>
-                    <div class="event-title">Career Guidance Sessions</div>
-                    <div class="event-desc">Career exposure sessions at every school — covering higher education, vocational training, and professional opportunities.</div>
-                </div>
-                <div class="event-item">
-                    <div class="event-date">Annual</div>
-                    <div class="event-title">Inter-School Competition</div>
-                    <div class="event-desc">Sports and cultural competitions (speech, writing, etc.) across schools — planned carefully given the challenging hill terrain.</div>
-                </div>
-            </div>
-
-            <div class="section-label">Off-site &amp; Online</div>
-            <div class="card">
-                <div class="event-item">
-                    <div class="event-date">Monthly</div>
-                    <div class="event-title">Volunteer Connect</div>
-                    <div class="event-desc">Volunteers meet — in person or online — to share experiences, reflect on progress, and plan the coming month's activities.</div>
-                </div>
-                <div class="event-item">
-                    <div class="event-date">Weekly · Every Friday</div>
-                    <div class="event-title">Status Update Call</div>
-                    <div class="event-desc">All volunteers and School Companions share updates, discuss open issues, and align on the week ahead. New volunteers are welcome to join and listen in.</div>
-                </div>
-            </div>
-
-            <div class="action-bar">
-                <h3>Want to be part of the next event?</h3>
-                <p>Join our weekly Friday calls or sign up as a volunteer — the door is always open.</p>
-                <div class="action-bar-btns">
-                    <button class="action-bar-btn primary menu-item" data-section="join-vazhai">Join Vazhai →</button>
-                    <button class="action-bar-btn secondary menu-item" data-section="contact-us">Contact Us →</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
+      </article>
+    </div>
+  </section>
 </main>
 
-<!-- ═══ MOBILE STICKY BOTTOM BAR ═══ -->
-<div class="bottom-bar">
-    <button class="bottom-bar-btn" onclick="navigateTo('what-we-do')">
-        <span class="bottom-bar-icon">📚</span><span>What We Do</span>
-    </button>
-    <button class="bottom-bar-btn" onclick="navigateTo('contact-us')">
-        <span class="bottom-bar-icon">✉️</span><span>Contact</span>
-    </button>
-    <button class="bottom-bar-btn" onclick="navigateTo('join-vazhai')">
-        <span class="bottom-bar-icon">🤝</span><span>Join Us</span>
-    </button>
-    <button class="bottom-bar-btn" onclick="navigateTo('donation')">
-        <span class="bottom-bar-icon">💛</span><span>Donate</span>
-    </button>
-</div>
-
 <script>
-    const allItems = document.querySelectorAll('.menu-item');
-    const sections = document.querySelectorAll('.content-section');
-
-    function navigateTo(target) {
-        history.pushState(null, '', '#' + target);
-        activateSection(target);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Per-section SEO metadata — title, description, canonical path
+  const sectionMeta = {
+    'home': {
+      title: 'Vazhai NGO — Rural Education NGO Tamil Nadu | Krishnagiri, Dharmapuri, Villupuram',
+      description: 'Vazhai is an impact-focused education NGO placing full-time School Companions in rural government schools across Tamil Nadu — Krishnagiri, Dharmapuri, and Villupuram. Donate, volunteer, or sponsor a school.',
+      path: '/'
+    },
+    'who-we-are': {
+      title: 'Who We Are — Vazhai NGO | Rural Education Tamil Nadu Since 2005',
+      description: 'Founded in April 2005 by first-generation graduates from Presidency College Chennai, Vazhai has supported 500+ students across Dharmapuri and Villupuram. Learn our story, values, and the meaning behind our name.',
+      path: '/#who-we-are'
+    },
+    'what-we-do': {
+      title: 'What We Do — School Companions & Field Coordinators | Vazhai NGO',
+      description: 'Vazhai places full-time School Companions and Field Coordinators in remote government schools in Krishnagiri, Tamil Nadu. We target 10 schools by 2026. Learn how our program works.',
+      path: '/#what-we-do'
+    },
+    'join-vazhai': {
+      title: 'Join Vazhai — Volunteer, School Companion or Field Coordinator | Tamil Nadu NGO',
+      description: 'Volunteer remotely with Vazhai NGO, or apply for a full-time School Companion (₹15–20K/mo) or Field Coordinator (₹25–35K/mo) role in Krishnagiri, Tamil Nadu. Apply today.',
+      path: '/#join-vazhai'
+    },
+    'donation': {
+      title: 'Donate to Vazhai NGO — Support Rural Education in Tamil Nadu',
+      description: '₹15,000/month fully funds a School Companion in a rural Tamil Nadu government school. Support Vazhai NGO with a one-time or monthly donation. Every rupee is tracked and reported.',
+      path: '/#donation'
+    },
+    'contact-us': {
+      title: 'Contact Vazhai NGO — Rural Education, Tamil Nadu | Email & Address',
+      description: 'Contact Vazhai NGO to volunteer, donate, explore CSR education projects in Tamil Nadu, or visit our schools in Krishnagiri. Email: vazhai.connect@gmail.com',
+      path: '/#contact-us'
+    },
+    'vazhai-events': {
+      title: 'Vazhai Events — Field Events & Online Calls | Rural Education NGO Tamil Nadu',
+      description: 'Join Vazhai NGO\'s weekly Friday volunteer calls, field events in Krishnagiri, career guidance sessions, student assessments, and inter-school competitions across Tamil Nadu.',
+      path: '/#vazhai-events'
     }
+  };
 
-    function activateSection(target) {
-        if (!document.getElementById(target)) return;
-        allItems.forEach(i => i.classList.remove('active'));
-        document.querySelectorAll(`[data-section="${target}"]`).forEach(i => i.classList.add('active'));
-        sections.forEach(s => s.classList.remove('active'));
-        document.getElementById(target).classList.add('active');
-    }
+  const menuItems = document.querySelectorAll('.menu-item');
+  const pages = document.querySelectorAll('.pg');
+  const canonicalTag = document.querySelector('link[rel="canonical"]');
+  const metaDesc = document.querySelector('meta[name="description"]');
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  const ogUrl = document.querySelector('meta[property="og:url"]');
+  const twTitle = document.querySelector('meta[name="twitter:title"]');
+  const twDesc = document.querySelector('meta[name="twitter:description"]');
 
-    allItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = this.getAttribute('data-section');
-            if (!target) return;
-            navigateTo(target);
-            closeDrawer();
-        });
+  function navigateTo(target) {
+    const el = document.getElementById(target);
+    if (!el) return;
+    const meta = sectionMeta[target] || sectionMeta['home'];
+
+    // Update URL
+    history.pushState(null, '', '#' + target);
+
+    // Update page visibility
+    pages.forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    menuItems.forEach(i => i.classList.remove('active'));
+    document.querySelectorAll(`[data-section="${target}"]`).forEach(i => i.classList.add('active'));
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    // Update SEO meta dynamically
+    document.title = meta.title;
+    if (metaDesc) metaDesc.setAttribute('content', meta.description);
+    if (canonicalTag) canonicalTag.setAttribute('href', 'https://vazhai.in' + meta.path);
+    if (ogTitle) ogTitle.setAttribute('content', meta.title);
+    if (ogDesc) ogDesc.setAttribute('content', meta.description);
+    if (ogUrl) ogUrl.setAttribute('content', 'https://vazhai.in' + meta.path);
+    if (twTitle) twTitle.setAttribute('content', meta.title);
+    if (twDesc) twDesc.setAttribute('content', meta.description);
+  }
+
+  menuItems.forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const t = this.getAttribute('data-section');
+      if (t) navigateTo(t);
     });
+  });
 
-    function loadFromHash() {
-        const hash = window.location.hash.replace('#', '');
-        activateSection(hash && document.getElementById(hash) ? hash : 'home');
-    }
-    window.addEventListener('popstate', loadFromHash);
-    loadFromHash();
+  function loadFromHash() {
+    const hash = window.location.hash.replace('#', '');
+    navigateTo(hash && document.getElementById(hash) ? hash : 'home');
+  }
+  window.addEventListener('popstate', loadFromHash);
+  loadFromHash();
 
-    const hamburger = document.getElementById('hamburger');
-    const drawer    = document.getElementById('drawer');
-    const overlay   = document.getElementById('overlay');
+  let rzpSubLoaded = false;
+  function toggleMonthly() {
+    const body = document.getElementById('dwbody');
+    const chev = document.getElementById('dwchev');
+    const toggleBtn = document.querySelector('.dw-toggle');
+    const isOpening = !body.classList.contains('open');
 
-    function openDrawer() {
-        drawer.classList.add('open');
-        overlay.classList.add('show');
-        overlay.style.pointerEvents = 'auto';
-        hamburger.classList.add('open');
-    }
-    function closeDrawer() {
-        drawer.classList.remove('open');
-        overlay.classList.remove('show');
-        overlay.style.pointerEvents = 'none';
-        hamburger.classList.remove('open');
-    }
-    hamburger.addEventListener('click', () => drawer.classList.contains('open') ? closeDrawer() : openDrawer());
-    overlay.addEventListener('click', closeDrawer);
+    body.classList.toggle('open');
+    chev.classList.toggle('open');
+    toggleBtn.setAttribute('aria-expanded', isOpening);
 
-    function toggleMonthly() {
-        document.getElementById('monthly-body').classList.toggle('open');
-        document.getElementById('monthly-chevron').classList.toggle('open');
+    if (isOpening && !rzpSubLoaded) {
+      rzpSubLoaded = true;
+      const form = document.getElementById('rzp-sub-form');
+      const s = document.createElement('script');
+      s.src = 'https://cdn.razorpay.com/static/widget/subscription-button.js';
+      s.setAttribute('data-subscription_button_id', 'pl_SnE7xSxS7tFLxU');
+      s.setAttribute('data-button_theme', 'brand-color');
+      s.async = true;
+      form.appendChild(s);
     }
+  }
 
-    function scrollToShare() {
-        const el = document.getElementById('share-section');
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function copyLink(toastId) {
-        const url = window.location.href.split('#')[0];
-        navigator.clipboard.writeText(url).then(() => {
-            const el = document.getElementById(toastId);
-            if (el) { el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 3000); }
-        }).catch(() => prompt('Copy this link:', url));
-    }
+  function copyLink(id) {
+    const url = window.location.href.split('#')[0];
+    navigator.clipboard.writeText(url).then(() => {
+      const el = document.getElementById(id);
+      if (el) { el.style.display = 'inline'; setTimeout(() => el.style.display = 'none', 3000); }
+    }).catch(() => prompt('Copy this link:', url));
+  }
 </script>
 </body>
 </html>
-

@@ -1,4 +1,8 @@
 # vazhaihtml
+## for images:
+### 1. Cloudinary (The Best "Free" Powerhouse)
+### 2. Cloudflare R2 (The "Unlimited BandGitHub "raw" URLs are slow because GitHub's content servers (raw.githubusercontent.com) are not optimized for high-speed image delivery; they lack the aggressive global caching and on-the-fly compression that a real Image CDN provides.
+
 ## Vazhai website based on html
 ## improvements to be made:
 ### problem
