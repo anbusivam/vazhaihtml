@@ -1,0 +1,34 @@
+[build]
+  command = "echo 'static site with serverless functions'"
+  publish = "."
+
+[[redirects]]
+  from = "/config"
+  to = "/.netlify/functions/config"
+  status = 200
+
+[[redirects]]
+  from = "/donate/order"
+  to = "/.netlify/functions/donate-order"
+  status = 200
+
+[[redirects]]
+  from = "/donate/verify"
+  to = "/.netlify/functions/donate-verify"
+  status = 200
+
+[[redirects]]
+  from = "/donate/subscribe"
+  to = "/.netlify/functions/donate-subscribe"
+  status = 200
+
+[[redirects]]
+  from = "/donate/verify-subscription"
+  to = "/.netlify/functions/donate-verify-subscription"
+  status = 200
+
+# SPA fallback: serve index.html for any unmatched route
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
