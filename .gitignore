@@ -153,3 +153,6 @@ vite.config.ts.timestamp-*
 
 # run-vazhai script
 run-vazhai
+# Local Netlify folder
+.netlify
+log.txt

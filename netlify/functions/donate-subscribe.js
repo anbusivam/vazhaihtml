@@ -226,20 +226,12 @@ exports.handler = async function (event, context) {
     // Strip non-digit characters from phone so Razorpay accepts it
     const cleanPhone = donor.phone.replace(/[^\d+]/g, '');
 
-    // Create Razorpay subscription — pass customer_details so the
-    // checkout modal pre-fills the phone number (subscription checkouts
-    // do not respect the frontend `prefill` object the way one-time
-    // checkouts do; customer_details must be set on the subscription itself).
+    // Create Razorpay subscription (without customer_details as Razorpay API doesn't accept it)
     const subscription = await razorpay.subscriptions.create({
       plan_id:         resolvedPlanId,
       total_count:     SUBSCRIPTION_TOTAL_COUNT,
       quantity:        1,
       customer_notify: 1,
-      customer_details: {
-        name:    donor.name,
-        email:   donor.email,
-        contact: cleanPhone,
-      },
       notes: buildNotes({ ...donor, pan: pan.toUpperCase() }),
     });
 
