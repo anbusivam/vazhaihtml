@@ -44,6 +44,19 @@ const SUBSCRIPTION_PLANS = {
   'plan_SryURl0Iu04xnO': { amount: 1500000, label: '₹15,000/mo — full month, one Companion'    },
 };
 
+/* Helper — format amount for logs. If value is in paise (e.g. 50000),
+   convert to rupees (divide by 100). If value already looks like rupees,
+   show as-is. */
+function formatAmountForLog(amount) {
+  let n = typeof amount === 'number' ? amount : parseInt(amount, 10);
+  if (Number.isNaN(n)) return `₹0`;
+  // Heuristic: if divisible by 100 and > 100, treat as paise
+  if (n % 100 === 0 && n > 100) {
+    return `₹${(n / 100).toLocaleString('en-IN')}`;
+  }
+  return `₹${n.toLocaleString('en-IN')}`;
+}
+
 /* ── Production plan ID overrides (test → production) ── */
 const PRODUCTION_PLAN_MAP = {
   'plan_SryRYvzzsWua9X': 'plan_R2TidaR2HFINZH',   // ₹500
@@ -106,6 +119,14 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Minimal per-request info log: method, path, host and mode
+app.use((req, res, next) => {
+  const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const mode = isProductionHost(host) ? 'PRODUCTION' : 'TEST/DEV';
+  console.info(`[vazhai] Request: ${req.method} ${req.path} host=${host || 'none'} mode=${mode}`);
+  next();
+});
 
 /* ── Static files (serves index.html, thankyou.html, images/, etc.) ── */
 app.use(express.static(__dirname));
@@ -197,8 +218,8 @@ app.post('/donate/order', async (req, res) => {
       notes:    buildNotes({ ...donor, pan: pan.toUpperCase() }),
     });
 
-    // Minimal info log for created payment order
-    console.info(`[vazhai] Payment order created: id=${order.id} amount=${order.amount} currency=${order.currency} donor=${donor.email}`);
+    // Minimal info log for created payment order (format amount)
+    console.info(`[vazhai] Payment order created: id=${order.id} amount=${formatAmountForLog(order.amount)} currency=${order.currency} donor=${donor.email}`);
 
     res.json({ orderId: order.id, amount: order.amount, currency: order.currency });
   } catch (err) {
@@ -226,9 +247,11 @@ app.post('/donate/verify', (req, res) => {
       .digest('hex');
 
     if (expected !== razorpay_signature) {
+      console.info(`[vazhai] Payment verification FAILED: order=${razorpay_order_id} payment=${razorpay_payment_id}`);
       return res.status(400).json({ error: 'Payment signature mismatch. Payment could not be verified.' });
     }
 
+    console.info(`[vazhai] Payment verification SUCCESS: order=${razorpay_order_id} payment=${razorpay_payment_id}`);
     res.json({ success: true, paymentId: razorpay_payment_id });
   } catch (err) {
     console.error('[/donate/verify]', err);
@@ -274,6 +297,9 @@ app.post('/donate/subscribe', async (req, res) => {
         return res.status(400).json({ error: 'Invalid subscription plan.' });
       }
       resolvedLabel = SUBSCRIPTION_PLANS[planId].label;
+      // Log preset plan amount (amounts in SUBSCRIPTION_PLANS are in paise)
+      const presetAmountPaise = SUBSCRIPTION_PLANS[planId].amount;
+      console.info(`[vazhai] Preset subscription plan selected: planId=${planId} amount=${formatAmountForLog(presetAmountPaise)}`);
     } else if (customAmount) {
       /* ── Custom amount — find existing plan or create one ── */
       const amountRupees = parseInt(customAmount, 10);
@@ -287,6 +313,9 @@ app.post('/donate/subscribe', async (req, res) => {
       if (match) {
         resolvedPlanId = match[0];
         resolvedLabel  = match[1].label;
+        // set resolved amount (paise) for logging later
+        var resolvedAmountPaise = match[1].amount;
+        console.info(`[vazhai] Found matching preset plan for custom amount: amount=${formatAmountForLog(resolvedAmountPaise)} planId=${resolvedPlanId}`);
       } else {
         // Fetch existing plans from Razorpay to find one with matching amount
         let existingPlanId = null;
@@ -306,6 +335,8 @@ app.post('/donate/subscribe', async (req, res) => {
             existingPlanId = found.id;
             existingPlanLabel = found.item.name ||
               `₹${amountRupees.toLocaleString('en-IN')}/mo — custom monthly gift`;
+            // capture amount (paise) from Razorpay plan
+            var foundAmountPaise = typeof found.item.amount === 'string' ? parseInt(found.item.amount, 10) : found.item.amount;
           }
         } catch (fetchErr) {
           // Fall through — create new plan on error
@@ -314,7 +345,8 @@ app.post('/donate/subscribe', async (req, res) => {
         if (existingPlanId) {
           resolvedPlanId = existingPlanId;
           resolvedLabel  = existingPlanLabel;
-          console.info(`[vazhai] Existing subscription plan reused: amount=₹${amountRupees} planId=${existingPlanId}`);
+          resolvedAmountPaise = foundAmountPaise || (amountRupees * 100);
+          console.info(`[vazhai] Existing subscription plan reused: amount=${formatAmountForLog(resolvedAmountPaise)} planId=${existingPlanId}`);
         } else {
           // Create a new plan on the fly via Razorpay API
           const newPlan = await razorpay.plans.create({
@@ -332,7 +364,8 @@ app.post('/donate/subscribe', async (req, res) => {
           });
           resolvedPlanId = newPlan.id;
           resolvedLabel  = `₹${amountRupees.toLocaleString('en-IN')}/mo — custom monthly gift`;
-          console.info(`[vazhai] Created new subscription plan: amount=₹${amountRupees} planId=${newPlan.id}`);
+          resolvedAmountPaise = amountPaise;
+          console.info(`[vazhai] Created new subscription plan: amount=${formatAmountForLog(resolvedAmountPaise)} planId=${newPlan.id}`);
         }
       }
     } else {
@@ -348,8 +381,11 @@ app.post('/donate/subscribe', async (req, res) => {
       notes:          buildNotes({ ...donor, pan: pan.toUpperCase() }),
     });
 
-    // Minimal info log for created subscription
-    console.info(`[vazhai] Subscription created: id=${subscription.id} planId=${resolvedPlanId} donor=${donor.email}`);
+    // Minimal info log for created subscription — include amount if available
+    const subAmountLog = typeof resolvedAmountPaise !== 'undefined'
+      ? formatAmountForLog(resolvedAmountPaise)
+      : resolvedLabel || 'unknown';
+    console.info(`[vazhai] Subscription created: id=${subscription.id} planId=${resolvedPlanId} amount=${subAmountLog} donor=${donor.email}`);
 
     res.json({
       subscriptionId: subscription.id,

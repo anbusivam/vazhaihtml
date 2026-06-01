@@ -49,6 +49,18 @@ function resolvePlanId(planId, host) {
 
 const SUBSCRIPTION_TOTAL_COUNT = 100;
 
+/* Helper — format amount for logs. If value is in paise (e.g. 50000),
+   convert to rupees (divide by 100). If value already looks like rupees,
+   show as-is. */
+function formatAmountForLog(amount) {
+  let n = typeof amount === 'number' ? amount : parseInt(amount, 10);
+  if (Number.isNaN(n)) return `₹0`;
+  if (n % 100 === 0 && n > 100) {
+    return `₹${(n / 100).toLocaleString('en-IN')}`;
+  }
+  return `₹${n.toLocaleString('en-IN')}`;
+}
+
 // Cloudflare Turnstile verification
 async function verifyTurnstile(token, remoteip) {
   const body = new URLSearchParams({
@@ -136,6 +148,9 @@ exports.handler = async function (event, context) {
         return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid subscription plan.' }) };
       }
       resolvedLabel = SUBSCRIPTION_PLANS[planId].label;
+      // Log preset plan amount
+      const presetAmountPaise = SUBSCRIPTION_PLANS[planId].amount;
+      console.info(`[vazhai] Preset subscription plan selected: planId=${planId} amount=${formatAmountForLog(presetAmountPaise)}`);
     } else if (customAmount) {
       // Custom amount — find existing plan or reuse one
       const amountRupees = parseInt(customAmount, 10);
@@ -149,6 +164,8 @@ exports.handler = async function (event, context) {
       if (match) {
         resolvedPlanId = match[0];
         resolvedLabel  = match[1].label;
+        var resolvedAmountPaise = match[1].amount;
+        console.info(`[vazhai] Found matching preset plan for custom amount: amount=${formatAmountForLog(resolvedAmountPaise)} planId=${resolvedPlanId}`);
       } else {
         // Fetch existing plans from Razorpay to find one with matching amount
         let existingPlanId = null;
@@ -168,6 +185,7 @@ exports.handler = async function (event, context) {
             existingPlanId = found.id;
             existingPlanLabel = found.item.name ||
               `₹${amountRupees.toLocaleString('en-IN')}/mo — custom monthly gift`;
+            var foundAmountPaise = typeof found.item.amount === 'string' ? parseInt(found.item.amount, 10) : found.item.amount;
           }
         } catch (fetchErr) {
           // Fall through — create new plan on error
@@ -176,7 +194,8 @@ exports.handler = async function (event, context) {
         if (existingPlanId) {
           resolvedPlanId = existingPlanId;
           resolvedLabel  = existingPlanLabel;
-          console.info(`[vazhai] Existing subscription plan reused: amount=₹${amountRupees} planId=${existingPlanId}`);
+          resolvedAmountPaise = foundAmountPaise || (amountRupees * 100);
+          console.info(`[vazhai] Existing subscription plan reused: amount=${formatAmountForLog(resolvedAmountPaise)} planId=${existingPlanId}`);
         } else {
           // Create a new plan on the fly via Razorpay API
           const newPlan = await razorpay.plans.create({
@@ -194,7 +213,8 @@ exports.handler = async function (event, context) {
           });
           resolvedPlanId = newPlan.id;
           resolvedLabel  = `₹${amountRupees.toLocaleString('en-IN')}/mo — custom monthly gift`;
-          console.info(`[vazhai] Created new subscription plan: amount=₹${amountRupees} planId=${newPlan.id}`);
+          resolvedAmountPaise = amountPaise;
+          console.info(`[vazhai] Created new subscription plan: amount=${formatAmountForLog(resolvedAmountPaise)} planId=${newPlan.id}`);
         }
       }
     } else {
@@ -220,6 +240,12 @@ exports.handler = async function (event, context) {
       },
       notes: buildNotes({ ...donor, pan: pan.toUpperCase() }),
     });
+
+    // Log created subscription with amount if available
+    const subAmountLog = typeof resolvedAmountPaise !== 'undefined'
+      ? formatAmountForLog(resolvedAmountPaise)
+      : resolvedLabel || 'unknown';
+    console.info(`[vazhai] Subscription created: id=${subscription.id} planId=${resolvedPlanId} amount=${subAmountLog} donor=${donor.email}`);
 
     return {
       statusCode: 200,
