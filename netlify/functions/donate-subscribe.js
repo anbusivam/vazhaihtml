@@ -28,6 +28,12 @@ const PRODUCTION_PLAN_MAP = {
 
 /* ── Determine whether to use production plan IDs ── */
 function isProductionHost(host) {
+  // Environment override: if IS_PRODUCTION is set to true/1, treat as production.
+  const isProdEnv = process.env.IS_PRODUCTION === true
+    || process.env.IS_PRODUCTION === 'true'
+    || process.env.IS_PRODUCTION === '1';
+  if (isProdEnv) return true;
+
   if (!host) return false;
   const h = host.split(':')[0].toLowerCase();           // strip port
   return h === 'vazhai.in' || h === 'vazhaihtml.netlify.app';
