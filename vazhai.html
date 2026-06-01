@@ -2235,7 +2235,30 @@ let turnstileToken  = null;
 /* Load config from server on init */
 async function loadDonConfig() {
   try {
-    const res  = await fetch('/config');
+    // Request the Netlify function using the canonical path so local/production routing works
+    // When using `netlify dev` this will be proxied; when deployed Netlify serves functions
+    // under /.netlify/functions/<name>.
+    // Try canonical functions path first (works on Netlify and with `netlify dev`)
+    let res = await fetch('/.netlify/functions/config');
+    // If that fails (404) or returns HTML (static server fallback returning index.html),
+    // try the CORS-wrapped function path (added for local cross-origin scenarios),
+    // then finally try the local functions server used by `netlify functions:serve` (default port 9999).
+    if (!res.ok || (res.headers && !(res.headers.get && (res.headers.get('content-type') || '').includes('application/json')))) {
+      try {
+        // first try a CORS-enabled wrapper function on the same origin
+        res = await fetch('/.netlify/functions/config-cors');
+      } catch (err) {
+        // ignore and try the functions server
+      }
+    }
+    if (!res.ok || (res.headers && !(res.headers.get && (res.headers.get('content-type') || '').includes('application/json')))) {
+      try {
+        const alt = `${location.protocol}//localhost:9999/.netlify/functions/config`;
+        res = await fetch(alt);
+      } catch (err) {
+        // ignore and let the error handling below produce a helpful message
+      }
+    }
     const data = await res.json();
     rzpKeyId         = data.razorpayKeyId;
     turnstileSiteKey = data.turnstileSiteKey;
@@ -2522,10 +2545,32 @@ async function submitDonation() {
   }
 }
 
+/* Helper — route API calls to local Netlify Functions when developing
+   with `netlify functions:serve`. When running on localhost the
+   functions are served at http://localhost:8888/.netlify/functions/<fn>.
+   Map the user-facing paths to their function names and use the
+   function URL during local development; in production keep the
+   original paths (which rely on Netlify `_redirects` / `netlify.toml`).
+*/
+const _netlifyFunctionsLocalPort = 8888;
+const _isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const _functionMap = {
+  '/donate/order': 'donate-order',
+  '/donate/verify': 'donate-verify',
+  '/donate/subscribe': 'donate-subscribe',
+  '/donate/verify-subscription': 'donate-verify-subscription',
+};
+function apiUrl(path) {
+  if (_isLocalHost && _functionMap[path]) {
+    return `http://localhost:${_netlifyFunctionsLocalPort}/.netlify/functions/${_functionMap[path]}`;
+  }
+  return path;
+}
+
 /* ── One-time flow ── */
 async function handleOnetime(donor) {
   try {
-    const res  = await fetch('/donate/order', {
+    const res  = await fetch(apiUrl('/donate/order'), {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2553,7 +2598,7 @@ async function handleOnetime(donor) {
       theme: { color: '#f5c842' },
       handler: async function(response) {
         // Verify server-side
-        const vres  = await fetch('/donate/verify', {
+        const vres  = await fetch(apiUrl('/donate/verify'), {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(response),
@@ -2596,7 +2641,7 @@ async function handleMonthly(donor) {
       body.amount = monthlyAmount;
     }
 
-    const res  = await fetch('/donate/subscribe', {
+    const res  = await fetch(apiUrl('/donate/subscribe'), {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -2617,7 +2662,7 @@ async function handleMonthly(donor) {
       },
       theme: { color: '#f5c842' },
       handler: async function(response) {
-        const vres  = await fetch('/donate/verify-subscription', {
+        const vres  = await fetch(apiUrl('/donate/verify-subscription'), {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(response),

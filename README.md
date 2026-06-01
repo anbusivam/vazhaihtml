@@ -35,3 +35,7 @@ Where it falls short psychologically
    Add a "Share Vazhai" section at the bottom of Home with a pre-written WhatsApp/message
    On the Donate page, frame amounts around concrete outcomes: "₹500/month funds one student's materials for a year"
    Want me to go ahead and implement these? Some will need you to supply real stories/quotes, but I can build the structure and write placeholder prompts for where that content should go.
+
+## to run
+1. ensure netlify cli is installed
+2. run `netlify dev` in the terminal
