@@ -119,9 +119,10 @@ exports.handler = async function (event, context) {
       turnstileToken,
       event.headers['client-ip'] || event.headers['x-forwarded-for'] || '',
     );
-    if (!humanVerified) {
-      return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Turnstile verification failed. Please try again.' }) };
-    }
+        if (!humanVerified) {
+          console.error(`[vazhai] Turnstile verification failed for /donate/subscribe host=${_hostForMode}`);
+          return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Turnstile verification failed. Please try again.' }) };
+        }
 
     // Donor field validation
     const { name, email, phone, address, pan } = donor || {};
@@ -188,6 +189,7 @@ exports.handler = async function (event, context) {
             var foundAmountPaise = typeof found.item.amount === 'string' ? parseInt(found.item.amount, 10) : found.item.amount;
           }
         } catch (fetchErr) {
+          console.error(`[vazhai] Error fetching plans from Razorpay while looking for amountPaise=${amountPaise}:`, fetchErr && fetchErr.message ? fetchErr.message : fetchErr);
           // Fall through — create new plan on error
         }
 

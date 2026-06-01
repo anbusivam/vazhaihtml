@@ -191,9 +191,10 @@ app.post('/donate/order', async (req, res) => {
       turnstileToken,
       req.headers['cf-connecting-ip'] || req.ip,
     );
-    if (!humanVerified) {
-      return res.status(403).json({ error: 'Turnstile verification failed. Please try again.' });
-    }
+        if (!humanVerified) {
+          console.error(`[vazhai] Turnstile verification failed for /donate/order ip=${req.ip}`);
+          return res.status(403).json({ error: 'Turnstile verification failed. Please try again.' });
+        }
 
     /* ── Donor field validation ── */
     const { name, email, phone, address, pan } = donor || {};
@@ -339,6 +340,8 @@ app.post('/donate/subscribe', async (req, res) => {
             var foundAmountPaise = typeof found.item.amount === 'string' ? parseInt(found.item.amount, 10) : found.item.amount;
           }
         } catch (fetchErr) {
+          // Log Razorpay plans fetch error for debugging
+          console.error(`[vazhai] Error fetching plans from Razorpay while looking for amountPaise=${amountPaise}:`, fetchErr && fetchErr.message ? fetchErr.message : fetchErr);
           // Fall through — create new plan on error
         }
 
