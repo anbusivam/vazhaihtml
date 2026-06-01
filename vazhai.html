@@ -756,9 +756,15 @@ body::before {
 
 /* "Donate Monthly" dropdown toggle button */
 .dw-monthly-btn {
-  display:inline-flex;
+  background:#58c25b;
+  color:white;
+  padding:8px 10px;
+  border-radius:8px;
+  font-weight:700;
+  border:0;
+  cursor:pointer;
+  display:flex;
   align-items:center;
-  justify-content:space-between;
   gap:10px;
   background:#72E08A;
   color:#111;
@@ -780,7 +786,7 @@ body::before {
 .dw-monthly-btn-label { display:flex; flex-direction:column; }
 .dw-monthly-btn-label span:first-child { font-size:.78rem; color:#111; }
 .dw-monthly-btn-label span:last-child {
-  font-size:.62rem; font-weight:400; font-style:normal;
+  font-size:.7rem; font-weight:400; font-style:normal;
   color:#333; letter-spacing:.02em;
 }
 .dw-monthly-chev {
@@ -792,7 +798,7 @@ body::before {
 .dw-monthly-chev.open { transform:rotate(180deg); }
 
 /* expandable Razorpay widget area */
-.dw-body { display:none; margin-top:14px; }
+.dw-body { display:block; margin-top:14px; }
 .dw-body.open { display:block; }
 
 @media (max-width:860px) {
@@ -936,7 +942,7 @@ body::before {
 
 <nav class="fnav" aria-label="Main Navigation">
   <div class="fnav-logo menu-item" data-section="home">
-    <img src="images/vazahi-logo.gif" alt="Vazhai NGO Logo - Rural Education in Tamil Nadu" loading="eager" decoding="async" fetchpriority="high"
+    <img src="images/vazhai-logo.gif" alt="Vazhai NGO Logo - Rural Education in Tamil Nadu" loading="eager" decoding="async" fetchpriority="high"
          onerror="this.style.display='none'">
     <span class="fnav-logo-text">வாழை VAZHAI</span>
   </div>
@@ -958,7 +964,7 @@ body::before {
       </div>
       <div class="mh-inner">
         <div class="mh-logo-wrap">
-          <img src="images/vazahi-logo.gif"
+          <img src="images/vazhai-logo.gif"
                alt="Vazhai NGO Logo - Education NGO in Tamil Nadu" class="mh-logo" loading="eager" decoding="async" fetchpriority="high"
                onerror="this.style.display='none'">
         </div>
@@ -1291,10 +1297,10 @@ body::before {
     </div>
 
     <div class="steps-bar">
-      <div class="step"><div class="step-n">01</div><h4 class="step-t">Apply Online</h4><div class="step-b">Fill out our join form — takes five minutes. Tell us your skills and availability. We read every response.</div></div>
-      <div class="step"><div class="step-n">02</div><h4 class="step-t">Orientation Call</h4><div class="step-b">We'll walk you through the program, answer your questions, and figure out where you fit best.</div></div>
-      <div class="step"><div class="step-n">03</div><h4 class="step-t">Your First Task</h4><div class="step-b">We assign you something concrete in your first week — a specific output, not a vague invite to "help out."</div></div>
-      <div class="step"><div class="step-n">04</div><h4 class="step-t">Friday Calls</h4><div class="step-b">Every Friday, the whole Vazhai network connects. Hear from the field. Share what you did. Stay part of the work.</div></div>
+      <div class="step"><div class="step-n">01</div><h4 class="step-t">Apply Online</h2><div class="step-b">Fill out our join form — takes five minutes. Tell us your skills and availability. We read every response.</div></div>
+      <div class="step"><div class="step-n">02</div><h4 class="step-t">Orientation Call</h2><div class="step-b">We'll walk you through the program, answer your questions, and figure out where you fit best.</div></div>
+      <div class="step"><div class="step-n">03</div><h4 class="step-t">Your First Task</h2><div class="step-b">We assign you something concrete in your first week — a specific output, not a vague invite to "help out."</div></div>
+      <div class="step"><div class="step-n">04</div><h4 class="step-t">Friday Calls</h2><div class="step-b">Every Friday, the whole Vazhai network connects. Hear from the field. Share what you did. Stay part of the work.</div></div>
     </div>
 
     <div class="join-apply">
@@ -1345,13 +1351,6 @@ body::before {
       <article>
         <h3 class="dw-title">Monthly Giving</h3>
         <p class="dw-sub">The most effective way to support a rural education NGO — predictable monthly income lets us hire, plan, and commit to schools a full year ahead.</p>
-        <button class="dw-monthly-btn" onclick="toggleMonthly()" aria-expanded="false" aria-controls="dwbody">
-          <span class="dw-monthly-btn-label">
-            <span>Donate Monthly</span>
-            <span>Secured by Razorpay</span>
-          </span>
-          <span class="dw-monthly-chev" id="dwchev">▾</span>
-        </button>
         <div class="dw-body" id="dwbody">
           <form id="rzp-sub-form"><script src="https://cdn.razorpay.com/static/widget/subscription-button.js"
             data-subscription_button_id="pl_SnE7xSxS7tFLxU"
@@ -1526,21 +1525,13 @@ body::before {
   function toggleMonthly() {
     const body = document.getElementById('dwbody');
     const btn  = document.querySelector('.dw-monthly-btn');
-    const chev = document.getElementById('dwchev');
-    const isOpening = !body.classList.contains('open');
-    body.classList.toggle('open');
-    chev.classList.toggle('open');
-    btn.setAttribute('aria-expanded', isOpening);
-
-    if (isOpening && !rzpSubLoaded) {
-      rzpSubLoaded = true;
-      const form = document.getElementById('rzp-sub-form');
-      const s = document.createElement('script');
-      s.src = 'https://cdn.razorpay.com/static/widget/subscription-button.js';
-      s.setAttribute('data-subscription_button_id', 'pl_SnE7xSxS7tFLxU');
-      s.setAttribute('data-button_theme', 'brand-color');
-      s.async = true;
-      form.appendChild(s);
+    if (!body) return;
+    if (body.classList.contains('open')) {
+      body.classList.remove('open');
+      if (btn) btn.setAttribute('aria-expanded','false');
+    } else {
+      body.classList.add('open');
+      if (btn) btn.setAttribute('aria-expanded','true');
     }
   }
 
