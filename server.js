@@ -197,6 +197,9 @@ app.post('/donate/order', async (req, res) => {
       notes:    buildNotes({ ...donor, pan: pan.toUpperCase() }),
     });
 
+    // Minimal info log for created payment order
+    console.info(`[vazhai] Payment order created: id=${order.id} amount=${order.amount} currency=${order.currency} donor=${donor.email}`);
+
     res.json({ orderId: order.id, amount: order.amount, currency: order.currency });
   } catch (err) {
     console.error('[/donate/order]', err);
@@ -291,7 +294,8 @@ app.post('/donate/subscribe', async (req, res) => {
 
         try {
           const plansResp = await razorpay.plans.all({ count: 100 });
-          console.log("plans fetched:",plansResp.count);
+          // Minimal info log when fetching available plans from Razorpay
+          console.info(`[vazhai] Subscription plans fetched from Razorpay: count=${plansResp.count} lookingForAmountPaise=${amountPaise}`);
           const plansList = plansResp.items || [];
           const found = plansList.find(p => {
             if (!p.item) return false;
@@ -310,6 +314,7 @@ app.post('/donate/subscribe', async (req, res) => {
         if (existingPlanId) {
           resolvedPlanId = existingPlanId;
           resolvedLabel  = existingPlanLabel;
+          console.info(`[vazhai] Existing subscription plan reused: amount=₹${amountRupees} planId=${existingPlanId}`);
         } else {
           // Create a new plan on the fly via Razorpay API
           const newPlan = await razorpay.plans.create({
@@ -327,6 +332,7 @@ app.post('/donate/subscribe', async (req, res) => {
           });
           resolvedPlanId = newPlan.id;
           resolvedLabel  = `₹${amountRupees.toLocaleString('en-IN')}/mo — custom monthly gift`;
+          console.info(`[vazhai] Created new subscription plan: amount=₹${amountRupees} planId=${newPlan.id}`);
         }
       }
     } else {
@@ -341,6 +347,9 @@ app.post('/donate/subscribe', async (req, res) => {
       customer_notify: 1,
       notes:          buildNotes({ ...donor, pan: pan.toUpperCase() }),
     });
+
+    // Minimal info log for created subscription
+    console.info(`[vazhai] Subscription created: id=${subscription.id} planId=${resolvedPlanId} donor=${donor.email}`);
 
     res.json({
       subscriptionId: subscription.id,
@@ -395,4 +404,9 @@ app.get('*', (_req, res) => {
 app.listen(PORT, () => {
   console.log(`[vazhai] Server running on http://localhost:${PORT}`);
   console.log(`[vazhai] CORS allowed origins: ${ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS.join(', ') : 'ALL (dev mode)'}`);
+  // Log whether running in production or test/dev mode. Honor IS_PRODUCTION env var.
+  const PROD_MODE = process.env.IS_PRODUCTION === true
+    || process.env.IS_PRODUCTION === 'true'
+    || process.env.IS_PRODUCTION === '1';
+  console.info(`[vazhai] Mode: ${PROD_MODE ? 'PRODUCTION' : 'TEST/DEV'}${PROD_MODE ? " (forced by IS_PRODUCTION)" : ''}`);
 });

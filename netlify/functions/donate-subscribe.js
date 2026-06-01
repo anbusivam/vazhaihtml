@@ -87,6 +87,11 @@ exports.handler = async function (event, context) {
     return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
+  // Minimal mode log (only for actual requests, not OPTIONS) — determine from host header or env
+  const _hostForMode = event.headers['x-forwarded-host'] || event.headers.host || '';
+  const _isProd = isProductionHost(_hostForMode);
+  console.info(`[vazhai] Mode: ${_isProd ? 'PRODUCTION' : 'TEST/DEV'} (host=${_hostForMode || 'none'})`);
+
   try {
     const { planId, amount: customAmount, donor, turnstileToken } = JSON.parse(event.body || '{}');
 
@@ -151,7 +156,8 @@ exports.handler = async function (event, context) {
 
         try {
           const plansResp = await razorpay.plans.all({ count: 100 });
-          console.log("plans fetched:",plansResp.count);
+          // Minimal info log when fetching available plans from Razorpay
+          console.info(`[vazhai] Subscription plans fetched from Razorpay: count=${plansResp.count} lookingForAmountPaise=${amountPaise}`);
           const plansList = plansResp.items || [];
           const found = plansList.find(p => {
             if (!p.item) return false;
@@ -170,6 +176,7 @@ exports.handler = async function (event, context) {
         if (existingPlanId) {
           resolvedPlanId = existingPlanId;
           resolvedLabel  = existingPlanLabel;
+          console.info(`[vazhai] Existing subscription plan reused: amount=₹${amountRupees} planId=${existingPlanId}`);
         } else {
           // Create a new plan on the fly via Razorpay API
           const newPlan = await razorpay.plans.create({
@@ -187,6 +194,7 @@ exports.handler = async function (event, context) {
           });
           resolvedPlanId = newPlan.id;
           resolvedLabel  = `₹${amountRupees.toLocaleString('en-IN')}/mo — custom monthly gift`;
+          console.info(`[vazhai] Created new subscription plan: amount=₹${amountRupees} planId=${newPlan.id}`);
         }
       }
     } else {
