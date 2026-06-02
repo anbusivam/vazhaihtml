@@ -62,19 +62,24 @@ function formatAmountForLog(amount) {
 }
 
 // Cloudflare Turnstile verification
+// Returns { verified: boolean, errorCodes: string[], exception: Error|null }
 async function verifyTurnstile(token, remoteip) {
-  const body = new URLSearchParams({
-    secret:   process.env.TURNSTILE_SECRET_KEY || '',
-    response: token,
-    ...(remoteip ? { remoteip } : {}),
-  });
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body:    body.toString(),
-  });
-  const data = await res.json();
-  return data.success === true;
+  try {
+    const body = new URLSearchParams({
+      secret:   process.env.TURNSTILE_SECRET_KEY || '',
+      response: token,
+      ...(remoteip ? { remoteip } : {}),
+    });
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    body.toString(),
+    });
+    const data = await res.json();
+    return { verified: data.success === true, errorCodes: data['error-codes'] || [], exception: null };
+  } catch (ex) {
+    return { verified: false, errorCodes: [], exception: ex };
+  }
 }
 
 function buildNotes(donor) {
@@ -114,14 +119,17 @@ exports.handler = async function (event, context) {
       return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Server config error: missing Razorpay keys.' }) };
     }
 
-    // Turnstile check
-    const humanVerified = await verifyTurnstile(
+    // Turnstile check — log failure but proceed regardless, as real humans sometimes fail verification
+    const { verified: humanVerified, errorCodes: turnstileErrorCodes, exception: turnstileException } = await verifyTurnstile(
       turnstileToken,
       event.headers['client-ip'] || event.headers['x-forwarded-for'] || '',
     );
         if (!humanVerified) {
-          console.error(`[vazhai] Turnstile verification failed for /donate/subscribe host=${_hostForMode}`);
-          return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Turnstile verification failed. Please try again.' }) };
+          if (turnstileException) {
+            console.warn(`[vazhai] Turnstile communication error for /donate/subscribe host=${_hostForMode} — proceeding anyway`, turnstileException);
+          } else {
+            console.warn(`[vazhai] Turnstile verification failed for /donate/subscribe host=${_hostForMode} error-codes=${JSON.stringify(turnstileErrorCodes)} — proceeding anyway`);
+          }
         }
 
     // Donor field validation
