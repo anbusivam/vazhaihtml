@@ -3,206 +3,93 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Thank You — Vazhai NGO</title>
+<title>Thank You — Vazhai NGO Donation</title>
+<meta name="description" content="Thank you for your donation to Vazhai NGO. Your support helps keep a School Companion in a rural Tamil Nadu government school.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://vazhai.in/thankyou.html">
+<meta property="og:title" content="Thank You — Vazhai NGO Donation">
+<meta property="og:description" content="Thank you for supporting rural education in Tamil Nadu.">
+<meta property="og:url" content="https://vazhai.in/thankyou.html">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="images/favicon_io/favicon.ico">
+<link rel="apple-touch-icon" href="images/favicon_io/logo192x192.png">
+<meta name="theme-color" content="#2A6B2F">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --earth: #1a0f00; --bark: #3d2008; --soil: #6b3a18;
-  --amber: #e08c3a; --sun: #f5c842; --cream: #fdf6ec;
-  --parch: #f7edd8; --sand: #e8d5b0; --leaf: #2d5a27;
-  --muted: #8a6d50; --white: #ffffff;
-  --ff-disp: 'Playfair Display', Georgia, serif;
-  --ff-body: 'Source Serif 4', Georgia, serif;
-  --ff-mono: 'Space Mono', monospace;
-}
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; }
-body {
-  font-family: var(--ff-body);
-  background: var(--earth);
-  color: var(--white);
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 24px 16px;
-  text-align: center;
-  position: relative; overflow: hidden;
-}
-body::before {
-  content: '🌿';
-  font-size: 20rem; line-height: 1;
-  position: absolute; right: -60px; bottom: -60px;
-  opacity: .04; pointer-events: none;
-  filter: grayscale(1);
-}
-
-.ty-card {
-  background: var(--bark);
-  border-radius: 24px;
-  padding: 40px 28px;
-  max-width: 480px; width: 100%;
-  position: relative; z-index: 1;
-  border-top: 4px solid var(--sun);
-}
-
-.ty-icon {
-  font-size: 3rem; margin-bottom: 16px; display: block;
-  animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
-}
-@keyframes popIn {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-
-.ty-eyebrow {
-  font-family: var(--ff-mono); font-size: .52rem;
-  letter-spacing: .2em; text-transform: uppercase;
-  color: var(--amber); display: block; margin-bottom: 10px;
-}
-
-.ty-h {
-  font-family: var(--ff-disp); font-weight: 900;
-  font-size: clamp(1.8rem, 7vw, 2.6rem);
-  color: var(--sun); line-height: 1.05;
-  margin-bottom: 16px;
-}
-
-.ty-body {
-  font-size: .9rem; line-height: 1.78;
-  color: rgba(255,255,255,.7);
-  margin-bottom: 24px;
-}
-
-.ty-detail {
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 28px;
-  font-family: var(--ff-mono); font-size: .52rem;
-  letter-spacing: .04em; color: rgba(255,255,255,.45);
-  line-height: 1.9; text-align: left;
-}
-.ty-detail strong { color: rgba(255,255,255,.7); }
-
-.ty-note {
-  font-size: .75rem; line-height: 1.7;
-  color: rgba(255,255,255,.35);
-  margin-bottom: 28px;
-  font-style: italic;
-}
-
-.btn-back {
-  display: inline-block;
-  font-family: var(--ff-mono); font-size: .62rem;
-  letter-spacing: .1em; text-transform: uppercase;
-  padding: 14px 28px; border-radius: 100px;
-  background: var(--sun); color: var(--earth);
-  border: none; cursor: pointer; font-weight: 700;
-  text-decoration: none; transition: background .2s;
-}
-.btn-back:hover { background: var(--amber); }
-
-.ty-share {
-  margin-top: 24px;
-  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
-}
-.share-btn {
-  font-family: var(--ff-mono); font-size: .52rem;
-  letter-spacing: .08em; text-transform: uppercase;
-  padding: 9px 16px; border-radius: 100px;
-  background: rgba(255,255,255,.06); color: rgba(255,255,255,.6);
-  border: 1px solid rgba(255,255,255,.12); cursor: pointer;
-  transition: all .2s; text-decoration: none;
-}
-.share-btn:hover { background: rgba(255,255,255,.12); color: var(--sun); }
-
-.ty-footer {
-  margin-top: 32px;
-  font-family: var(--ff-mono); font-size: .48rem;
-  letter-spacing: .06em; color: rgba(255,255,255,.2);
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body style="padding:0;">
 
-<div class="ty-card">
-  <span class="ty-icon" id="ty-icon">💛</span>
-  <span class="ty-eyebrow" id="ty-eyebrow">Donation Confirmed</span>
-  <h1 class="ty-h" id="ty-h">Thank you.</h1>
-  <p class="ty-body" id="ty-body">
-    Your gift goes directly to keeping a School Companion present in a forest-area government school in Krishnagiri, Tamil Nadu — every school day, all year.
-  </p>
-
-  <div class="ty-detail" id="ty-detail">
-    <!-- filled by JS -->
-  </div>
-
-  <p class="ty-note">
-    Vazhai does not hold 80G exemption. This donation is not eligible for income tax deduction in India. 100% of your gift funds field staff.
-  </p>
-
-  <a href="/" class="btn-back">← Back to Vazhai</a>
-
-  <div class="ty-share">
-    <a class="share-btn"
-       id="wa-share"
-       href="https://wa.me/?text=I%20just%20donated%20to%20Vazhai%20NGO%20%E2%80%94%20they%20place%20full-time%20School%20Companions%20in%20rural%20government%20schools%20in%20Tamil%20Nadu.%20https%3A%2F%2Fvazhai.in"
-       target="_blank" rel="noopener">
-      📲 Share on WhatsApp
-    </a>
+<div id="thankyou-overlay" class="visible" aria-hidden="false">
+  <div class="ty-overlay-inner">
+    <div class="ty-hero">
+      <div class="ty-icon-wrap"><span id="ty-icon">💛</span></div>
+      <span id="ty-eyebrow" class="eyebrow" style="color:rgba(255,255,255,.7);text-align:center;display:block;margin-bottom:8px;">Donation Confirmed</span>
+      <h2 id="ty-h" class="ty-main-h">Thank you.</h2>
+      <p id="ty-body" class="ty-body-p" style="margin-top:10px;">Your gift goes directly to keeping a School Companion present in a forest-area government school in Krishnagiri, Tamil Nadu — every school day, all year.</p>
+    </div>
+    <div class="ty-content">
+      <div id="ty-detail" class="ty-detail-box"></div>
+      <a href="index.html" class="btn btn-green btn-full">← Back to Vazhai</a>
+      <div class="ty-share-row">
+        <a id="ty-wa-share" href="https://wa.me/?text=I%20just%20donated%20to%20Vazhai%20NGO%20%E2%80%94%20they%20place%20full-time%20School%20Companions%20in%20rural%20government%20schools%20in%20Tamil%20Nadu.%20https%3A%2F%2Fvazhai.in" target="_blank" rel="noopener" class="share-btn">📲 Share on WhatsApp</a>
+      </div>
+      <p class="ty-note-p">Vazhai does not hold 80G exemption. This donation is not eligible for income tax deduction in India. 100% of your gift funds field staff.</p>
+      <div class="ty-footer-note">Vazhai NGO · Est. April 2005 · Reg. No. 296/05 · Tamil Nadu, India</div>
+    </div>
   </div>
 </div>
 
-<div class="ty-footer">Vazhai NGO · Est. April 2005 · Reg. No. 296/05 · Tamil Nadu, India</div>
-
 <script>
-  // Read query params set by the donation flow
-  const params  = new URLSearchParams(window.location.search);
-  const type    = params.get('type');       // 'onetime' | 'monthly'
-  const pid     = params.get('pid');        // payment id
-  const name    = params.get('name') || '';
-  const amount  = params.get('amount') || '';
-  const plan    = params.get('plan') || '';
+/* ── Read URL params and show thank-you details ── */
+function escHtml(str) {
+  return String(str).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"');
+}
+
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const type   = params.get('type');
+  const pid    = params.get('pid');
+  const name   = params.get('name');
+  const amount = params.get('amount');
+  const plan   = params.get('plan');
 
   const detailEl = document.getElementById('ty-detail');
 
   if (type === 'monthly') {
-    document.getElementById('ty-icon').textContent    = '🌿';
-    document.getElementById('ty-eyebrow').textContent = 'Monthly Gift Confirmed';
-    document.getElementById('ty-h').textContent       = 'Welcome, Sponsor.';
-    document.getElementById('ty-body').textContent    =
-      'Your monthly gift will keep a School Companion in the field — present at school every single day. Thank you for making this commitment.';
+    document.getElementById('ty-icon').textContent = '🎓';
+    document.getElementById('ty-eyebrow').textContent = 'Monthly Sponsorship Confirmed';
+    document.getElementById('ty-h').textContent = 'You Made This Possible';
+    document.getElementById('ty-body').textContent = 'Your monthly sponsorship helps place a dedicated School Companion in a rural government school, supporting children every day. Thank you for becoming part of this journey.';
+
     detailEl.innerHTML =
-      `<strong>Type:</strong> Monthly Sponsorship<br>` +
-      `<strong>Plan:</strong> ${escHtml(plan)}<br>` +
-      (name   ? `<strong>Name:</strong> ${escHtml(name)}<br>` : '') +
-      (pid    ? `<strong>Payment ID:</strong> ${escHtml(pid)}<br>` : '') +
-      `<strong>Recurrence:</strong> Up to 100 months · Cancel anytime via Razorpay`;
+      '<strong>Type:</strong> Monthly Sponsorship<br>' +
+      (plan ? '<strong>Plan:</strong> ' + escHtml(plan) + '<br>' : '') +
+      (name ? '<strong>Name:</strong> ' + escHtml(name) + '<br>' : '') +
+      (pid ? '<strong>Payment ID:</strong> ' + escHtml(pid) + '<br>' : '') +
+      '<strong>Recurrence:</strong> Up to 100 months · Cancel anytime via Razorpay';
   } else {
+    document.getElementById('ty-icon').textContent = '❤️';
+    document.getElementById('ty-eyebrow').textContent = 'Donation Received';
+    document.getElementById('ty-h').textContent = 'Thank You for Your Generosity';
+    document.getElementById('ty-body').textContent = 'Your contribution helps support children in rural government schools through full-time School Companions. Every contribution creates better learning opportunities.';
+
     detailEl.innerHTML =
-      `<strong>Type:</strong> One-time Donation<br>` +
-      (amount ? `<strong>Amount:</strong> ₹${escHtml(amount)}<br>` : '') +
-      (name   ? `<strong>Name:</strong> ${escHtml(name)}<br>` : '') +
-      (pid    ? `<strong>Payment ID:</strong> ${escHtml(pid)}<br>` : '');
-  }
+      '<strong>Type:</strong> One-time Donation<br>' +
+      (amount ? '<strong>Amount:</strong> ₹' + escHtml(amount) + '<br>' : '') +
+      (name ? '<strong>Name:</strong> ' + escHtml(name) + '<br>' : '') +
+      (pid ? '<strong>Payment ID:</strong> ' + escHtml(pid) + '<br>' : '');
 
-  // Update WhatsApp share with amount if available
-  if (amount && type !== 'monthly') {
-    const msg = encodeURIComponent(
-      `I just donated ₹${amount} to Vazhai NGO — they place full-time School Companions in rural government schools in Tamil Nadu. https://vazhai.in`
-    );
-    document.getElementById('wa-share').href = `https://wa.me/?text=${msg}`;
+    if (amount) {
+      const msg = encodeURIComponent(
+        'I just donated ₹' + amount +
+        ' to Vazhai NGO — they place full-time School Companions in rural government schools in Tamil Nadu. https://vazhai.in'
+      );
+      document.getElementById('ty-wa-share').href = 'https://wa.me/?text=' + msg;
+    }
   }
-
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+})();
 </script>
 </body>
 </html>

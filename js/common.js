@@ -1,0 +1,99 @@
+/* ═══════════════════════════════════════════════════
+   COMMON — shared across all pages
+   SEO navigation, accordion, carousel, dynamic years, copy link
+═══════════════════════════════════════════════════ */
+
+/* ── SEO META ── */
+const sectionMeta = {
+  'home':        { title:'Vazhai NGO — Rural Education NGO Tamil Nadu | Krishnagiri, Dharmapuri, Villupuram', description:'Vazhai is an impact-focused education NGO placing full-time School Companions in rural government schools across Tamil Nadu. Donate, volunteer, or sponsor a school.' },
+  'who-we-are':  { title:'Who We Are — Vazhai NGO | Rural Education Tamil Nadu Since 2005', description:'Founded in April 2005 by first-generation graduates from Presidency College Chennai, Vazhai has supported 500+ students across Tamil Nadu.' },
+  'what-we-do':  { title:'What We Do — School Companions & Field Coordinators | Vazhai NGO', description:'Vazhai places full-time School Companions and Field Coordinators in remote government schools in Krishnagiri, Tamil Nadu. We target 10 schools by 2026.' },
+  'join-vazhai': { title:'Join Vazhai — Volunteer, School Companion or Field Coordinator | Tamil Nadu NGO', description:'Volunteer remotely with Vazhai NGO, or apply for a full-time School Companion or Field Coordinator role in Krishnagiri, Tamil Nadu.' },
+  'donation':   { title:'Donate to Vazhai NGO — Support Rural Education in Tamil Nadu', description:'₹15,000/month fully funds a School Companion in a rural Tamil Nadu government school. Support Vazhai NGO with a one-time or monthly donation.' },
+  'contact-us': { title:'Contact Vazhai NGO — Rural Education, Tamil Nadu | Email & Address', description:'Contact Vazhai NGO to volunteer, donate, explore CSR education projects in Tamil Nadu, or visit schools in Krishnagiri.' },
+  'vazhai-events': { title:'Vazhai Events — Field Events & Online Calls | Rural Education NGO Tamil Nadu', description:"Join Vazhai NGO's weekly Friday volunteer calls, field events in Krishnagiri, career guidance sessions, and student assessments across Tamil Nadu." }
+};
+
+const canonicalBase = 'https://vazhai.in';
+const sectionPaths = {
+  'home':        '/',
+  'who-we-are':  '/who-we-are.html',
+  'what-we-do':  '/what-we-do.html',
+  'join-vazhai': '/join-vazhai.html',
+  'donation':   '/donate.html',
+  'contact-us': '/contact.html',
+  'vazhai-events': '/events.html'
+};
+
+/* ── Accordion (mobile only) ── */
+function toggleProg(card) {
+  if (window.innerWidth >= 720) return;
+  const isOpen = card.classList.contains('open');
+  document.querySelectorAll('.prog-card').forEach(c => {
+    c.classList.remove('open');
+    c.setAttribute('aria-expanded', 'false');
+  });
+  if (!isOpen) {
+    card.classList.add('open');
+    card.setAttribute('aria-expanded', 'true');
+  }
+}
+
+/* ── Carousel arrow navigation ── */
+function scrollCarousel(btn, dir) {
+  const wrap = btn.closest('[data-scroll-wrap]');
+  const scroller = wrap.querySelector('.hscroll');
+  if (!scroller) return;
+  const items = scroller.querySelectorAll('*');
+  if (!items.length) return;
+  const gap = 12;
+  const itemW = items[0].offsetWidth + gap;
+  const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+  let target = scroller.scrollLeft + dir * itemW;
+  if (target < 0) target = 0;
+  if (target > maxScroll) target = maxScroll;
+  scroller.scrollTo({ left: target, behavior: 'smooth' });
+}
+
+function updateArrows(scroller) {
+  const wrap = scroller.closest('[data-scroll-wrap]');
+  if (!wrap) return;
+  const leftBtn = wrap.querySelector('.scroll-arrow-left');
+  const rightBtn = wrap.querySelector('.scroll-arrow-right');
+  const atStart = scroller.scrollLeft <= 8;
+  const atEnd = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 8;
+  if (leftBtn) leftBtn.classList.toggle('visible', !atStart);
+  if (rightBtn) rightBtn.classList.toggle('visible', !atEnd);
+}
+
+function initCarousels() {
+  document.querySelectorAll('.hscroll').forEach(scroller => {
+    updateArrows(scroller);
+    scroller.addEventListener('scroll', () => updateArrows(scroller), { passive: true });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initCarousels);
+setTimeout(initCarousels, 400);
+
+/* ── Dynamic years since April 2005 ── */
+(function() {
+  const founded = new Date(2005, 3, 1);
+  const now = new Date();
+  let years = now.getFullYear() - founded.getFullYear();
+  if (now < new Date(now.getFullYear(), 3, 1)) years--;
+  const label = years + '+ Years on the Ground';
+  ['stat-years','ticker-years','ticker-years2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = id === 'stat-years' ? years + '+' : label;
+  });
+})();
+
+/* ── Copy link ── */
+function copyLink(id) {
+  const url = window.location.href.split('#')[0];
+  navigator.clipboard.writeText(url).then(() => {
+    const el = document.getElementById(id);
+    if (el) { el.style.display='inline'; setTimeout(()=>el.style.display='none',3000); }
+  }).catch(() => prompt('Copy this link:', url));
+}
