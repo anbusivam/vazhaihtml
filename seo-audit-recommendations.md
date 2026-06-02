@@ -25,7 +25,7 @@
 | 1.3 | **Canonical URLs** | ✅ | Every page has a self-referencing `<link rel="canonical">`. Correct. |
 | 1.4 | **Meta Robots** | ✅ | All public pages use `index, follow`. `thankyou.html` correctly uses `noindex, nofollow`. |
 | 1.5 | **Structured Data (JSON-LD)** | ✅ | Home page includes: NGO Organization, BreadcrumbList, FAQPage, DonateAction. Inner pages each have BreadcrumbList. The experimental `vazhai.html` has additional rich schemas (JobPosting × 2, Event). This is excellent. |
-| 1.6 | **Hreflang Tags** | ⚠️ | Home page correctly declares `en`, `ta`, and `x-default` alternates. **Inner pages only declare `en` and `x-default`** — they are missing the `ta` (Tamil) alternate. If Tamil content is meant to be served from the same URLs, that's acceptable, but the current setup is inconsistent. |
+| 1.6 | **Hreflang Tags** | ✅ | All pages consistently declare `en` and `x-default` alternates. Removed `ta` (Tamil) since there is no separate Tamil content — declaring `ta` without having it would confuse Google. |
 | 1.7 | **Page Speed Signals** | ✅ | Good use of: `preconnect` to Google Fonts, `preload` for hero images and fonts, `loading="lazy"` on below-fold images, `decoding="async"`, and `fetchpriority="high"` on the primary hero image. CSS is a single file. |
 | 1.8 | **Mobile Responsiveness** | ✅ | Well-implemented responsive design with breakpoints at 768px and 520px. Two navigation layouts (bottom tab bar for mobile, sidebar for desktop). Touch-friendly targets. |
 | 1.9 | **HTTPS Enforcement** | ✅ | Hosted on Netlify with automatic HTTPS. All canonical URLs use HTTPS. |
@@ -88,7 +88,7 @@
 |---|---------------|--------|-------|
 | 5.1 | **Semantic HTML** | ⚠️ | Navigation uses `<nav>`, sections use `<section>`, articles use `<article>` where appropriate — good. But many content blocks use `<div>` instead of heading tags (see 2.4). |
 | 5.2 | **ARIA Labels** | ⚠️ | Bottom navigation has `aria-label="Mobile Navigation"`. Sidebar nav does not. Testimonials carousel has `aria-label="Testimonials"`. Donation form has `aria-live="polite"` for error div. Overall partial coverage. |
-| 5.3 | **Skip Navigation Link** | ❌ | No skip-to-content link for keyboard/screen reader users. |
+| 5.3 | **Skip Navigation Link** | ✅ | Skip-to-content link added to all pages — becomes visible on keyboard focus. |
 | 5.4 | **Form Labels & Accessibility** | ✅ | Donation form has `<label>` elements linked to inputs. Required fields are marked with `*` on labels. |
 | 5.5 | **Color Contrast** | ⚠️ | Visual inspection suggests good contrast overall (dark text on light backgrounds, white text on green/dark backgrounds). Amber on white backgrounds may be low contrast for small text (e.g., `color:var(--muted)` on some labels). |
 | 5.6 | **Focus Indicators** | ⚠️ | No custom `:focus-visible` or `outline` styles detected. Browser defaults will apply, but custom focus styles improve UX for keyboard navigation. |
@@ -166,11 +166,11 @@
 1. ✅ Add Google Search Console verification meta tag - done
 2. ✅ Add Google Analytics 4 tracking snippet - done
 3. ✅ Create a custom 404 page - done
-4. ✅ Add phone number to contact page and schema
-5. ✅ Add `<lastmod>` dates to sitemap.xml
-6. ✅ Add `Cache-Control` headers to netlify.toml
-7. ✅ Add skip-to-content link
-8. ✅ Fix hreflang consistency
+4. ✅ Add phone number to contact page and schema - pending
+5. ✅ Add `<lastmod>` dates to sitemap.xml - done
+6. ✅ Add `Cache-Control` headers to netlify.toml - done
+7. ✅ Add skip-to-content link - done
+8. ✅ Fix hreflang consistency - pending and after adding tamil.
 
 ## Strategic Investments (1–4 weeks)
 
