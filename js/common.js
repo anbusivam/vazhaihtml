@@ -97,3 +97,25 @@ function copyLink(id) {
     if (el) { el.style.display='inline'; setTimeout(()=>el.style.display='none',3000); }
   }).catch(() => prompt('Copy this link:', url));
 }
+
+/* ── Hash-based redirect (backward compatibility with old SPA links) ── */
+(function() {
+  const hashMap = {
+    'home':        '/',
+    'who-we-are':  '/who-we-are',
+    'what-we-do':  '/what-we-do',
+    'join-vazhai': '/join',
+    'donation':   '/donate',
+    'contact-us': '/contact',
+    'vazhai-events': '/events'
+  };
+  const hash = window.location.hash.replace('#','');
+  if (hash && hashMap[hash]) {
+    // Only redirect if we're not already on the right page
+    const target = hashMap[hash];
+    const current = window.location.pathname.replace(/\/$/, '') || '/';
+    if (current !== target) {
+      window.location.replace(target);
+    }
+  }
+})();
