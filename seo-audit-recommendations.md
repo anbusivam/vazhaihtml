@@ -31,7 +31,7 @@
 | 1.9 | **HTTPS Enforcement** | ✅ | Hosted on Netlify with automatic HTTPS. All canonical URLs use HTTPS. |
 | 1.10 | **Open Graph & Twitter Cards** | ✅ | Every page includes `og:title`, `og:description`, `og:image`, `og:url`, `og:type`, `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`. Image dimensions specified. |
 | 1.11 | **Favicon & App Icons** | ✅ | `favicon.ico`, `apple-touch-icon` (192×192), and theme-color meta tag present on all pages. |
-| 1.12 | **404 Page** | ❌ | No custom 404 page detected. Netlify will serve its generic 404 by default. |
+| 1.12 | **404 Page** | ✅ | Custom `404.html` created at root — Netlify auto-serves it. Includes branding, navigation links, and GA4 tracking. |
 | 1.13 | **Clean URLs** | ✅ | Netlify redirect rules rewrite `/who-we-are` → `/who-we-are.html` etc. This is correct and well-configured. |
 | 1.14 | **Google Search Console & Analytics** | ✅ | File-based verification (`google2e8d5954e98983fa.html`) is deployed at root and confirmed verified. No analytics/tracking script found yet. |
 | 1.15 | **Custom Domain / Subdomain** | ✅ | All canonical URLs reference `https://vazhai.in`. Clean professional domain. |
@@ -105,7 +105,7 @@
 | 6.3 | **Image Optimization** | ⚠️ | Images use JPEG format with descriptive filenames, but no WebP/AVIF versions. No explicit `width`/`height` attributes on most `img` tags (except OG images), which can cause layout shift. |
 | 6.4 | **Font Loading** | ✅ | Google Fonts loaded with `preconnect`, `preload`, and `swap` via standard CSS. |
 | 6.5 | **Compression** | ✅ | Netlify applies Brotli/Gzip compression automatically. |
-| 6.6 | **Caching Headers** | ❌ | No explicit caching strategy defined in `netlify.toml`. Static assets (CSS, images, JS) should have far-future `Cache-Control` headers. |
+| 6.6 | **Caching Headers** | ✅ | `Cache-Control` headers added in `netlify.toml`: CSS/JS/images get 1-year cache with `immutable`, favicon gets 1-day cache. |
 
 ---
 
@@ -131,7 +131,7 @@
 🟢 **Done** | **Analytics** | ✅ Google Search Console file verified. ✅ GA4 tag (`G-SPVB6NE6JN`) added to all 9 HTML pages. | ✅ | ✅ |
 | 🟠 **P2** | **Content** | Add **team/board member profiles** — names, photos, bios of founders, School Companions, Field Coordinators. Builds E-E-A-T. | Medium | High |
 | 🟠 **P2** | **Technical** | Create a **custom 404 page** that helps users find their way back. | Low | Low |
-| 🟠 **P2** | **Technical** | Add `<lastmod>` dates to `sitemap.xml`. | Low | Medium |
+| � **P2** | **Technical** | Add `<lastmod>` dates to `sitemap.xml`. | Low | Medium |
 | 🟠 **P2** | **Content** | Add **phone number** to contact page and schema markup. | Low | Medium |
 | 🟠 **P2** | **Performance** | Serve images in **WebP format** with JPEG fallback. Add explicit `width`/`height` attributes to prevent CLS. | Medium | Medium |
 | 🟡 **P3** | **Content** | Publish **annual impact report** (PDF or page) showing outcomes, numbers, school photos, student journeys. | High | High |
@@ -165,7 +165,7 @@
 
 1. ✅ Add Google Search Console verification meta tag - done
 2. ✅ Add Google Analytics 4 tracking snippet - done
-3. ✅ Create a custom 404 page
+3. ✅ Create a custom 404 page - done
 4. ✅ Add phone number to contact page and schema
 5. ✅ Add `<lastmod>` dates to sitemap.xml
 6. ✅ Add `Cache-Control` headers to netlify.toml
