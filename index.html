@@ -1848,7 +1848,8 @@ body {
                  oninput="this.value=this.value.toUpperCase()" autocomplete="off">
           <span class="don-field-hint">Format: ABCDE1234F · Stored securely</span>
         </div>
-        <div class="don-field-group">
+        <div class="don-field-group" style="display: none;">
+          <!--TODO: text area hidden as ramesh mentioned someone says it proceeds if there is no comment and fails otherwise. need to recheck. and enable-->
           <label class="don-label" for="don-comment">Comments <span class="don-opt">(optional)</span></label>
           <textarea class="don-input don-textarea" id="don-comment" placeholder="Anything you'd like us to know…" rows="2"></textarea>
         </div>
