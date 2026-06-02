@@ -2541,9 +2541,11 @@ async function submitDonation() {
 
   // Otherwise, prompt user to complete the Turnstile challenge
   if (turnstileWidgetId !== null && window.turnstile) {
-    showError('Please complete the "I am not a robot" verification above before proceeding.');
+    console.warn('[donation] No Turnstile token yet — ideally it should not have happened');
+    // showError('Please complete the "I am not a robot" verification above before proceeding.');
   } else {
-    showError('Verification system is not ready. Please refresh and try again.');
+    console.warn('[donation] Turnstile widget not ready — ideally it should not have happened');
+    // showError('Verification system is not ready. Please refresh and try again.');
   }
 }
 
