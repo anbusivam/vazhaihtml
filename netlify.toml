@@ -27,8 +27,39 @@
   to = "/.netlify/functions/donate-verify-subscription"
   status = 200
 
-# SPA fallback: serve index.html for any unmatched route
+# Clean URL rewrites (status=200 means internal rewrite, no client redirect)
 [[redirects]]
-  from = "/*"
+  from = "/who-we-are"
+  to = "/who-we-are.html"
+  status = 200
+
+[[redirects]]
+  from = "/what-we-do"
+  to = "/what-we-do.html"
+  status = 200
+
+[[redirects]]
+  from = "/join"
+  to = "/join.html"
+  status = 200
+
+[[redirects]]
+  from = "/donate"
+  to = "/donate.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact.html"
+  status = 200
+
+[[redirects]]
+  from = "/events"
+  to = "/events.html"
+  status = 200
+
+# Root fallback
+[[redirects]]
+  from = "/"
   to = "/index.html"
   status = 200

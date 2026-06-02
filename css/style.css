@@ -104,6 +104,7 @@ body {
   background:none; border:none; cursor:pointer;
   transition:background .15s; padding:6px 4px;
   -webkit-tap-highlight-color:transparent;
+  text-decoration:none;
 }
 .bn-item:active { background:var(--bg2); }
 .bn-icon { font-size:1.25rem; line-height:1; }
@@ -161,6 +162,7 @@ body {
     background:none; border:none; cursor:pointer;
     text-align:left; transition:background .15s; width:100%;
     -webkit-tap-highlight-color:transparent;
+    text-decoration:none;
   }
   .sb-item:hover { background:rgba(255,255,255,.07); }
   .sb-item.active { background:rgba(232,146,10,.18); }
@@ -183,6 +185,7 @@ body {
     border-radius:var(--r); padding:13px 16px; cursor:pointer;
     font-size:.72rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
     transition:background .15s;
+    text-decoration:none;
   }
   .sb-donate-btn:hover { background:var(--amber-d); }
   main { margin-left:var(--sb-w); width:calc(100% - var(--sb-w)); }
