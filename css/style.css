@@ -194,6 +194,9 @@ body {
   }
   .sb-footer-live { font-size:.58rem; color:var(--green); font-weight:700; text-transform:uppercase; letter-spacing:.06em; display:flex; align-items:center; gap:5px; margin-bottom:6px; }
   .sb-footer-reg { font-size:.52rem; color:rgba(255,255,255,.25); letter-spacing:.03em; line-height:1.7; }
+  .sb-footer-links { margin-top:8px; font-size:.5rem; letter-spacing:.04em; }
+  .sb-footer-links a { color:rgba(255,255,255,.35); text-decoration:none; transition:color .15s; }
+  .sb-footer-links a:hover { color:var(--amber); text-decoration:underline; }
   .sb-donate-btn {
     display:flex; align-items:center; justify-content:center;
     gap:8px; margin:12px 10px 16px;
