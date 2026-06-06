@@ -44,10 +44,19 @@ exports.handler = async function (event, context) {
       };
     }
 
+    // Fetch user data to get role
+    const userData = await store.get(`user:${session.email}`, { type: 'json' });
+    const role = userData ? userData.role : null;
+
     return {
       statusCode: 200,
       headers: CORS_HEADERS,
-      body: JSON.stringify({ authenticated: true, email: session.email, expiresAt: session.expiresAt }),
+      body: JSON.stringify({ 
+        authenticated: true, 
+        email: session.email, 
+        expiresAt: session.expiresAt,
+        role: role
+      }),
     };
   } catch (err) {
     console.error('[auth-check] Exception:', err.message, err.stack);

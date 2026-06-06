@@ -105,8 +105,23 @@
   status = 200
 
 [[redirects]]
+  from = "/auth/admin"
+  to = "/.netlify/functions/auth-admin"
+  status = 200
+
+[[redirects]]
   from = "/login"
   to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard/user.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard/manage"
+  to = "/dashboard/manage.html"
   status = 200
 
 # Root fallback

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>My Dashboard — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-container {
+      max-width: 760px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .profile-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .profile-row:last-child { border-bottom: none; }
+    .profile-label {
+      font-size: 13px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    .profile-value {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .role-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .role-badge.admin { background: #e3f2fd; color: #1565c0; }
+    .role-badge.blogging { background: #fff3e0; color: #e65100; }
+    .role-badge.none { background: #f5f5f5; color: #999; }
+    .role-badge.member { background: var(--green-light); color: var(--green-dark); }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .feature-card {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.2s;
+      cursor: default;
+    }
+    .feature-card:hover {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .feature-card .icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .feature-card .title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .feature-card .desc {
+      font-size: 12px;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+    .feature-card.coming-soon {
+      opacity: 0.6;
+    }
+    .feature-card.coming-soon .title::after {
+      content: ' (Coming Soon)';
+      font-size: 10px;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .admin-link {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 8px 16px;
+      background: #e3f2fd;
+      color: #1565c0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .admin-link:hover { background: #bbdefb; }
+    @media (max-width: 640px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>👤 My Dashboard</h1>
+  <div class="user-info">
+    <span id="user-email-display" style="font-weight:600;color:var(--green-dark);"></span>
+    <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Profile Card -->
+  <div class="card">
+    <h2>📋 Account Details</h2>
+    <div id="profile-loading" style="padding:20px;text-align:center;color:var(--text-light);">Loading...</div>
+    <div id="profile-content" style="display:none;">
+      <div class="profile-info">
+        <div class="profile-row">
+          <span class="profile-label">Email</span>
+          <span class="profile-value" id="profile-email"></span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Role</span>
+          <span class="profile-value"><span id="profile-role-badge"></span></span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Session Expires</span>
+          <span class="profile-value" id="profile-expires"></span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">First Login</span>
+          <span class="profile-value" id="profile-first-login">—</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-label">Last Login</span>
+          <span class="profile-value" id="profile-last-login">—</span>
+        </div>
+      </div>
+      <!-- Admin link - only shown for admins -->
+      <div id="admin-link-area" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <a href="/dashboard/manage" class="admin-link">⚙️ Go to Admin Dashboard →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Card -->
+  <div class="card">
+    <h2>🚀 Available Features</h2>
+    <div class="features-grid">
+      <div class="feature-card coming-soon">
+        <div class="icon">📝</div>
+        <div class="title">Blogging</div>
+        <div class="desc">Write and manage posts</div>
+      </div>
+      <div class="feature-card coming-soon">
+        <div class="icon">📊</div>
+        <div class="title">Analytics</div>
+        <div class="desc">Track engagement and views</div>
+      </div>
+      <div class="feature-card coming-soon">
+        <div class="icon">🔔</div>
+        <div class="title">Notifications</div>
+        <div class="desc">Manage your alerts</div>
+      </div>
+      <div class="feature-card coming-soon">
+        <div class="icon">👥</div>
+        <div class="title">Community</div>
+        <div class="desc">Connect with members</div>
+      </div>
+    </div>
+  </div>
+
+  <a href="/" class="back-link">← Back to Home</a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+  
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  // Show user info
+  document.getElementById('user-email-display').textContent = data.email;
+  document.getElementById('profile-email').textContent = data.email;
+  
+  // Session expiry
+  if (data.expiresAt) {
+    const expiryDate = new Date(data.expiresAt);
+    document.getElementById('profile-expires').textContent = expiryDate.toLocaleString();
+  }
+  
+  // Role badge
+  const roleBadge = document.getElementById('profile-role-badge');
+  const role = data.role || 'member';
+  const roleDisplay = data.role ? data.role : 'Member';
+  const roleClass = data.role === 'admin' ? 'admin' : (data.role === 'blogging' ? 'blogging' : 'member');
+  roleBadge.className = 'role-badge ' + roleClass;
+  roleBadge.textContent = roleDisplay;
+  
+  // Show admin link for admins
+  if (data.role === 'admin') {
+    document.getElementById('admin-link-area').style.display = 'block';
+  }
+  
+  document.getElementById('profile-loading').style.display = 'none';
+  document.getElementById('profile-content').style.display = 'block';
+});
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch('/auth/logout', { method: 'POST', headers });
+  } catch (_) {}
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>

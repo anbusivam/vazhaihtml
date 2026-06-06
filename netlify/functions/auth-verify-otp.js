@@ -1,6 +1,6 @@
 // Netlify Function: POST /auth/verify-otp
 // Verifies OTP, creates a session cookie, stores session locally
-const { getStore } = require('./auth-store');
+const { getStore, ADMIN_EMAILS } = require('./auth-store');
 const crypto = require('crypto');
 
 const CORS_HEADERS = {
@@ -73,12 +73,32 @@ exports.handler = async function (event, context) {
     // Store/update user
     const userData = await store.get(`user:${normalizedEmail}`, { type: 'json' });
     if (!userData) {
+      // Determine role: admin if in ADMIN_EMAILS list
+      const role = ADMIN_EMAILS.includes(normalizedEmail) ? 'admin' : null;
       await store.setJSON(`user:${normalizedEmail}`, {
         email: normalizedEmail,
+        role: role,
         firstLogin: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
       });
+
+      // Add to users list for admin dashboard listing
+      const usersList = await store.get('users:list', { type: 'json' }) || [];
+      if (!usersList.includes(normalizedEmail)) {
+        usersList.push(normalizedEmail);
+        await store.setJSON('users:list', usersList);
+      }
     } else {
+      // For existing users, ensure admin role is set if they're in the admin list
+      if (ADMIN_EMAILS.includes(normalizedEmail) && userData.role !== 'admin') {
+        userData.role = 'admin';
+      }
+      // Also ensure user is in the users list
+      const usersList = await store.get('users:list', { type: 'json' }) || [];
+      if (!usersList.includes(normalizedEmail)) {
+        usersList.push(normalizedEmail);
+        await store.setJSON('users:list', usersList);
+      }
       userData.lastLogin = new Date().toISOString();
       await store.setJSON(`user:${normalizedEmail}`, userData);
     }

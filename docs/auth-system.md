@@ -185,12 +185,13 @@ await store.delete(`user:user@example.com`);
 
 **Store implementation logic:**
 ```
-getStore(context)
+(context)
   ├── Try: Netlify Blobs (using context parameter)
   │     └── Success → return Blobs store
   ├── Try: Netlify Blobs (explicit siteID + token from env/files)
   │     ├── NETLIFY_BLOBS_CONTEXT env var (JSON)
   │     ├── .netlify/state.json + NETLIFY_AUTH_TOKEN env var
+  │     ├── .netlify/state.json (siteID only — no token, local emulation)
   │     └── Success → return Blobs store
   └── Fallback: File-backed JSON store (.local-auth-store.json)
         └── Loaded into Map on first access

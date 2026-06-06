@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Admin Dashboard — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-header .user-info .email {
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .dashboard-container {
+      max-width: 960px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .add-user-form {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .add-user-form input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .add-user-form input:focus {
+      border-color: var(--green);
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+    }
+    .btn-outline:hover {
+      background: var(--green-light);
+    }
+    .btn-danger {
+      background: #d32f2f;
+      border-color: #d32f2f;
+    }
+    .btn-danger:hover { background: #b71c1c; }
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .users-table th {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .users-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    .users-table tr:hover td {
+      background: #fafafa;
+    }
+    .role-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .role-badge.admin { background: #e3f2fd; color: #1565c0; }
+    .role-badge.blogging { background: #fff3e0; color: #e65100; }
+    .role-badge.none { background: #f5f5f5; color: #999; }
+    .role-select {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+    }
+    .role-select:focus {
+      border-color: var(--green);
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .user-status {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .user-status .active { color: var(--green); font-weight: 600; }
+    .user-status .pending { color: #e65100; font-weight: 600; }
+    @media (max-width: 640px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+      .users-table { font-size: 13px; }
+      .users-table th, .users-table td { padding: 8px 6px; }
+      .role-select { font-size: 12px; padding: 4px 6px; }
+      .add-user-form { flex-direction: column; }
+      .add-user-form input { min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>⚙️ Admin Dashboard</h1>
+  <div class="user-info">
+    <span>Signed in as <span class="email" id="admin-email"></span></span>
+    <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Messages -->
+  <div id="msg-area" class="msg"></div>
+
+  <!-- Add User Card -->
+  <div class="card" id="add-user-card">
+    <h2>➕ Add New User</h2>
+    <div class="add-user-form">
+      <input type="email" id="new-user-email" placeholder="user@example.com" autocomplete="off">
+      <button class="btn-primary" onclick="addUser()">Add User</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-light);margin:4px 0 0;">Add a user to the system so they can log in. They'll receive OTP access once added.</p>
+  </div>
+
+  <!-- Users List Card -->
+  <div class="card">
+    <h2>👥 Registered Users</h2>
+    <div id="users-loading" class="loading-state">Loading users...</div>
+    <div id="users-empty" class="empty-state" style="display:none;">No users found.</div>
+    <div id="users-table-wrap" style="display:none;">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>First Login</th>
+            <th>Last Login</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <a href="/" class="back-link">← Back to Home</a>
+</div>
+
+<script>
+let currentUserEmail = null;
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+  
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  if (!data.role || data.role !== 'admin') {
+    showMsg('error', 'Admin access required. You do not have admin privileges.');
+    setTimeout(() => { window.location.href = '/'; }, 2000);
+    return;
+  }
+  
+  currentUserEmail = data.email;
+  document.getElementById('admin-email').textContent = data.email;
+  loadUsers();
+});
+
+function showMsg(type, text) {
+  const el = document.getElementById('msg-area');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+async function apiCall(method, body) {
+  const token = localStorage.getItem('vazhai_session');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  
+  const res = await fetch('/auth/admin', {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return await res.json();
+}
+
+async function loadUsers() {
+  document.getElementById('users-loading').style.display = 'block';
+  document.getElementById('users-empty').style.display = 'none';
+  document.getElementById('users-table-wrap').style.display = 'none';
+  
+  const data = await apiCall('GET');
+  
+  document.getElementById('users-loading').style.display = 'none';
+  
+  if (!data.users || data.users.length === 0) {
+    document.getElementById('users-empty').style.display = 'block';
+    return;
+  }
+  
+  document.getElementById('users-table-wrap').style.display = 'block';
+  const tbody = document.getElementById('users-tbody');
+  tbody.innerHTML = '';
+  
+  for (const user of data.users) {
+    const tr = document.createElement('tr');
+    
+    const roleDisplay = user.role ? user.role : '—';
+    const roleClass = user.role === 'admin' ? 'admin' : (user.role === 'blogging' ? 'blogging' : 'none');
+    
+    const firstLoginDisplay = user.firstLogin ? new Date(user.firstLogin).toLocaleDateString() : '—';
+    const lastLoginDisplay = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : '—';
+    
+    // Determine if user has ever logged in
+    const statusHtml = user.firstLogin 
+      ? '<span class="active">● Logged in</span>' 
+      : '<span class="pending">○ Not yet</span>';
+    
+    // Actions column - show role selector only for non-admin users
+    let actionsHtml = '';
+    if (user.role === 'admin') {
+      actionsHtml = '<span class="user-status"><span class="active">System Admin</span></span>';
+    } else {
+      actionsHtml = `
+        <select class="role-select" data-email="${user.email}" onchange="setRole('${user.email}', this.value)">
+          <option value="" ${!user.role ? 'selected' : ''}>No role</option>
+          <option value="blogging" ${user.role === 'blogging' ? 'selected' : ''}>Blogging</option>
+        </select>
+      `;
+    }
+    
+    tr.innerHTML = `
+      <td><strong>${user.email}</strong><br><span class="user-status">${statusHtml}</span></td>
+      <td><span class="role-badge ${roleClass}">${roleDisplay}</span></td>
+      <td>${firstLoginDisplay}</td>
+      <td>${lastLoginDisplay}</td>
+      <td>${actionsHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+async function addUser() {
+  const emailInput = document.getElementById('new-user-email');
+  const email = emailInput.value.trim();
+  
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showMsg('error', 'Please enter a valid email address.');
+    return;
+  }
+  
+  showMsg('', '');
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Adding...';
+  
+  const data = await apiCall('POST', { action: 'add-user', email });
+  
+  btn.disabled = false;
+  btn.textContent = 'Add User';
+  
+  if (data.error) {
+    showMsg('error', data.error);
+    return;
+  }
+  
+  showMsg('success', data.message);
+  emailInput.value = '';
+  loadUsers();
+}
+
+async function setRole(email, role) {
+  const normalizedRole = role === '' ? null : role;
+  
+  const data = await apiCall('POST', { action: 'set-role', email, role: normalizedRole });
+  
+  if (data.error) {
+    showMsg('error', data.error);
+    loadUsers(); // reload to reset the select
+    return;
+  }
+  
+  showMsg('success', data.message);
+  loadUsers();
+}
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch('/auth/logout', { method: 'POST', headers });
+  } catch (_) {}
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>

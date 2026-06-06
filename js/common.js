@@ -120,18 +120,18 @@ function copyLink(id) {
     const data = await res.json();
 
     if (data.authenticated) {
-      // Update page-legal login link to show email + logout
-      const loginLink = document.getElementById('page-login-link');
-      const loggedinEmail = document.getElementById('page-loggedin-email');
+      // Replace login link with email (as link to dashboard)
+      const authArea = document.getElementById('page-auth-area');
+      const logoutContainer = document.getElementById('page-logout-link-container');
       const logoutLink = document.getElementById('page-logout-link');
 
-      if (loginLink) loginLink.style.display = 'none';
-      if (loggedinEmail) {
-        loggedinEmail.style.display = 'inline';
-        loggedinEmail.textContent = data.email;
+      if (authArea) {
+        authArea.innerHTML = `<a href="/dashboard" id="page-loggedin-email" style="color:var(--green-dark, #2d5a3f);font-size:11px;font-weight:600;text-decoration:none;">${data.email}</a>`;
+      }
+      if (logoutContainer) {
+        logoutContainer.style.display = '';
       }
       if (logoutLink) {
-        logoutLink.style.display = 'inline';
         logoutLink.addEventListener('click', async function(e) {
           e.preventDefault();
           try {

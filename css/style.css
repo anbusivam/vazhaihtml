@@ -102,6 +102,9 @@ body {
 .live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
+/* ── Utility ── */
+.hidden { display: none !important; }
+
 /* ── PAGE LEGAL (inline at bottom of each page) ── */
 .page-legal {
   display: flex; align-items: center; justify-content: center; gap: 12px;

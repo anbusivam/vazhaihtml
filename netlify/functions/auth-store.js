@@ -12,7 +12,7 @@ const STORE_FILE = path.resolve(__dirname, '../../.local-auth-store.json');
 // ---------------------------------------------------------------------------
 
 function getSiteCredentials() {
-  // 1) NETLIFY_BLOBS_CONTEXT env var (full JSON string)
+  // 1) NETLIFY_BLOBS_CONTEXT env var (full JSON string) — set by netlify dev
   const blobContext = process.env.NETLIFY_BLOBS_CONTEXT;
   if (blobContext) {
     try {
@@ -21,7 +21,7 @@ function getSiteCredentials() {
     } catch { /* ignore invalid JSON */ }
   }
 
-  // 2) .netlify/state.json + NETLIFY_AUTH_TOKEN
+  // 2) .netlify/state.json (set by `netlify link`) — try with NETLIFY_AUTH_TOKEN
   try {
     const statePath = path.resolve(__dirname, '../../.netlify/state.json');
     if (fs.existsSync(statePath)) {
@@ -30,6 +30,11 @@ function getSiteCredentials() {
       if (state.siteId && token) {
         return { siteID: state.siteId, token };
       }
+      // Site is linked but no token available — return siteID anyway;
+      // the caller will try with just the siteId for local blob emulation.
+      if (state.siteId) {
+        return { siteID: state.siteId, token: null };
+      }
     }
   } catch { /* ignore file errors */ }
 
@@ -37,24 +42,37 @@ function getSiteCredentials() {
 }
 
 async function tryNetlifyBlobs(context) {
-  // Try with function context first
+  // Try with function context first (works with netlify dev)
   if (context) {
     try {
       const { getStore } = require('@netlify/blobs');
       const store = getStore({ name: 'auth', context });
+      // A simple no-op to confirm the store is usable (non-existent key returns null, no throw)
       await store.get('__probe__');
+      console.log('[auth-store] Using Netlify Blobs (context)');
       return store;
-    } catch { /* fall through */ }
+    } catch (err) {
+      console.warn('[auth-store] Netlify Blobs (context) failed:', err.message);
+    }
   }
 
-  // Try with explicit credentials
+  // Try with explicit credentials (siteID from .netlify/state.json ± token)
   const creds = getSiteCredentials();
-  if (creds) {
+  if (creds && creds.siteID) {
     try {
       const { getStore } = require('@netlify/blobs');
-      const store = getStore({ name: 'auth', siteID: creds.siteID, token: creds.token });
-      await store.get('__probe__');
-      return store;
+      if (creds.token) {
+        const store = getStore({ name: 'auth', siteID: creds.siteID, token: creds.token });
+        await store.get('__probe__');
+        console.log('[auth-store] Using Netlify Blobs (explicit credentials)');
+        return store;
+      } else {
+        // Linked site with no token — try without token for local blob emulation
+        const store = getStore({ name: 'auth', siteID: creds.siteID });
+        await store.get('__probe__');
+        console.log('[auth-store] Using Netlify Blobs (siteID only, local emulation)');
+        return store;
+      }
     } catch (err) {
       console.warn('[auth-store] Netlify Blobs (explicit creds) failed:', err.message);
     }
@@ -132,4 +150,12 @@ async function getStore(context) {
   return makeFileStore();
 }
 
-module.exports = { getStore };
+// ---------------------------------------------------------------------------
+// Admin user definitions — hardcoded, not changeable
+// ---------------------------------------------------------------------------
+const ADMIN_EMAILS = [
+  'anbusivam@gmail.com',
+  'vazhai.connect@gmail.com',
+];
+
+module.exports = { getStore, ADMIN_EMAILS };
