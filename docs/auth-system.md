@@ -7,8 +7,7 @@
 3. [Step 1: Send OTP](#step-1-send-otp)
 4. [Step 2: Verify OTP & Create Session](#step-2-verify-otp--create-session)
 5. [Session Persistence](#session-persistence)
-   - [Local (Dev)](#local-dev)
-   - [Netlify (Production)](#netlify-production)
+   - [Local Development](#local-development)
 6. [Auth Check (Page Load)](#auth-check-page-load)
 7. [Logout](#logout)
 8. [File Map](#file-map)
@@ -148,51 +147,56 @@ user:{email}    → { email, firstLogin, lastLogin }
 
 **File:** `netlify/functions/auth-store.js`
 
-The store automatically detects the environment and uses the appropriate backend:
+The store always tries **Netlify Blobs** first. If Netlify Blobs is unavailable (e.g. running locally without proper credentials), it falls back to a **file-backed JSON store** at `.local-auth-store.json`.
 
-```mermaid
-flowchart TD
-    A[getStore called] --> B{"isNetlify()?"}
-    B -->|Yes| C["Use Netlify Blobs<br/>production-grade, persistent"]
-    B -->|No| D["Use file-backed JSON store<br/>.local-auth-store.json"]
-    C --> E[getStore returns Netlify Blobs wrapper]
-    D --> F[load .local-auth-store.json into Map]
-    F --> G[Prune expired sessions]
-    G --> H["Return Map wrapper<br/>- get / getAsText<br/>- set / setJSON<br/>- delete"]
-    H --> I["Each write → persistStore()<br/>writes Map to JSON file"]
-```
+| Scenario | Storage Backend | Persistence |
+|---|---|---|
+| **Production (Netlify deployed)** | Netlify Blobs | ✅ Survives deploys, restarts, scaling |
+| **Local `netlify dev` (with `NETLIFY_AUTH_TOKEN`)** | Netlify Blobs | ✅ Survives restarts (local blob emulation) |
+| **Local `netlify dev` (no credentials)** | File-backed JSON (`.local-auth-store.json`) | ✅ Survives restarts, shared across function processes |
 
-### Local (Dev)
+**Blob Store Configuration (when Netlify Blobs is used):**
 
+| Property | Value |
+|---|---|
+| Storage driver | `@netlify/blobs` |
+| Store name | `auth` |
+| Init call | `getStore({ name: 'auth', context })` |
+
+**Blob Key Names:**
+
+| Key pattern | Purpose | Value shape |
+|---|---|---|
+| `otp:{normalizedEmail}` | Temporary OTP data (expires 10 min) | `{ otp, expiresAt, attempts }` |
+| `session:{token}` | Active session (expires 30 days) | `{ email, expiresAt, createdAt }` |
+| `user:{email}` | User metadata (persistent) | `{ email, firstLogin, lastLogin }` |
+
+> **Important:** The `context` parameter (the second argument passed to the Netlify Function handler) is **required** for Netlify Blobs to correctly scope the store to the deployment. Without it, blob operations will fail.
+
+**Usage in code:**
 ```javascript
-// File: .local-auth-store.json
-{
-  "session:a1b2c3...": {
-    "email": "user@example.com",
-    "expiresAt": 1783311657244,
-    "createdAt": 1780719657244
-  },
-  "user:user@example.com": {
-    "email": "user@example.com",
-    "firstLogin": "2026-06-06T09:00:00.000Z",
-    "lastLogin": "2026-06-06T09:00:00.000Z"
-  }
-}
+const { getStore } = require('./auth-store');
+const store = await getStore(context);
+
+await store.setJSON(`otp:user@example.com`, { otp, expiresAt, attempts: 0 });
+const session = await store.get(`session:abc123...`, { type: 'json' });
+await store.delete(`user:user@example.com`);
 ```
 
-**Key behaviours:**
-- On first access, loads the entire JSON file into an in-memory `Map`.
-- Every `setJSON`, `set`, or `delete` immediately writes the full Map back to disk (`persistStore()`).
-- On module load, expired sessions are automatically pruned (`pruneExpired()`).
-- If the JSON file is corrupted, it logs an error and starts fresh with an empty Map.
-
-### Netlify (Production)
-
-Netlify Blobs (`@netlify/blobs`) is a fully managed key-value store. It is:
-- **Persistent** — survives deploys, restarts, and scaling events.
-- **Global** — available across all function instances.
-- **Scoped** — each deployment has its own blob store namespace.
-
+**Store implementation logic:**
+```
+getStore(context)
+  ├── Try: Netlify Blobs (using context parameter)
+  │     └── Success → return Blobs store
+  ├── Try: Netlify Blobs (explicit siteID + token from env/files)
+  │     ├── NETLIFY_BLOBS_CONTEXT env var (JSON)
+  │     ├── .netlify/state.json + NETLIFY_AUTH_TOKEN env var
+  │     └── Success → return Blobs store
+  └── Fallback: File-backed JSON store (.local-auth-store.json)
+        └── Loaded into Map on first access
+        └── Each write persists to disk immediately
+        └── Expired sessions pruned on load
+```
 ---
 
 ## Auth Check (Page Load)
@@ -267,14 +271,13 @@ window.location.reload();
 
 | File | Purpose |
 |---|---|
-| `netlify/functions/auth-store.js` | Storage abstraction — Netlify Blobs (prod) or file-backed JSON (dev) |
+| `netlify/functions/auth-store.js` | Storage abstraction — Netlify Blobs (always, including local dev via `netlify dev`) |
 | `netlify/functions/auth-send-otp.js` | Generates OTP, stores it, sends via Resend |
 | `netlify/functions/auth-verify-otp.js` | Verifies OTP, creates session token, stores it, sets cookie |
 | `netlify/functions/auth-check.js` | Validates session token on page load |
 | `netlify/functions/auth-logout.js` | Deletes session from store, clears cookie |
 | `js/common.js` | Client-side auth check on every page (IIFE at bottom) |
 | `login.html` | Login page UI with email + OTP forms |
-| `.local-auth-store.json` | Local dev persistent store (auto-generated, gitignored) |
 | `netlify.toml` | Redirects `/auth/*` URLs to the corresponding Netlify functions |
 
 ---
@@ -286,6 +289,27 @@ window.location.reload();
 | `RESEND_API_KEY` | Yes | API key for sending OTP emails via Resend |
 | `OTP_FROM_EMAIL` | No | Sender email address (default: `do-not-reply@vazhai.in`) |
 | `SITE_URL` | Local dev only | Used for local testing (e.g. `http://localhost:8888`) |
+| `NETLIFY_BLOBS_CONTEXT` | No (see below) | JSON string with `{ "siteID": "...", "token": "..." }` for Netlify Blobs |
+
+### Netlify Blobs: Providing `siteID` and `token`
+
+Netlify Blobs requires `siteID` and `token` to connect. There are three ways to supply them:
+
+**1. `netlify link` (recommended)**  
+Run `netlify link` in the project root and select your Netlify site. This stores the site ID in `.netlify/state.json` and `netlify dev` automatically injects the proper context into functions — Netlify Blobs works natively without any extra env vars.
+
+**2. `NETLIFY_BLOBS_CONTEXT` env var**  
+The `@netlify/blobs` package reads the `NETLIFY_BLOBS_CONTEXT` environment variable, which must be a JSON string:
+```bash
+NETLIFY_BLOBS_CONTEXT='{"siteID":"YOUR_SITE_ID","token":"YOUR_API_TOKEN"}'
+```
+- **siteID**: Found at **Netlify Dashboard → Site → Site settings → General → Site details → Site ID**, or in `.netlify/state.json` after `netlify link`.
+- **token**: Generate at **Netlify Dashboard → User settings → Applications → Personal access tokens**.
+
+Add this to your `.env` file for local development.
+
+**3. File-backed JSON fallback (no setup needed)**  
+If neither option is configured, `auth-store.js` falls back to a JSON file at `.local-auth-store.json`. This persists across restarts and is shared across all function processes, so sessions survive cold starts. Gitignored by default. No configuration required.
 
 ---
 
@@ -307,12 +331,10 @@ flowchart TD
     end
 
     subgraph Storage
-        J[Netlify Blobs] -->|Production| K[(Persistent<br/>KV Store)]
-        L[.local-auth-store.json] -->|Local Dev| M[(JSON file<br/>on disk)]
+        J[Netlify Blobs] --> K[(Persistent<br/>KV Store)]
     end
 
     G --> J
-    G --> L
 ```
 
 The key insight is: **the session token is stored server-side**, not just client-side. The client only holds a reference (cookie/token) to look up the session. This means revoking a session on the server (e.g. via logout) truly invalidates it, and the 30-day expiry is enforced server-side regardless of what the client does.

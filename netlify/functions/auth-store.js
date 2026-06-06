@@ -1,43 +1,99 @@
 // Shared auth storage
-// On Netlify: uses Netlify Blobs
-// Locally: uses a JSON file on disk (survives server restarts)
+// Netlify Blobs: used in production and when `siteID` + credentials are available.
+// File-backed JSON: fallback for local dev (shared across all function processes).
 
 const fs = require('fs');
 const path = require('path');
 
 const STORE_FILE = path.resolve(__dirname, '../../.local-auth-store.json');
 
-// In-memory cache loaded from disk on first access
-let localStore = null;
+// ---------------------------------------------------------------------------
+// Netlify Blobs helpers
+// ---------------------------------------------------------------------------
 
-function loadStore() {
-  if (localStore) return localStore;
+function getSiteCredentials() {
+  // 1) NETLIFY_BLOBS_CONTEXT env var (full JSON string)
+  const blobContext = process.env.NETLIFY_BLOBS_CONTEXT;
+  if (blobContext) {
+    try {
+      const parsed = JSON.parse(blobContext);
+      if (parsed.siteID && parsed.token) return parsed;
+    } catch { /* ignore invalid JSON */ }
+  }
+
+  // 2) .netlify/state.json + NETLIFY_AUTH_TOKEN
+  try {
+    const statePath = path.resolve(__dirname, '../../.netlify/state.json');
+    if (fs.existsSync(statePath)) {
+      const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+      const token = process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_ACCESS_TOKEN;
+      if (state.siteId && token) {
+        return { siteID: state.siteId, token };
+      }
+    }
+  } catch { /* ignore file errors */ }
+
+  return null;
+}
+
+async function tryNetlifyBlobs(context) {
+  // Try with function context first
+  if (context) {
+    try {
+      const { getStore } = require('@netlify/blobs');
+      const store = getStore({ name: 'auth', context });
+      await store.get('__probe__');
+      return store;
+    } catch { /* fall through */ }
+  }
+
+  // Try with explicit credentials
+  const creds = getSiteCredentials();
+  if (creds) {
+    try {
+      const { getStore } = require('@netlify/blobs');
+      const store = getStore({ name: 'auth', siteID: creds.siteID, token: creds.token });
+      await store.get('__probe__');
+      return store;
+    } catch (err) {
+      console.warn('[auth-store] Netlify Blobs (explicit creds) failed:', err.message);
+    }
+  } else {
+    console.log('[auth-store] No Netlify Blobs credentials found, using file-backed store');
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// File-backed store (local dev fallback)
+// ---------------------------------------------------------------------------
+
+function loadFileStore() {
   try {
     if (fs.existsSync(STORE_FILE)) {
       const raw = fs.readFileSync(STORE_FILE, 'utf-8');
-      localStore = new Map(Object.entries(JSON.parse(raw)));
-    } else {
-      localStore = new Map();
+      return new Map(Object.entries(JSON.parse(raw)));
     }
   } catch (err) {
     console.error('[auth-store] Failed to load store file, starting fresh:', err.message);
-    localStore = new Map();
   }
-  return localStore;
+  return new Map();
 }
 
-function persistStore() {
+function persistFileStore(store) {
   try {
-    const obj = Object.fromEntries(localStore);
+    const obj = Object.fromEntries(store);
     fs.writeFileSync(STORE_FILE, JSON.stringify(obj, null, 2), 'utf-8');
   } catch (err) {
     console.error('[auth-store] Failed to persist store file:', err.message);
   }
 }
 
-// Clean expired sessions on load
-function pruneExpired() {
-  const store = loadStore();
+function makeFileStore() {
+  const store = loadFileStore();
+
+  // Prune expired sessions on load
   let changed = false;
   for (const [key, val] of store) {
     if (key.startsWith('session:') && val && val.expiresAt && Date.now() > val.expiresAt) {
@@ -45,26 +101,8 @@ function pruneExpired() {
       changed = true;
     }
   }
-  if (changed) persistStore();
-}
+  if (changed) persistFileStore(store);
 
-// Prune expired entries on module load
-pruneExpired();
-
-// Detect if running on actual Netlify deployment (not local dev)
-function isNetlify() {
-  return (process.env.NETLIFY === 'true' && process.env.NETLIFY_DEV !== 'true') ||
-         (process.env.DEPLOY_PRIME_URL && process.env.NETLIFY_DEV !== 'true') ||
-         (process.env.DEPLOY_URL && process.env.NETLIFY_DEV !== 'true');
-}
-
-async function getStore(context) {
-  if (isNetlify()) {
-    const { getStore } = require('@netlify/blobs');
-    return getStore({ name: 'auth', context });
-  }
-  // Local: return a mock store that wraps the file-backed Map
-  const store = loadStore();
   return {
     get: async (key, opts) => {
       const val = store.get(key);
@@ -76,10 +114,22 @@ async function getStore(context) {
       const val = store.get(key);
       return val !== undefined ? JSON.stringify(val) : null;
     },
-    set: async (key, value) => { store.set(key, value); persistStore(); },
-    setJSON: async (key, value) => { store.set(key, value); persistStore(); },
-    delete: async (key) => { store.delete(key); persistStore(); },
+    set: async (key, value) => { store.set(key, value); persistFileStore(store); },
+    setJSON: async (key, value) => { store.set(key, value); persistFileStore(store); },
+    delete: async (key) => { store.delete(key); persistFileStore(store); },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+async function getStore(context) {
+  const blobs = await tryNetlifyBlobs(context);
+  if (blobs) return blobs;
+
+  // Fallback: file-backed JSON store (shared across all function processes)
+  return makeFileStore();
 }
 
 module.exports = { getStore };
