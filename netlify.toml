@@ -84,6 +84,31 @@
   to = "/events.html"
   status = 200
 
+[[redirects]]
+  from = "/auth/send-otp"
+  to = "/.netlify/functions/auth-send-otp"
+  status = 200
+
+[[redirects]]
+  from = "/auth/verify-otp"
+  to = "/.netlify/functions/auth-verify-otp"
+  status = 200
+
+[[redirects]]
+  from = "/auth/check"
+  to = "/.netlify/functions/auth-check"
+  status = 200
+
+[[redirects]]
+  from = "/auth/logout"
+  to = "/.netlify/functions/auth-logout"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+
 # Root fallback
 [[redirects]]
   from = "/"

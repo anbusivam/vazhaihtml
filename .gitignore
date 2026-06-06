@@ -155,4 +155,6 @@ vite.config.ts.timestamp-*
 run-vazhai
 # Local Netlify folder
 .netlify
+# Local auth store (survives server restarts in dev)
+.local-auth-store.json
 log.txt

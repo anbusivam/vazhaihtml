@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Login — Vazhai NGO</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --error: #d32f2f;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 40px 32px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo img {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+    }
+
+    .login-logo h1 {
+      font-size: 22px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .login-logo p {
+      font-size: 13px;
+      color: var(--text-light);
+      margin: 4px 0 0;
+    }
+
+    .login-step {
+      display: none;
+    }
+
+    .login-step.active {
+      display: block;
+    }
+
+    .login-step h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 8px;
+      text-align: center;
+    }
+
+    .login-step p {
+      font-size: 14px;
+      color: var(--text-light);
+      text-align: center;
+      margin: 0 0 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--green);
+    }
+
+    .form-group input.otp-input {
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: 8px;
+      font-weight: 700;
+      padding: 12px 8px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 14px;
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+
+    .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+
+    .error-msg {
+      background: #fef2f2;
+      color: var(--error);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .success-msg {
+      background: var(--green-light);
+      color: var(--green-dark);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    .login-footer a {
+      color: var(--green-dark);
+      text-decoration: none;
+    }
+
+    .login-footer a:hover { text-decoration: underline; }
+
+    .resend-link {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+
+    .resend-link a {
+      color: var(--green-dark);
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .resend-link a:hover { text-decoration: underline; }
+
+    .timer-text {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-light);
+      margin-top: 8px;
+    }
+
+    .logged-in-state {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .logged-in-state .email-display {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--green-dark);
+      margin: 12px 0;
+      word-break: break-all;
+    }
+
+    .logged-in-state .check-icon {
+      font-size: 48px;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <img src="/images/favicon_io/logo192x192.png" alt="Vazhai" onerror="this.onerror=null;this.src='/images/vazahi-logo.gif'">
+      <h1>வாழை VAZHAI</h1>
+      <p>Rural Education · Tamil Nadu</p>
+    </div>
+
+    <!-- Step 1: Email -->
+    <div id="step-email" class="login-step active">
+      <h2>Sign In</h2>
+      <p>Enter your email to receive a login code</p>
+      <div id="email-error" class="error-msg"></div>
+      <div id="email-success" class="success-msg"></div>
+      <div class="form-group">
+        <label for="email-input">Email address</label>
+        <input type="email" id="email-input" placeholder="you@example.com" autocomplete="email" inputmode="email" autofocus>
+      </div>
+      <button id="btn-send-otp" class="btn-primary" onclick="sendOTP()">Send OTP</button>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div id="step-otp" class="login-step">
+      <h2>Check Your Email</h2>
+      <p id="otp-email-label">We sent a code to <strong id="otp-email-display"></strong></p>
+      <div id="otp-error" class="error-msg"></div>
+      <div class="form-group">
+        <label for="otp-input">Enter 6-digit code</label>
+        <input type="text" id="otp-input" class="otp-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+      </div>
+      <button id="btn-verify-otp" class="btn-primary" onclick="verifyOTP()">Verify & Sign In</button>
+      <div class="resend-link">
+        <a onclick="resendOTP()">Resend code</a>
+      </div>
+      <div class="timer-text" id="timer-text"></div>
+      <button class="btn-secondary" onclick="backToEmail()" style="margin-top:16px;">← Different email</button>
+    </div>
+
+    <!-- Step 3: Logged In -->
+    <div id="step-loggedin" class="login-step">
+      <div class="logged-in-state">
+        <div class="check-icon">✅</div>
+        <h2>Signed In</h2>
+        <div class="email-display" id="loggedin-email"></div>
+        <p style="color:#666;font-size:14px;">Session valid for 30 days</p>
+        <button class="btn-primary" onclick="logout()" style="margin-top:16px;">Sign Out</button>
+        <a href="/" style="display:block;margin-top:12px;color:var(--green-dark);font-size:14px;text-decoration:none;">← Back to Home</a>
+      </div>
+    </div>
+
+    <div class="login-footer">
+      <a href="/terms">Terms</a> · <a href="/privacy-policy">Privacy</a>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentEmail = '';
+let resendTimer = null;
+let resendCountdown = 0;
+
+// Check if already logged in on page load
+document.addEventListener('DOMContentLoaded', checkSession);
+
+function showStep(id) {
+  document.querySelectorAll('.login-step').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function showSuccess(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+async function checkSession() {
+  try {
+    const res = await fetch('/auth/check');
+    const data = await res.json();
+    if (data.authenticated) {
+      document.getElementById('loggedin-email').textContent = data.email;
+      showStep('step-loggedin');
+    }
+  } catch (e) {
+    console.error('Session check failed', e);
+  }
+}
+
+async function sendOTP() {
+  const email = document.getElementById('email-input').value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showError('email-error', 'Please enter a valid email address.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-send-otp');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Sending...';
+  showError('email-error', '');
+  showSuccess('email-success', '');
+
+  try {
+    const res = await fetch('/auth/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error('[/auth/send-otp] Error:', data);
+      showError('email-error', data.error || 'Failed to send OTP.');
+      btn.disabled = false;
+      btn.textContent = 'Send OTP';
+      return;
+    }
+
+    currentEmail = email;
+    document.getElementById('otp-email-display').textContent = email;
+    document.getElementById('otp-input').value = '';
+    showError('otp-error', '');
+    showStep('step-otp');
+    document.getElementById('otp-input').focus();
+    startResendTimer();
+  } catch (e) {
+    console.error('[/auth/send-otp] Network error:', e);
+    showError('email-error', 'Network error. Please check your connection and try again.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Send OTP';
+}
+
+async function resendOTP() {
+  if (resendCountdown > 0) return;
+  await sendOTP();
+}
+
+function startResendTimer() {
+  resendCountdown = 30;
+  updateResendTimer();
+}
+
+function updateResendTimer() {
+  const el = document.getElementById('timer-text');
+  if (resendCountdown <= 0) {
+    el.textContent = '';
+    return;
+  }
+  el.textContent = `Resend available in ${resendCountdown}s`;
+  resendCountdown--;
+  setTimeout(updateResendTimer, 1000);
+}
+
+function backToEmail() {
+  showStep('step-email');
+  document.getElementById('email-input').focus();
+}
+
+async function verifyOTP() {
+  const otp = document.getElementById('otp-input').value.trim();
+  if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+    showError('otp-error', 'Please enter the 6-digit code.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-verify-otp');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Verifying...';
+  showError('otp-error', '');
+
+  try {
+    const res = await fetch('/auth/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: currentEmail, otp }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error('[/auth/verify-otp] Error:', data);
+      showError('otp-error', data.error || 'Invalid code. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Verify & Sign In';
+      document.getElementById('otp-input').value = '';
+      document.getElementById('otp-input').focus();
+      return;
+    }
+
+    // Store token in cookie (as a fallback) and localStorage
+    document.cookie = `vazhai_session=${data.token}; Path=/; Max-Age=${30*24*60*60}; SameSite=Lax`;
+    localStorage.setItem('vazhai_session', data.token);
+
+    document.getElementById('loggedin-email').textContent = data.email;
+    showStep('step-loggedin');
+  } catch (e) {
+    console.error('[/auth/verify-otp] Network error:', e);
+    showError('otp-error', 'Network error. Please check your connection and try again.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Verify & Sign In';
+}
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    await fetch('/auth/logout', {
+      method: 'POST',
+      headers,
+    });
+  } catch (e) {
+    console.error('Logout error', e);
+  }
+
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  showStep('step-email');
+  document.getElementById('email-input').value = '';
+  document.getElementById('email-input').focus();
+}
+
+// Enter key support
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    if (document.getElementById('step-email').classList.contains('active')) {
+      sendOTP();
+    } else if (document.getElementById('step-otp').classList.contains('active')) {
+      verifyOTP();
+    }
+  }
+});
+</script>
+
+</body>
+</html>

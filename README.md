@@ -39,3 +39,5 @@ Where it falls short psychologically
 ## to run
 1. ensure netlify cli is installed
 2. run `netlify dev` in the terminal
+3. TURNSTILE CLOUDFARE IS USED TO DETECT HUMAN, BUT ITS DISABLED DUE TO SOME ISSUES WHERE IT DIDNT DETECT HUMAN and failed
+4. Resend is using VAZHAI.connect gmail account. Api key is needed to send otp for mail authentication

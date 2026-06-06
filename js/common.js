@@ -98,6 +98,59 @@ function copyLink(id) {
   }).catch(() => prompt('Copy this link:', url));
 }
 
+/* ── Auth Session Check ── */
+(async function() {
+  // Skip on login page
+  if (window.location.pathname === '/login' || window.location.pathname === '/login.html') return;
+
+  try {
+    // Try to get token from localStorage first
+    let token = localStorage.getItem('vazhai_session');
+
+    // Also check cookie
+    const match = document.cookie.match(/vazhai_session=([^;]+)/);
+    if (match && !token) {
+      token = match[1];
+    }
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/auth/check', { headers });
+    const data = await res.json();
+
+    if (data.authenticated) {
+      // Update page-legal login link to show email + logout
+      const loginLink = document.getElementById('page-login-link');
+      const loggedinEmail = document.getElementById('page-loggedin-email');
+      const logoutLink = document.getElementById('page-logout-link');
+
+      if (loginLink) loginLink.style.display = 'none';
+      if (loggedinEmail) {
+        loggedinEmail.style.display = 'inline';
+        loggedinEmail.textContent = data.email;
+      }
+      if (logoutLink) {
+        logoutLink.style.display = 'inline';
+        logoutLink.addEventListener('click', async function(e) {
+          e.preventDefault();
+          try {
+            const hdrs = { 'Content-Type': 'application/json' };
+            const tok = localStorage.getItem('vazhai_session');
+            if (tok) hdrs['Authorization'] = `Bearer ${tok}`;
+            await fetch('/auth/logout', { method: 'POST', headers: hdrs });
+          } catch (_) {}
+          localStorage.removeItem('vazhai_session');
+          document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+          window.location.reload();
+        });
+      }
+    }
+  } catch (e) {
+    console.error('Auth check failed', e);
+  }
+})();
+
 /* ── Hash-based redirect (backward compatibility with old SPA links) ── */
 (function() {
   const hashMap = {
