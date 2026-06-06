@@ -5,7 +5,12 @@
 const fs = require('fs');
 const path = require('path');
 
-const STORE_FILE = path.resolve(__dirname, '../../.local-auth-store.json');
+// Lambda filesystem is read-only except for /tmp/.
+// When running in production Netlify (Lambda), use /tmp/ for the fallback.
+const LAMBDA_TMP = process.env.LAMBDA_TASK_ROOT || process.env.AWS_EXECUTION_ENV ? '/tmp' : null;
+const STORE_FILE = LAMBDA_TMP
+  ? path.resolve(LAMBDA_TMP, '.local-auth-store.json')
+  : path.resolve(__dirname, '../../.local-auth-store.json');
 
 // ---------------------------------------------------------------------------
 // Netlify Blobs helpers
@@ -37,6 +42,12 @@ function getSiteCredentials() {
       }
     }
   } catch { /* ignore file errors */ }
+
+  // 3) SITE_ID env var — always set by Netlify in production deployments.
+  //    No token is needed when running inside the same site's functions.
+  if (process.env.SITE_ID) {
+    return { siteID: process.env.SITE_ID, token: null };
+  }
 
   return null;
 }

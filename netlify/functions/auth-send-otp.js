@@ -79,7 +79,11 @@ exports.handler = async function (event, context) {
 
     if (!resendRes.ok) {
       console.error('[auth-send-otp] Resend error:', JSON.stringify(resendData));
-      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Failed to send email. Please try again.' }) };
+      // If Resend returns "domain not verified", log it clearly so the operator knows.
+      const msg = resendData && resendData.message && resendData.message.includes('domain is not verified')
+        ? 'Email service domain not verified. Please contact the site administrator.'
+        : 'Failed to send email. Please try again.';
+      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: msg }) };
     }
 
     console.log('[auth-send-otp] OTP sent to', normalizedEmail, '- OTP:', otp);
