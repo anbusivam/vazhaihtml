@@ -320,6 +320,7 @@
 
 <script>
 let currentEmail = '';
+let currentOtpToken = '';
 let resendTimer = null;
 let resendCountdown = 0;
 
@@ -386,6 +387,7 @@ async function sendOTP() {
     }
 
     currentEmail = email;
+    currentOtpToken = data.otp_token || '';
     document.getElementById('otp-email-display').textContent = email;
     document.getElementById('otp-input').value = '';
     showError('otp-error', '');
@@ -443,7 +445,7 @@ async function verifyOTP() {
     const res = await fetch('/auth/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: currentEmail, otp }),
+      body: JSON.stringify({ email: currentEmail, otp, otp_token: currentOtpToken }),
     });
     const data = await res.json();
 

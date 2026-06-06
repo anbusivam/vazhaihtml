@@ -1,6 +1,8 @@
 // Netlify Function: POST /auth/send-otp
 // Generates a 6-digit OTP, stores in Netlify Blobs, sends via Resend
+// Also returns an HMAC-signed OTP token for stateless verification
 const { getStore } = require('./auth-store');
+const crypto = require('crypto');
 
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
@@ -11,6 +13,19 @@ const CORS_HEADERS = {
 
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/** Create an HMAC-signed OTP token (stateless — no blob storage needed for OTP) */
+function createOtpToken(email, otp) {
+  const secret = process.env.OTP_SIGNING_SECRET || process.env.SITE_ID || 'vazhai-dev-fallback-key';
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+  const payload = { email, otp, expiresAt };
+  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto
+    .createHmac('sha256', secret)
+    .update(payloadB64)
+    .digest('hex');
+  return `${payloadB64}.${signature}`;
 }
 
 exports.handler = async function (event, context) {
@@ -33,13 +48,16 @@ exports.handler = async function (event, context) {
     const otp = generateOTP();
     const expiresAt = Date.now() + 10 * 60 * 1000;
 
-    // Store OTP
+    // Store OTP in blobs (fallback for backward compatibility)
     const store = await getStore(context);
     await store.setJSON(`otp:${normalizedEmail}`, {
       otp,
       expiresAt,
       attempts: 0,
     });
+
+    // Create stateless signed token (primary verification method)
+    const otpToken = createOtpToken(normalizedEmail, otp);
 
     // Send email via Resend
     const resendApiKey = process.env.RESEND_API_KEY;
@@ -90,7 +108,11 @@ exports.handler = async function (event, context) {
     return {
       statusCode: 200,
       headers: CORS_HEADERS,
-      body: JSON.stringify({ success: true, message: 'OTP sent to your email.' }),
+      body: JSON.stringify({
+        success: true,
+        message: 'OTP sent to your email.',
+        otp_token: otpToken,
+      }),
     };
   } catch (err) {
     console.error('[auth-send-otp] Exception:', err.message, err.stack);
