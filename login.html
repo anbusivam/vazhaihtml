@@ -323,9 +323,10 @@ let currentEmail = '';
 let currentOtpToken = '';
 let resendTimer = null;
 let resendCountdown = 0;
-
 // Check if already logged in on page load
-document.addEventListener('DOMContentLoaded', checkSession);
+document.addEventListener('DOMContentLoaded', function() {
+  checkSession(true);
+});
 
 function showStep(id) {
   document.querySelectorAll('.login-step').forEach(s => s.classList.remove('active'));
@@ -344,11 +345,15 @@ function showSuccess(id, msg) {
   el.style.display = msg ? 'block' : 'none';
 }
 
-async function checkSession() {
+async function checkSession(redirectToDashboard) {
   try {
     const res = await fetch('/auth/check');
     const data = await res.json();
     if (data.authenticated) {
+      if (redirectToDashboard) {
+        window.location.href = '/dashboard';
+        return;
+      }
       document.getElementById('loggedin-email').textContent = data.email;
       showStep('step-loggedin');
     }
@@ -463,8 +468,8 @@ async function verifyOTP() {
     document.cookie = `vazhai_session=${data.token}; Path=/; Max-Age=${30*24*60*60}; SameSite=Lax`;
     localStorage.setItem('vazhai_session', data.token);
 
-    document.getElementById('loggedin-email').textContent = data.email;
-    showStep('step-loggedin');
+    // Redirect directly to user dashboard
+    window.location.href = '/dashboard';
   } catch (e) {
     console.error('[/auth/verify-otp] Network error:', e);
     showError('otp-error', 'Network error. Please check your connection and try again.');
