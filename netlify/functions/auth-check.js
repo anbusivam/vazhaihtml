@@ -44,14 +44,25 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // Fetch user data to get role
+    // Fetch user data to get roles
     // Hardcoded ADMIN_EMAILS takes precedence so admins always get their role
     // regardless of when their user record was created
     const userData = await store.get(`user:${session.email}`, { type: 'json' });
-    let role = userData ? userData.role : null;
-    if (ADMIN_EMAILS.includes(session.email)) {
-      role = 'admin';
+    let roles = [];
+    if (userData) {
+      // Support both old single-role format and new array format
+      if (Array.isArray(userData.roles)) {
+        roles = userData.roles;
+      } else if (userData.role) {
+        roles = [userData.role];
+      }
     }
+    // Hardcoded admin emails always get 'admin' role
+    if (ADMIN_EMAILS.includes(session.email) && !roles.includes('admin')) {
+      roles = [...roles, 'admin'];
+    }
+    // Store a display-friendly role string for backward compat with existing frontend
+    const primaryRole = roles.length > 0 ? roles[0] : null;
 
     return {
       statusCode: 200,
@@ -60,7 +71,8 @@ exports.handler = async function (event, context) {
         authenticated: true, 
         email: session.email, 
         expiresAt: session.expiresAt,
-        role: role
+        roles: roles,
+        role: primaryRole
       }),
     };
   } catch (err) {

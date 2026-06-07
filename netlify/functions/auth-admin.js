@@ -9,7 +9,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-const VALID_ROLES = ['blogging', null];
+const VALID_ROLES = ['admin', 'volunteer', 'donor', 'blogger'];
 
 // Extract session from request
 async function getSession(store, event) {
@@ -68,9 +68,9 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // POST: set role or add user
+    // POST: set roles or add user
     if (event.httpMethod === 'POST') {
-      const { action, email: targetEmail, role } = JSON.parse(event.body || '{}');
+      const { action, email: targetEmail, roles, role } = JSON.parse(event.body || '{}');
 
       if (!targetEmail) {
         return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Email is required.' }) };
@@ -83,9 +83,15 @@ exports.handler = async function (event, context) {
         return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Cannot modify admin users.' }) };
       }
 
-      if (action === 'set-role') {
-        if (!VALID_ROLES.includes(role)) {
-          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `Invalid role. Must be one of: ${VALID_ROLES.filter(Boolean).join(', ')}, or null to clear role.` }) };
+      if (action === 'set-roles') {
+        // roles must be an array of valid role strings
+        if (!Array.isArray(roles)) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Roles must be an array.' }) };
+        }
+        for (const r of roles) {
+          if (!VALID_ROLES.includes(r)) {
+            return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `Invalid role "${r}". Valid roles: ${VALID_ROLES.join(', ')}` }) };
+          }
         }
 
         const userData = await store.get(`user:${normalizedEmail}`, { type: 'json' });
@@ -93,14 +99,14 @@ exports.handler = async function (event, context) {
           return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'User not found.' }) };
         }
 
-        userData.role = role;
+        userData.roles = roles;
         userData.lastUpdated = new Date().toISOString();
         await store.setJSON(`user:${normalizedEmail}`, userData);
 
         return {
           statusCode: 200,
           headers: CORS_HEADERS,
-          body: JSON.stringify({ success: true, user: userData, message: `Role updated for ${normalizedEmail}.` }),
+          body: JSON.stringify({ success: true, user: userData, message: `Roles updated for ${normalizedEmail}.` }),
         };
       }
 
@@ -113,7 +119,8 @@ exports.handler = async function (event, context) {
 
         const newUser = {
           email: normalizedEmail,
-          role: null,
+          roles: [],
+          role: null, // kept for backward compat
           firstLogin: null,
           lastLogin: null,
           addedBy: session.email,

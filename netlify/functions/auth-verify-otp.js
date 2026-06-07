@@ -120,11 +120,12 @@ exports.handler = async function (event, context) {
     // Store/update user
     const userData = await store.get(`user:${normalizedEmail}`, { type: 'json' });
     if (!userData) {
-      // Determine role: admin if in ADMIN_EMAILS list
-      const role = ADMIN_EMAILS.includes(normalizedEmail) ? 'admin' : null;
+      // Determine roles: admin if in ADMIN_EMAILS list
+      const roles = ADMIN_EMAILS.includes(normalizedEmail) ? ['admin'] : [];
       await store.setJSON(`user:${normalizedEmail}`, {
         email: normalizedEmail,
-        role: role,
+        roles: roles,
+        role: roles.length > 0 ? roles[0] : null, // kept for backward compat
         firstLogin: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
       });
@@ -137,7 +138,15 @@ exports.handler = async function (event, context) {
       }
     } else {
       // For existing users, ensure admin role is set if they're in the admin list
-      if (ADMIN_EMAILS.includes(normalizedEmail) && userData.role !== 'admin') {
+      if (ADMIN_EMAILS.includes(normalizedEmail)) {
+        // Migrate old single-role format to new array format if needed
+        if (!Array.isArray(userData.roles)) {
+          userData.roles = userData.role ? [userData.role] : [];
+        }
+        if (!userData.roles.includes('admin')) {
+          userData.roles.push('admin');
+        }
+        // Also keep old format for backward compat
         userData.role = 'admin';
       }
       // Also ensure user is in the users list

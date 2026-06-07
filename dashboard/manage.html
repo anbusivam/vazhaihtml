@@ -162,18 +162,51 @@
     .role-badge.admin { background: #e3f2fd; color: #1565c0; }
     .role-badge.blogging { background: #fff3e0; color: #e65100; }
     .role-badge.none { background: #f5f5f5; color: #999; }
-    .role-select {
-      padding: 5px 8px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 13px;
-      font-family: inherit;
+    .role-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .role-checkboxes label {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 12px;
       cursor: pointer;
-      outline: none;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #fafafa;
+      transition: all 0.15s;
+      user-select: none;
     }
-    .role-select:focus {
+    .role-checkboxes label:hover {
       border-color: var(--green);
+      background: var(--green-light);
     }
+    .role-checkboxes input[type="checkbox"] {
+      margin: 0;
+      accent-color: var(--green-dark);
+    }
+    .role-checkboxes label.active {
+      background: var(--green-light);
+      border-color: var(--green-dark);
+      font-weight: 600;
+    }
+    .role-save-btn {
+      padding: 3px 10px;
+      font-size: 11px;
+      border-radius: 4px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+    .role-save-btn:hover { background: var(--green); }
+    .role-save-btn:disabled { background: #ccc; cursor: not-allowed; }
     .msg {
       padding: 10px 14px;
       border-radius: 8px;
@@ -280,7 +313,10 @@
 </div>
 
 <script>
+const ALL_ROLES = ['admin', 'volunteer', 'donor', 'blogger'];
+
 let currentUserEmail = null;
+let userRolesCache = {}; // email -> roles array (for tracking changes)
 
 document.addEventListener('DOMContentLoaded', async function() {
   const res = await fetch('/auth/check');
@@ -291,7 +327,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     return;
   }
   
-  if (!data.role || data.role !== 'admin') {
+  // Support both old single-role and new multi-role checking
+  const isAdmin = data.roles ? data.roles.includes('admin') : (data.role === 'admin');
+  if (!isAdmin) {
     showMsg('error', 'Admin access required. You do not have admin privileges.');
     setTimeout(() => { window.location.href = '/'; }, 2000);
     return;
@@ -323,6 +361,24 @@ async function apiCall(method, body) {
   return await res.json();
 }
 
+// Get roles array from user object (handles both old format and new format)
+function getRolesArray(user) {
+  if (Array.isArray(user.roles)) return user.roles;
+  if (user.role) return [user.role];
+  return [];
+}
+
+// Format roles for display as badges
+function rolesToBadges(roles) {
+  if (!roles || roles.length === 0) {
+    return '<span class="role-badge none">—</span>';
+  }
+  return roles.map(r => {
+    const cls = r === 'admin' ? 'admin' : (r === 'blogging' ? 'blogging' : 'none');
+    return `<span class="role-badge ${cls}">${r}</span>`;
+  }).join(' ');
+}
+
 async function loadUsers() {
   document.getElementById('users-loading').style.display = 'block';
   document.getElementById('users-empty').style.display = 'none';
@@ -344,8 +400,9 @@ async function loadUsers() {
   for (const user of data.users) {
     const tr = document.createElement('tr');
     
-    const roleDisplay = user.role ? user.role : '—';
-    const roleClass = user.role === 'admin' ? 'admin' : (user.role === 'blogging' ? 'blogging' : 'none');
+    const roles = getRolesArray(user);
+    const hasAdminRole = roles.includes('admin');
+    const badgesHtml = rolesToBadges(roles);
     
     const firstLoginDisplay = user.firstLogin ? new Date(user.firstLogin).toLocaleDateString() : '—';
     const lastLoginDisplay = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : '—';
@@ -355,28 +412,73 @@ async function loadUsers() {
       ? '<span class="active">● Logged in</span>' 
       : '<span class="pending">○ Not yet</span>';
     
-    // Actions column - show role selector only for non-admin users
+    // Actions column: for system admins, show static text; for others, show checkboxes
     let actionsHtml = '';
-    if (user.role === 'admin') {
+    if (hasAdminRole) {
       actionsHtml = '<span class="user-status"><span class="active">System Admin</span></span>';
     } else {
-      actionsHtml = `
-        <select class="role-select" data-email="${user.email}" onchange="setRole('${user.email}', this.value)">
-          <option value="" ${!user.role ? 'selected' : ''}>No role</option>
-          <option value="blogging" ${user.role === 'blogging' ? 'selected' : ''}>Blogging</option>
-        </select>
-      `;
+      // Create checkboxes for each possible role
+      const checkboxes = ALL_ROLES.map(r => {
+        const checked = roles.includes(r) ? 'checked' : '';
+        return `<label class="${checked ? 'active' : ''}">
+          <input type="checkbox" value="${r}" ${checked} onchange="onRoleCheckboxChange(this, '${user.email}')">
+          ${r}
+        </label>`;
+      }).join('');
+      
+      actionsHtml = `<div class="role-checkboxes" id="role-cbs-${user.email.replace(/[@.]/g, '_')}">
+        ${checkboxes}
+        <button class="role-save-btn" id="save-roles-${user.email.replace(/[@.]/g, '_')}" onclick="saveRoles('${user.email}')" disabled>Save</button>
+      </div>`;
     }
     
     tr.innerHTML = `
       <td><strong>${user.email}</strong><br><span class="user-status">${statusHtml}</span></td>
-      <td><span class="role-badge ${roleClass}">${roleDisplay}</span></td>
+      <td>${badgesHtml}</td>
       <td>${firstLoginDisplay}</td>
       <td>${lastLoginDisplay}</td>
       <td>${actionsHtml}</td>
     `;
     tbody.appendChild(tr);
+    
+    // Store current roles to detect changes
+    userRolesCache[user.email] = [...roles];
   }
+}
+
+function onRoleCheckboxChange(cb, email) {
+  const safeEmail = email.replace(/[@.]/g, '_');
+  const saveBtn = document.getElementById(`save-roles-${safeEmail}`);
+  if (saveBtn) {
+    saveBtn.disabled = false;
+  }
+}
+
+async function saveRoles(email) {
+  const safeEmail = email.replace(/[@.]/g, '_');
+  const saveBtn = document.getElementById(`save-roles-${safeEmail}`);
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+  
+  // Collect checked roles
+  const roles = [];
+  document.querySelectorAll(`#role-cbs-${safeEmail} input[type="checkbox"]:checked`).forEach(cb => {
+    roles.push(cb.value);
+  });
+  
+  const data = await apiCall('POST', { action: 'set-roles', email, roles });
+  
+  saveBtn.textContent = 'Save';
+  
+  if (data.error) {
+    showMsg('error', data.error);
+    loadUsers(); // reload to reset
+    return;
+  }
+  
+  showMsg('success', data.message);
+  userRolesCache[email] = [...roles];
+  loadUsers();
 }
 
 async function addUser() {
@@ -405,21 +507,6 @@ async function addUser() {
   
   showMsg('success', data.message);
   emailInput.value = '';
-  loadUsers();
-}
-
-async function setRole(email, role) {
-  const normalizedRole = role === '' ? null : role;
-  
-  const data = await apiCall('POST', { action: 'set-role', email, role: normalizedRole });
-  
-  if (data.error) {
-    showMsg('error', data.error);
-    loadUsers(); // reload to reset the select
-    return;
-  }
-  
-  showMsg('success', data.message);
   loadUsers();
 }
 

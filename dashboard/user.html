@@ -287,16 +287,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('profile-expires').textContent = expiryDate.toLocaleString();
   }
   
-  // Role badge
+  // Role badges — support multiple roles
   const roleBadge = document.getElementById('profile-role-badge');
-  const role = data.role || 'member';
-  const roleDisplay = data.role ? data.role : 'Member';
-  const roleClass = data.role === 'admin' ? 'admin' : (data.role === 'blogging' ? 'blogging' : 'member');
-  roleBadge.className = 'role-badge ' + roleClass;
-  roleBadge.textContent = roleDisplay;
+  const roles = data.roles || (data.role ? [data.role] : []);
+  
+  if (roles.length === 0) {
+    roleBadge.className = 'role-badge member';
+    roleBadge.textContent = 'Member';
+  } else {
+    roleBadge.innerHTML = roles.map(r => {
+      const cls = r === 'admin' ? 'admin' : (r === 'blogging' ? 'blogging' : 'none');
+      return `<span class="role-badge ${cls}" style="margin-right:4px;">${r}</span>`;
+    }).join('');
+  }
   
   // Show admin link for admins
-  if (data.role === 'admin') {
+  if (roles.includes('admin')) {
     document.getElementById('admin-link-area').style.display = 'block';
   }
   
