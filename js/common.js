@@ -120,30 +120,31 @@ function copyLink(id) {
     const data = await res.json();
 
     if (data.authenticated) {
-      // Replace login link with email (as link to dashboard)
-      const authArea = document.getElementById('page-auth-area');
-      const logoutContainer = document.getElementById('page-logout-link-container');
-      const logoutLink = document.getElementById('page-logout-link');
+      // Replace login link with email (as link to dashboard/user.html)
+      // Both "Login" and "Logout" are replaced by just the email link.
+      // The user can sign out from the dashboard itself.
 
+      // Pattern A: common-bottom.html has #page-auth-area wrapping the login link
+      const authArea = document.getElementById('page-auth-area');
       if (authArea) {
         authArea.innerHTML = `<a href="/dashboard" id="page-loggedin-email" style="color:var(--green-dark, #2d5a3f);font-size:11px;font-weight:600;text-decoration:none;">${data.email}</a>`;
       }
-      if (logoutContainer) {
-        logoutContainer.style.display = '';
+
+      // Pattern B: pages with inline #page-login-link + #page-loggedin-email (hidden)
+      const loginLink = document.getElementById('page-login-link');
+      const emailSpan = document.getElementById('page-loggedin-email');
+      if (loginLink) {
+        loginLink.style.display = 'none';
       }
-      if (logoutLink) {
-        logoutLink.addEventListener('click', async function(e) {
-          e.preventDefault();
-          try {
-            const hdrs = { 'Content-Type': 'application/json' };
-            const tok = localStorage.getItem('vazhai_session');
-            if (tok) hdrs['Authorization'] = `Bearer ${tok}`;
-            await fetch('/auth/logout', { method: 'POST', headers: hdrs });
-          } catch (_) {}
-          localStorage.removeItem('vazhai_session');
-          document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
-          window.location.reload();
-        });
+      if (emailSpan) {
+        emailSpan.innerHTML = `<a href="/dashboard" style="color:var(--green-dark, #2d5a3f);font-size:11px;font-weight:600;text-decoration:none;">${data.email}</a>`;
+        emailSpan.style.display = '';
+      }
+
+      // Keep logout container hidden — email replaces both Login and Logout
+      const logoutContainer = document.getElementById('page-logout-link-container');
+      if (logoutContainer) {
+        logoutContainer.style.display = 'none';
       }
     }
   } catch (e) {
