@@ -80,7 +80,7 @@ exports.handler = async function (event, context) {
     } else {
       // ── Fallback: blob-based OTP verification (for backward compatibility) ──
       console.log('[auth-verify-otp] No otp_token provided, falling back to blob store');
-      const store = await getStore(context);
+      const store = await getStore(event);
 
       const otpData = await store.get(`otp:${normalizedEmail}`, { type: 'json' });
 
@@ -107,7 +107,7 @@ exports.handler = async function (event, context) {
     }
 
     // ── Session creation (shared by both paths) ──
-    const store = await getStore(context);
+    const store = await getStore(event);
     const token = generateToken();
     const expiresAt = Date.now() + SESSION_DURATION_MS;
 

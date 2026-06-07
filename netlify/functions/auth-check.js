@@ -28,7 +28,7 @@ exports.handler = async function (event, context) {
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ authenticated: false }) };
     }
 
-    const store = await getStore(context);
+    const store = await getStore(event);
     const session = await store.get(`session:${token}`, { type: 'json' });
 
     if (!session) {

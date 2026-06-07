@@ -28,7 +28,7 @@ exports.handler = async function (event, context) {
     if (!token && authHeader.startsWith('Bearer ')) token = authHeader.slice(7);
 
     if (token) {
-      const store = await getStore(context);
+      const store = await getStore(event);
       await store.delete(`session:${token}`);
     }
 

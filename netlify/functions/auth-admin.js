@@ -34,7 +34,7 @@ exports.handler = async function (event, context) {
   }
 
   try {
-    const store = await getStore(context);
+    const store = await getStore(event);
     const session = await getSession(store, event);
 
     // Must be authenticated

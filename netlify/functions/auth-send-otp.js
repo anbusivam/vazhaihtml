@@ -49,7 +49,7 @@ exports.handler = async function (event, context) {
     const expiresAt = Date.now() + 10 * 60 * 1000;
 
     // Store OTP in blobs (fallback for backward compatibility)
-    const store = await getStore(context);
+    const store = await getStore(event);
     await store.setJSON(`otp:${normalizedEmail}`, {
       otp,
       expiresAt,

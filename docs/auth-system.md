@@ -147,13 +147,12 @@ user:{email}    → { email, firstLogin, lastLogin }
 
 **File:** `netlify/functions/auth-store.js`
 
-The store always tries **Netlify Blobs** first. If Netlify Blobs is unavailable (e.g. running locally without proper credentials), it falls back to a **file-backed JSON store** at `.local-auth-store.json`.
+The store always uses **Netlify Blobs** — in both production and local development. There is no file-backed fallback. If blobs are unavailable, the function throws an error.
 
 | Scenario | Storage Backend | Persistence |
 |---|---|---|
 | **Production (Netlify deployed)** | Netlify Blobs | ✅ Survives deploys, restarts, scaling |
-| **Local `netlify dev` (with `NETLIFY_AUTH_TOKEN`)** | Netlify Blobs | ✅ Survives restarts (local blob emulation) |
-| **Local `netlify dev` (no credentials)** | File-backed JSON (`.local-auth-store.json`) | ✅ Survives restarts, shared across function processes |
+| **Local `netlify dev` (with `netlify link`)** | Netlify Blobs | ✅ Survives restarts (context-based or local blob emulation) |
 
 **Blob Store Configuration (when Netlify Blobs is used):**
 
@@ -171,7 +170,7 @@ The store always tries **Netlify Blobs** first. If Netlify Blobs is unavailable 
 | `session:{token}` | Active session (expires 30 days) | `{ email, expiresAt, createdAt }` |
 | `user:{email}` | User metadata (persistent) | `{ email, firstLogin, lastLogin }` |
 
-> **Important:** The `context` parameter (the second argument passed to the Netlify Function handler) is **required** for Netlify Blobs to correctly scope the store to the deployment. Without it, blob operations will fail.
+> **Important:** The `context` parameter (the second argument passed to the Netlify Function handler) is **required** for Netlify Blobs to correctly scope the store to the deployment. Without it, blob operations will fail. `netlify dev` automatically injects the blob context into this parameter.
 
 **Usage in code:**
 ```javascript
@@ -193,10 +192,7 @@ await store.delete(`user:user@example.com`);
   │     ├── .netlify/state.json + NETLIFY_AUTH_TOKEN env var
   │     ├── .netlify/state.json (siteID only — no token, local emulation)
   │     └── Success → return Blobs store
-  └── Fallback: File-backed JSON store (.local-auth-store.json)
-        └── Loaded into Map on first access
-        └── Each write persists to disk immediately
-        └── Expired sessions pruned on load
+  └── Throw error — no fallback
 ```
 ---
 
@@ -294,7 +290,7 @@ window.location.reload();
 
 ### Netlify Blobs: Providing `siteID` and `token`
 
-Netlify Blobs requires `siteID` and `token` to connect. There are three ways to supply them:
+Netlify Blobs requires `siteID` and `token` to connect. There are two ways to supply them locally (in production, Netlify injects `SITE_ID` automatically):
 
 **1. `netlify link` (recommended)**  
 Run `netlify link` in the project root and select your Netlify site. This stores the site ID in `.netlify/state.json` and `netlify dev` automatically injects the proper context into functions — Netlify Blobs works natively without any extra env vars.
@@ -309,8 +305,7 @@ NETLIFY_BLOBS_CONTEXT='{"siteID":"YOUR_SITE_ID","token":"YOUR_API_TOKEN"}'
 
 Add this to your `.env` file for local development.
 
-**3. File-backed JSON fallback (no setup needed)**  
-If neither option is configured, `auth-store.js` falls back to a JSON file at `.local-auth-store.json`. This persists across restarts and is shared across all function processes, so sessions survive cold starts. Gitignored by default. No configuration required.
+> **Note:** The file-backed JSON fallback (`.local-auth-store.json`) has been removed to ensure identical behavior between local and production modes. The store now requires Netlify Blobs in both environments.
 
 ---
 

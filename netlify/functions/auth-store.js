@@ -1,164 +1,143 @@
 // Shared auth storage
-// Netlify Blobs: used in production and when `siteID` + credentials are available.
-// File-backed JSON: fallback for local dev (shared across all function processes).
+// Netlify Blobs: used in both production and local dev (via `netlify link` + `netlify dev`).
+// No file-backed fallback — if blobs are unavailable, an error is thrown.
 
 const fs = require('fs');
 const path = require('path');
 
-// Lambda filesystem is read-only except for /tmp/.
-// When running in production Netlify (Lambda), use /tmp/ for the fallback.
-const LAMBDA_TMP = process.env.LAMBDA_TASK_ROOT || process.env.AWS_EXECUTION_ENV ? '/tmp' : null;
-const STORE_FILE = LAMBDA_TMP
-  ? path.resolve(LAMBDA_TMP, '.local-auth-store.json')
-  : path.resolve(__dirname, '../../.local-auth-store.json');
-
 // ---------------------------------------------------------------------------
-// Netlify Blobs helpers
+// Helpers to connect to the local blob server started by netlify dev
+//
+// netlify-cli 23.x runs functions in Lambda compatibility mode and does NOT
+// inject NETLIFY_BLOBS_CONTEXT into the process.  Instead the CLI starts a
+// local blob server and passes the connection info (token + URL) inside the
+// function event's clientContext.blobs field.
+//
+// In contrast, newer CLI versions (or production deploys) either set the
+// NETLIFY_BLOBS_CONTEXT env var or rely on the @netlify/blobs library's
+// built-in environment detection.
 // ---------------------------------------------------------------------------
 
-function getSiteCredentials() {
-  // 1) NETLIFY_BLOBS_CONTEXT env var (full JSON string) — set by netlify dev
-  const blobContext = process.env.NETLIFY_BLOBS_CONTEXT;
-  if (blobContext) {
+/**
+ * Try to obtain a Netlify Blobs store.
+ *
+ * Strategy (in order):
+ *
+ * 1. If we're inside a Netlify Functions invocation (event?.clientContext?.blobs),
+ *    use connectLambda() to decode the blob context and then auto-resolve.
+ *
+ * 2. Library-automatic: let @netlify/blobs discover credentials from:
+ *      - globalThis.netlifyBlobsContext
+ *      - NETLIFY_BLOBS_CONTEXT (base64-encoded env var)
+ *
+ * 3. Explicit from .netlify/state.json + NETLIFY_AUTH_TOKEN / NETLIFY_ACCESS_TOKEN
+ *    (works when NETLIFY_AUTH_TOKEN is injected into the function process).
+ *
+ * 4. SITE_ID env var (set by Netlify in production deployments — may fail if
+ *    the library needs a token for the API path).
+ */
+async function tryNetlifyBlobs(event) {
+  const { getStore, setEnvironmentContext } = require('@netlify/blobs');
+
+  // ── 1) event.blobs (Lambda compat mode, netlify-cli 23.x) ─────────
+  //     The old CLI passes blob connection info via event.blobs (base64
+  //     encoded JSON with token/url) and headers (x-nf-site-id, etc.).
+  //     The @netlify/blobs library's connectLambda() decodes this.
+  if (event && event.blobs) {
     try {
-      const parsed = JSON.parse(blobContext);
-      if (parsed.siteID && parsed.token) return parsed;
-    } catch { /* ignore invalid JSON */ }
-  }
-
-  // 2) .netlify/state.json (set by `netlify link`) — try with NETLIFY_AUTH_TOKEN
-  try {
-    const statePath = path.resolve(__dirname, '../../.netlify/state.json');
-    if (fs.existsSync(statePath)) {
-      const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
-      const token = process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_ACCESS_TOKEN;
-      if (state.siteId && token) {
-        return { siteID: state.siteId, token };
-      }
-      // Site is linked but no token available — return siteID anyway;
-      // the caller will try with just the siteId for local blob emulation.
-      if (state.siteId) {
-        return { siteID: state.siteId, token: null };
-      }
-    }
-  } catch { /* ignore file errors */ }
-
-  // 3) SITE_ID env var — always set by Netlify in production deployments.
-  //    No token is needed when running inside the same site's functions.
-  if (process.env.SITE_ID) {
-    return { siteID: process.env.SITE_ID, token: null };
-  }
-
-  return null;
-}
-
-async function tryNetlifyBlobs(context) {
-  // Try with function context first (works with netlify dev)
-  if (context) {
-    try {
-      const { getStore } = require('@netlify/blobs');
-      const store = getStore({ name: 'auth', context });
-      // A simple no-op to confirm the store is usable (non-existent key returns null, no throw)
+      const { connectLambda } = require('@netlify/blobs');
+      connectLambda(event);
+      const store = getStore({ name: 'auth' });
       await store.get('__probe__');
-      console.log('[auth-store] Using Netlify Blobs (context)');
+      console.log('[auth-store] Using Netlify Blobs (connectLambda)');
       return store;
     } catch (err) {
-      console.warn('[auth-store] Netlify Blobs (context) failed:', err.message);
+      console.warn('[auth-store] Netlify Blobs (connectLambda) failed:', err.message);
+    }
+  }
+  // Also check clientContext.blobs (some CLI versions/event-formats)
+  if (event && event.clientContext && event.clientContext.blobs) {
+    try {
+      const { setEnvironmentContext } = require('@netlify/blobs');
+      const raw = Buffer.from(event.clientContext.blobs, 'base64').toString('utf-8');
+      const blobInfo = JSON.parse(raw);
+      setEnvironmentContext({
+        siteID: event.headers['x-nf-site-id'] || process.env.SITE_ID,
+        token: blobInfo.token,
+        edgeURL: blobInfo.url,
+        deployID: event.headers['x-nf-deploy-id'],
+      });
+      const store = getStore({ name: 'auth' });
+      await store.get('__probe__');
+      console.log('[auth-store] Using Netlify Blobs (clientContext.blobs)');
+      return store;
+    } catch (err) {
+      console.warn('[auth-store] Netlify Blobs (clientContext.blobs) failed:', err.message);
     }
   }
 
-  // Try with explicit credentials (siteID from .netlify/state.json ± token)
-  const creds = getSiteCredentials();
-  if (creds && creds.siteID) {
-    try {
-      const { getStore } = require('@netlify/blobs');
-      if (creds.token) {
-        const store = getStore({ name: 'auth', siteID: creds.siteID, token: creds.token });
+  // ── 2) Library-automatic (modern CLI / env var) ────────────────
+  try {
+    const store = getStore({ name: 'auth' });
+    await store.get('__probe__');
+    console.log('[auth-store] Using Netlify Blobs (auto)');
+    return store;
+  } catch (err) {
+    console.warn('[auth-store] Netlify Blobs (auto) failed:', err.message);
+  }
+
+  // ── 3) Explicit from .netlify/state.json + token ───────────────
+  try {
+    const statePath = path.resolve(__dirname, '../../.netlify/state.json');
+    const token = process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_ACCESS_TOKEN;
+    if (fs.existsSync(statePath) && token) {
+      const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+      if (state.siteId) {
+        const store = getStore({ name: 'auth', siteID: state.siteId, token });
         await store.get('__probe__');
-        console.log('[auth-store] Using Netlify Blobs (explicit credentials)');
-        return store;
-      } else {
-        // Linked site with no token — try without token for local blob emulation
-        const store = getStore({ name: 'auth', siteID: creds.siteID });
-        await store.get('__probe__');
-        console.log('[auth-store] Using Netlify Blobs (siteID only, local emulation)');
+        console.log('[auth-store] Using Netlify Blobs (state.json + token)');
         return store;
       }
+    }
+  } catch (err) {
+    console.warn('[auth-store] Netlify Blobs (state.json) failed:', err.message);
+  }
+
+  // ── 4) SITE_ID env var (production — works when deployed) ──────
+  if (process.env.SITE_ID) {
+    try {
+      const store = getStore({ name: 'auth', siteID: process.env.SITE_ID });
+      await store.get('__probe__');
+      console.log('[auth-store] Using Netlify Blobs (SITE_ID only)');
+      return store;
     } catch (err) {
-      console.warn('[auth-store] Netlify Blobs (explicit creds) failed:', err.message);
+      console.warn('[auth-store] Netlify Blobs (SITE_ID) failed:', err.message);
     }
-  } else {
-    console.log('[auth-store] No Netlify Blobs credentials found, using file-backed store');
   }
 
+  console.log('[auth-store] No Netlify Blobs credentials found');
   return null;
-}
-
-// ---------------------------------------------------------------------------
-// File-backed store (local dev fallback)
-// ---------------------------------------------------------------------------
-
-function loadFileStore() {
-  try {
-    if (fs.existsSync(STORE_FILE)) {
-      const raw = fs.readFileSync(STORE_FILE, 'utf-8');
-      return new Map(Object.entries(JSON.parse(raw)));
-    }
-  } catch (err) {
-    console.error('[auth-store] Failed to load store file, starting fresh:', err.message);
-  }
-  return new Map();
-}
-
-function persistFileStore(store) {
-  try {
-    const obj = Object.fromEntries(store);
-    fs.writeFileSync(STORE_FILE, JSON.stringify(obj, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('[auth-store] Failed to persist store file:', err.message);
-  }
-}
-
-function makeFileStore() {
-  const store = loadFileStore();
-
-  // Prune expired sessions on load
-  let changed = false;
-  for (const [key, val] of store) {
-    if (key.startsWith('session:') && val && val.expiresAt && Date.now() > val.expiresAt) {
-      store.delete(key);
-      changed = true;
-    }
-  }
-  if (changed) persistFileStore(store);
-
-  return {
-    get: async (key, opts) => {
-      const val = store.get(key);
-      if (val === undefined) return null;
-      if (opts && opts.type === 'json') return val;
-      return String(val);
-    },
-    getAsText: async (key) => {
-      const val = store.get(key);
-      return val !== undefined ? JSON.stringify(val) : null;
-    },
-    set: async (key, value) => { store.set(key, value); persistFileStore(store); },
-    setJSON: async (key, value) => { store.set(key, value); persistFileStore(store); },
-    delete: async (key) => { store.delete(key); persistFileStore(store); },
-  };
 }
 
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
-async function getStore(context) {
-  const blobs = await tryNetlifyBlobs(context);
+/**
+ * Obtain the 'auth' store.
+ *
+ * @param {object} [event] – Netlify Functions event object. When running via
+ *   `netlify dev`, this carries clientContext.blobs from the local blob server.
+ */
+async function getStore(event) {
+  const blobs = await tryNetlifyBlobs(event);
   if (blobs) return blobs;
 
-  // Fallback: file-backed JSON store (shared across all function processes)
-  return makeFileStore();
+  throw new Error(
+    'Netlify Blobs is unavailable. ' +
+    'Ensure the site is linked (netlify link) and running via netlify dev, ' +
+    'or that SITE_ID is set in the deployment environment.'
+  );
 }
 
 // ---------------------------------------------------------------------------
