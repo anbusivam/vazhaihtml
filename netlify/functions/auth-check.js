@@ -1,6 +1,6 @@
 // Netlify Function: GET /auth/check
 // Validates the session cookie stored locally
-const { getStore } = require('./auth-store');
+const { getStore, ADMIN_EMAILS } = require('./auth-store');
 
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
@@ -45,8 +45,13 @@ exports.handler = async function (event, context) {
     }
 
     // Fetch user data to get role
+    // Hardcoded ADMIN_EMAILS takes precedence so admins always get their role
+    // regardless of when their user record was created
     const userData = await store.get(`user:${session.email}`, { type: 'json' });
-    const role = userData ? userData.role : null;
+    let role = userData ? userData.role : null;
+    if (ADMIN_EMAILS.includes(session.email)) {
+      role = 'admin';
+    }
 
     return {
       statusCode: 200,
