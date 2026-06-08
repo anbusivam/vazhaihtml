@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.27.2/dist/editorjs.min.css">
   <link rel="stylesheet" href="/css/style.css">
   <style>
     :root {
@@ -99,6 +100,10 @@
       white-space: nowrap;
     }
     .btn-outline:hover { background: var(--green-light); }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
     .editor-field { margin-bottom: 16px; }
     .editor-field label {
       display: block;
@@ -142,31 +147,258 @@
       flex-wrap: wrap;
     }
     .editor-actions .btn { flex: 1; min-width: 120px; }
+    /* ── Editor.js Container ── */
     #editorjs-container {
       border: 1.5px solid var(--border);
       border-radius: 8px;
-      padding: 10px;
-      min-height: 250px;
+      padding: 20px 24px;
+      min-height: 350px;
+      background: #fff;
+      cursor: text;
+      transition: border-color 0.15s;
     }
-    #editorjs-container .codex-editor__redactor { padding-bottom: 0 !important; }
-    .msg {
-      padding: 10px 14px;
+    #editorjs-container:focus-within {
+      border-color: var(--green);
+    }
+    #editorjs-container .codex-editor {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    #editorjs-container .codex-editor__redactor {
+      padding-bottom: 0 !important;
+    }
+    /* Block styling */
+    #editorjs-container .ce-block__content {
+      max-width: 100%;
+      padding: 4px 0;
+    }
+    #editorjs-container .ce-toolbar__content {
+      max-width: 100%;
+    }
+    /* Headings */
+    #editorjs-container .ce-header {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.3;
+    }
+    #editorjs-container h1.ce-header { font-size: 1.75em; font-weight: 700; }
+    #editorjs-container h2.ce-header { font-size: 1.4em; font-weight: 600; }
+    #editorjs-container h3.ce-header { font-size: 1.15em; font-weight: 600; }
+    /* Paragraph */
+    #editorjs-container .ce-paragraph {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+    /* Placeholder */
+    #editorjs-container .ce-paragraph[data-placeholder]:empty::before {
+      color: #b0b0b0;
+      font-style: normal;
+    }
+    /* Inline toolbar */
+    #editorjs-container .ce-inline-toolbar {
       border-radius: 8px;
-      font-size: 13px;
-      margin-bottom: 16px;
-      display: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     }
-    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
-    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
-    .back-link {
-      display: inline-block;
-      margin-top: 16px;
-      color: var(--green-dark);
-      text-decoration: none;
+    /* Block tune toolbar */
+    #editorjs-container .ce-settings {
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    /* Conversion toolbar */
+    #editorjs-container .ce-conversion-toolbar {
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    /* List styling */
+    #editorjs-container .cdx-list {
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    /* Quote styling */
+    #editorjs-container .cdx-quote {
+      margin: 12px 0;
+    }
+    #editorjs-container .cdx-quote__text {
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 40px;
+    }
+    /* Table styling */
+    #editorjs-container .tc-table {
+      border-collapse: collapse;
+    }
+    #editorjs-container .tc-cell {
       font-size: 14px;
-      font-weight: 500;
+      padding: 8px 12px;
+      border-color: var(--border);
     }
-    .back-link:hover { text-decoration: underline; }
+    /* Delimiter */
+    #editorjs-container .cdx-delimiter {
+      margin: 16px 0;
+    }
+    /* Image tool */
+    #editorjs-container .image-tool {
+      margin: 12px 0;
+    }
+    #editorjs-container .image-tool__image {
+      border-radius: 8px;
+    }
+    /* ── Cover image row with browse button ── */
+    .cover-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .cover-row input {
+      flex: 1;
+    }
+    .cover-row .btn-browse {
+      flex-shrink: 0;
+      margin-top: 0;
+    }
+    /* ── Cloudinary Browser Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 720px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text-light);
+      padding: 4px 8px;
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-search {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-search input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .modal-search input:focus {
+      border-color: var(--green);
+    }
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+    }
+    .modal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+    .modal-grid-item {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.1s;
+      position: relative;
+      aspect-ratio: 4/3;
+      background: #f5f5f5;
+    }
+    .modal-grid-item:hover {
+      border-color: var(--green);
+      transform: scale(1.02);
+    }
+    .modal-grid-item.selected {
+      border-color: var(--green-dark);
+      box-shadow: 0 0 0 2px var(--green-dark);
+    }
+    .modal-grid-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .modal-grid-item .item-check {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: var(--green-dark);
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .modal-grid-item.selected .item-check {
+      display: flex;
+    }
+    .modal-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-light);
+    }
+    .modal-loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-light);
+    }
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-footer .info {
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    .modal-footer .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .modal-load-more {
+      text-align: center;
+      padding: 12px;
+    }
     .spinner {
       display: inline-block;
       width: 16px;
@@ -178,70 +410,72 @@
       vertical-align: middle;
       margin-right: 6px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #editor-loading {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-light);
-    }
-    @media (max-width: 640px) {
-      .dashboard-header { flex-direction: column; align-items: flex-start; }
-      .dashboard-container { padding: 0 12px; }
-      .card { padding: 16px; }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
 
 <div class="dashboard-header">
-  <h1 id="page-title">📝 Create New Post</h1>
+  <h1 id="page-title">✏️ New Blog Post</h1>
   <div class="user-info">
-    <span id="user-email-display" style="font-weight:600;color:var(--green-dark);"></span>
-    <button class="btn-primary btn-sm" onclick="goBack()">← Back to Dashboard</button>
+    <span id="user-email-display"></span>
+    <button class="btn-outline" onclick="logout()">Sign Out</button>
   </div>
 </div>
 
 <div class="dashboard-container">
-  <div id="editor-loading">Loading editor...</div>
+  <div id="msg-area" class="msg"></div>
 
-  <div id="editor-content" style="display:none;">
-    <!-- Message area -->
-    <div id="msg-area" class="msg"></div>
+  <!-- Loading state -->
+  <div id="editor-loading" class="loading-state" style="display:block;">Loading editor...</div>
 
-    <div class="card">
+  <!-- Editor content (hidden until ready) -->
+  <div id="editor-content" class="card" style="display:none;">
+    <h2>Post Details</h2>
+
+    <div class="editor-field">
+      <label for="post-title">Title</label>
+      <input type="text" id="post-title" placeholder="Enter your post title" oninput="generateSlug()" maxlength="120">
+    </div>
+
+    <div class="editor-row">
       <div class="editor-field">
-        <label>Post Title *</label>
-        <input type="text" id="post-title" placeholder="Enter a title for your post" oninput="generateSlug()">
+        <label for="post-slug">URL Slug</label>
+        <input type="text" id="post-slug" placeholder="auto-generated" oninput="slugEdited()" maxlength="100">
+        <div class="field-hint">Leave blank to auto-generate from title</div>
       </div>
-
       <div class="editor-field">
-        <label>Slug</label>
-        <input type="text" id="post-slug" placeholder="post-url-slug" oninput="slugEdited()">
-        <div class="field-hint">URL-friendly identifier. Auto-generated from title but can be customized.</div>
+        <label for="post-status">Status</label>
+        <select id="post-status">
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
       </div>
+    </div>
 
-      <div class="editor-row">
-        <div>
-          <label>Status</label>
-          <select id="post-status">
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
-        </div>
-        <div>
-          <label>Tags (comma separated)</label>
-          <input type="text" id="post-tags" placeholder="e.g. education, krishnagiri">
-        </div>
-      </div>
+    <div class="editor-field">
+      <label for="post-tags">Tags</label>
+      <input type="text" id="post-tags" placeholder="e.g. education, environment, community">
+      <div class="field-hint">Separate tags with commas</div>
+    </div>
 
-      <div class="editor-field" style="margin-top:16px;">
-        <label>Cover Image URL</label>
-        <input type="text" id="post-cover" placeholder="https://example.com/image.jpg (optional)">
+    <div class="editor-field">
+      <label for="post-cover">Cover Image URL</label>
+      <div class="cover-row">
+        <input type="text" id="post-cover" placeholder="https://example.com/image.jpg">
+        <button class="btn-outline btn-sm btn-browse" type="button" onclick="openCloudinaryBrowser('cover')">📁 Browse Cloudinary</button>
       </div>
+      <div class="field-hint">Optional. URL of a cover image for the post.</div>
+    </div>
 
       <div class="editor-field">
         <label>Content — click each block to edit</label>
         <div id="editorjs-container"></div>
+        <div style="margin-top:8px;">
+          <button class="btn-outline btn-sm" type="button" onclick="openCloudinaryBrowser('editor')">📁 Insert from Cloudinary Library</button>
+        </div>
       </div>
 
       <input type="hidden" id="edit-slug" value="">
@@ -253,6 +487,34 @@
     </div>
 
     <a href="/dashboard/user.html" class="back-link">← Back to My Dashboard</a>
+  </div>
+</div>
+
+<!-- ── Cloudinary Browser Modal ── -->
+<div class="modal-overlay" id="cloudinary-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📁 Browse Cloudinary Images</h3>
+      <button class="modal-close" onclick="closeCloudinaryBrowser()">&times;</button>
+    </div>
+    <div class="modal-search">
+      <input type="text" id="cloudinary-search-input" placeholder="Search images..." oninput="debouncedSearch()">
+    </div>
+    <div class="modal-body" id="cloudinary-modal-body">
+      <div class="modal-loading" id="cloudinary-loading">Loading images...</div>
+      <div class="modal-grid" id="cloudinary-grid"></div>
+      <div class="modal-empty" id="cloudinary-empty" style="display:none;">No images found in your Cloudinary library.</div>
+      <div class="modal-load-more" id="cloudinary-load-more" style="display:none;">
+        <button class="btn-outline btn-sm" onclick="loadMoreImages()">Load More</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="info" id="cloudinary-info">Select an image from your library</div>
+      <div class="actions">
+        <button class="btn-outline btn-sm" onclick="closeCloudinaryBrowser()">Cancel</button>
+        <button class="btn-primary btn-sm" id="cloudinary-select-btn" onclick="selectCloudinaryImage()" disabled>Insert Selected</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -271,6 +533,14 @@ let userRoles = [];
 let editor = null;
 let slugAutoGenerated = true;
 let isSaving = false;
+
+// ── Cloudinary Browser State ──
+let cloudinaryContext = ''; // 'cover' or 'editor'
+let cloudinaryImages = [];
+let cloudinaryCursor = null;
+let cloudinarySearchTerm = '';
+let cloudinarySelected = null;
+let cloudinaryLoading = false;
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', async function() {
@@ -487,6 +757,171 @@ function showMsg(type, text) {
   el.className = 'msg ' + type;
   el.textContent = text;
   el.style.display = text ? 'block' : 'none';
+}
+
+// ── Cloudinary Browser ──
+function openCloudinaryBrowser(context) {
+  cloudinaryContext = context;
+  cloudinarySelected = null;
+  cloudinaryImages = [];
+  cloudinaryCursor = null;
+  cloudinarySearchTerm = '';
+  document.getElementById('cloudinary-select-btn').disabled = true;
+  document.getElementById('cloudinary-info').textContent = 'Loading images...';
+  document.getElementById('cloudinary-search-input').value = '';
+  document.getElementById('cloudinary-modal').classList.add('active');
+  document.getElementById('cloudinary-grid').innerHTML = '';
+  document.getElementById('cloudinary-load-more').style.display = 'none';
+  document.getElementById('cloudinary-empty').style.display = 'none';
+  document.getElementById('cloudinary-loading').style.display = 'block';
+  fetchCloudinaryImages();
+}
+
+function closeCloudinaryBrowser() {
+  document.getElementById('cloudinary-modal').classList.remove('active');
+  cloudinaryContext = '';
+  cloudinarySelected = null;
+}
+
+function fetchCloudinaryImages() {
+  if (cloudinaryLoading) return;
+  cloudinaryLoading = true;
+
+  const el = document.getElementById('cloudinary-loading');
+  if (el) el.style.display = 'block';
+
+  fetch('/blog/cloudinary-search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      search: cloudinarySearchTerm || undefined,
+      cursor: cloudinaryCursor || undefined,
+    }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    cloudinaryLoading = false;
+    if (el) el.style.display = 'none';
+
+    if (data.error) {
+      document.getElementById('cloudinary-info').textContent = 'Error: ' + data.error;
+      return;
+    }
+
+    if (data.images && data.images.length > 0) {
+      cloudinaryImages = cloudinaryImages.concat(data.images);
+      cloudinaryCursor = data.nextCursor;
+      renderCloudinaryGrid();
+
+      if (data.nextCursor) {
+        document.getElementById('cloudinary-load-more').style.display = 'block';
+      } else {
+        document.getElementById('cloudinary-load-more').style.display = 'none';
+      }
+
+      document.getElementById('cloudinary-info').textContent =
+        `Showing ${cloudinaryImages.length} image${cloudinaryImages.length !== 1 ? 's' : ''}`;
+    } else {
+      if (cloudinaryImages.length === 0) {
+        document.getElementById('cloudinary-empty').style.display = 'block';
+        document.getElementById('cloudinary-info').textContent = 'No images found.';
+      }
+    }
+  })
+  .catch(err => {
+    cloudinaryLoading = false;
+    if (el) el.style.display = 'none';
+    document.getElementById('cloudinary-info').textContent = 'Failed to load images: ' + err.message;
+  });
+}
+
+function renderCloudinaryGrid() {
+  const grid = document.getElementById('cloudinary-grid');
+  cloudinaryImages.forEach(img => {
+    // Avoid duplicates
+    if (document.querySelector(`[data-public-id="${img.publicId}"]`)) return;
+
+    const item = document.createElement('div');
+    item.className = 'modal-grid-item';
+    item.dataset.publicId = img.publicId;
+    item.dataset.url = img.url;
+    item.onclick = function() { selectGridItem(this); };
+
+    const imgEl = document.createElement('img');
+    imgEl.src = img.thumbnail;
+    imgEl.alt = img.publicId;
+    imgEl.loading = 'lazy';
+
+    const check = document.createElement('div');
+    check.className = 'item-check';
+    check.textContent = '✓';
+
+    item.appendChild(imgEl);
+    item.appendChild(check);
+    grid.appendChild(item);
+  });
+}
+
+function selectGridItem(item) {
+  // Deselect previous
+  if (cloudinarySelected) {
+    const prev = document.querySelector(`.modal-grid-item.selected`);
+    if (prev) prev.classList.remove('selected');
+  }
+
+  item.classList.add('selected');
+  cloudinarySelected = {
+    publicId: item.dataset.publicId,
+    url: item.dataset.url,
+  };
+  document.getElementById('cloudinary-select-btn').disabled = false;
+  document.getElementById('cloudinary-info').textContent = `Selected: ${item.dataset.publicId}`;
+}
+
+function selectCloudinaryImage() {
+  if (!cloudinarySelected) return;
+
+  if (cloudinaryContext === 'cover') {
+    // Set the cover image URL
+    document.getElementById('post-cover').value = cloudinarySelected.url;
+    closeCloudinaryBrowser();
+    showMsg('success', 'Cover image set from Cloudinary.');
+  } else if (cloudinaryContext === 'editor') {
+    // Insert image block into Editor.js
+    if (editor) {
+      editor.blocks.insert('image', {
+        file: {
+          url: cloudinarySelected.url,
+        }
+      });
+    }
+    closeCloudinaryBrowser();
+    showMsg('success', 'Image inserted into editor.');
+  }
+
+  cloudinarySelected = null;
+}
+
+function loadMoreImages() {
+  fetchCloudinaryImages();
+}
+
+let debounceTimer = null;
+function debouncedSearch() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    const term = document.getElementById('cloudinary-search-input').value.trim();
+    if (term !== cloudinarySearchTerm) {
+      // Reset and search
+      cloudinarySearchTerm = term;
+      cloudinaryImages = [];
+      cloudinaryCursor = null;
+      document.getElementById('cloudinary-grid').innerHTML = '';
+      document.getElementById('cloudinary-load-more').style.display = 'none';
+      document.getElementById('cloudinary-empty').style.display = 'none';
+      fetchCloudinaryImages();
+    }
+  }, 400);
 }
 </script>
 

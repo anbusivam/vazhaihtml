@@ -1,10 +1,12 @@
 // Netlify Function: POST /blog/upload-image
-// Accepts a file upload from Editor.js Image plugin, forwards to Cloudinary unsigned upload
+// Accepts a file upload from Editor.js Image plugin, forwards to Cloudinary signed upload
 // Returns Editor.js-compatible response format
 const { handleOptions, CORS_HEADERS } = require('./blog-auth');
+const crypto = require('crypto');
 
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || '';
-const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET || '';
+const CLOUDINARY_KEY = process.env.CLOUDINARY_KEY || '';
+const CLOUDINARY_SECRET = process.env.CLOUDINARY_SECRET || '';
 
 exports.handler = async function (event, context) {
   const optPre = handleOptions(event);
@@ -14,11 +16,11 @@ exports.handler = async function (event, context) {
     return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_KEY || !CLOUDINARY_SECRET) {
     return {
       statusCode: 500,
       headers: CORS_HEADERS,
-      body: JSON.stringify({ error: 'Cloudinary not configured. Set CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET env vars.' }),
+      body: JSON.stringify({ error: 'Cloudinary not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_KEY, and CLOUDINARY_SECRET env vars.' }),
     };
   }
 
@@ -34,13 +36,10 @@ exports.handler = async function (event, context) {
     }
 
     // Parse the multipart body to extract the file
-    // Netlify functions receive the body as base64 when isBase64Encoded is true
     const bodyBuffer = event.isBase64Encoded
       ? Buffer.from(event.body, 'base64')
       : Buffer.from(event.body);
 
-    // We need to parse multipart manually or use a simple approach
-    // Since we know Editor.js sends the file as "image" field, extract it
     const boundary = contentType.split('boundary=')[1];
     if (!boundary) {
       return {
@@ -62,18 +61,53 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // Upload to Cloudinary using unsigned upload preset
+    // Generate signed upload to Cloudinary
+    const timestamp = Math.floor(Date.now() / 1000);
+    const folder = 'blog'; // Optional: organize blog uploads in a folder
+    
+    // Build signature string: sort params alphabetically, concatenate as key=value&key2=value2
+    const paramsToSign = {
+      timestamp,
+      folder,
+    };
+    
+    // Sort keys alphabetically and build signature string
+    const sortedKeys = Object.keys(paramsToSign).sort();
+    const signString = sortedKeys.map(k => `${k}=${paramsToSign[k]}`).join('&') + CLOUDINARY_SECRET;
+    const signature = crypto.createHash('sha1').update(signString).digest('hex');
+
     const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
     // Create form data for Cloudinary
     const formDataBoundary = '----FormBoundary' + Math.random().toString(36).slice(2);
     const formDataParts = [];
 
-    // Add upload preset
+    // Add api_key
     formDataParts.push(
       `--${formDataBoundary}\r\n` +
-      `Content-Disposition: form-data; name="upload_preset"\r\n\r\n` +
-      `${CLOUDINARY_UPLOAD_PRESET}\r\n`
+      `Content-Disposition: form-data; name="api_key"\r\n\r\n` +
+      `${CLOUDINARY_KEY}\r\n`
+    );
+
+    // Add timestamp
+    formDataParts.push(
+      `--${formDataBoundary}\r\n` +
+      `Content-Disposition: form-data; name="timestamp"\r\n\r\n` +
+      `${timestamp}\r\n`
+    );
+
+    // Add folder
+    formDataParts.push(
+      `--${formDataBoundary}\r\n` +
+      `Content-Disposition: form-data; name="folder"\r\n\r\n` +
+      `${folder}\r\n`
+    );
+
+    // Add signature
+    formDataParts.push(
+      `--${formDataBoundary}\r\n` +
+      `Content-Disposition: form-data; name="signature"\r\n\r\n` +
+      `${signature}\r\n`
     );
 
     // Add the file
@@ -84,12 +118,18 @@ exports.handler = async function (event, context) {
       `Content-Type: ${imagePart.contentType || 'application/octet-stream'}\r\n\r\n`
     );
 
-    const formDataHeader = Buffer.from(formDataParts[0], 'utf-8');
-    const formDataFileHeader = Buffer.from(formDataParts[1], 'utf-8');
+    const formDataHeader1 = Buffer.from(formDataParts[0], 'utf-8');
+    const formDataHeader2 = Buffer.from(formDataParts[1], 'utf-8');
+    const formDataHeader3 = Buffer.from(formDataParts[2], 'utf-8');
+    const formDataHeader4 = Buffer.from(formDataParts[3], 'utf-8');
+    const formDataFileHeader = Buffer.from(formDataParts[4], 'utf-8');
     const formDataFooter = Buffer.from(`\r\n--${formDataBoundary}--\r\n`, 'utf-8');
 
     const cloudinaryBody = Buffer.concat([
-      formDataHeader,
+      formDataHeader1,
+      formDataHeader2,
+      formDataHeader3,
+      formDataHeader4,
       formDataFileHeader,
       imagePart.data,
       formDataFooter,
@@ -109,14 +149,13 @@ exports.handler = async function (event, context) {
       return {
         statusCode: 502,
         headers: CORS_HEADERS,
-        body: JSON.stringify({ error: 'Cloudinary upload failed' }),
+        body: JSON.stringify({ error: 'Cloudinary upload failed: ' + errText }),
       };
     }
 
     const cloudinaryData = await cloudinaryRes.json();
 
     // Return Editor.js-compatible response
-    // https://editorjs.io/image-tool-configuration/#custom-uploader
     return {
       statusCode: 200,
       headers: CORS_HEADERS,
@@ -144,14 +183,13 @@ function parseMultipart(buffer, boundary) {
   let start = 0;
 
   while (start < buffer.length) {
-    // Find next boundary
     const bIdx = buffer.indexOf(boundaryBytes, start);
     if (bIdx === -1) break;
 
     const partStart = bIdx + boundaryBytes.length;
     
     // Check if this is the closing boundary
-    if (buffer[partStart] === 0x2d && buffer[partStart + 1] === 0x2d) break; // "--"
+    if (buffer[partStart] === 0x2d && buffer[partStart + 1] === 0x2d) break;
     
     // Skip \r\n after boundary
     let contentStart = partStart;
@@ -167,7 +205,7 @@ function parseMultipart(buffer, boundary) {
 
     // Find next boundary to know where this part ends
     const nextBIdx = buffer.indexOf(boundaryBytes, dataStart);
-    const partEnd = nextBIdx !== -1 ? nextBIdx - 2 : buffer.length; // -2 to remove trailing \r\n
+    const partEnd = nextBIdx !== -1 ? nextBIdx - 2 : buffer.length;
 
     // Parse headers
     const fieldName = extractHeaderValue(headerSection, 'name');

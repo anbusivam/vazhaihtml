@@ -150,6 +150,11 @@
   to = "/.netlify/functions/blog-image-upload"
   status = 200
 
+[[redirects]]
+  from = "/blog/cloudinary-search"
+  to = "/.netlify/functions/blog-cloudinary-search"
+  status = 200
+
 # Blog: hybrid static/dynamic post rendering — force=false means Netlify checks for a static file first
 [[redirects]]
   from = "/blog/*"

@@ -259,8 +259,7 @@ exports.handler = async function (event, context) {
     if (blocks.length > 0) {
       try {
         const edJsParser = editorjsHtml();
-        const htmlBlocks = edJsParser.parse(post.content);
-        postHtml = htmlBlocks.join('\n');
+        postHtml = edJsParser.parse(post.content);
       } catch (parseErr) {
         console.error('[blog-render] editorjs-html parse error:', parseErr.message);
         postHtml = '<p>Error rendering post content.</p>';
