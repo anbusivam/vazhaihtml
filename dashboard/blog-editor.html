@@ -242,18 +242,79 @@
     #editorjs-container .image-tool__image {
       border-radius: 8px;
     }
-    /* ── Cover image row with browse button ── */
-    .cover-row {
+    /* ── Cover image section ── */
+    .cover-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .cover-actions {
       display: flex;
       gap: 8px;
-      align-items: flex-start;
+      flex-wrap: wrap;
     }
-    .cover-row input {
+    .cover-actions .btn {
       flex: 1;
+      min-width: 140px;
     }
-    .cover-row .btn-browse {
-      flex-shrink: 0;
-      margin-top: 0;
+    @media (max-width: 420px) {
+      .cover-actions .btn {
+        min-width: 100%;
+      }
+    }
+    /* ── Cover image preview ── */
+    .cover-preview {
+      display: none;
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      position: relative;
+    }
+    .cover-preview.has-image {
+      display: block;
+    }
+    .cover-preview img {
+      width: 100%;
+      max-height: 240px;
+      object-fit: cover;
+      display: block;
+    }
+    .cover-preview .remove-cover {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .cover-preview .remove-cover:hover {
+      background: rgba(200,0,0,0.8);
+    }
+    /* ── Body image actions ── */
+    .body-image-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .body-image-actions .btn {
+      flex: 1;
+      min-width: 160px;
+    }
+    @media (max-width: 420px) {
+      .body-image-actions .btn {
+        min-width: 100%;
+      }
     }
     /* ── Cloudinary Browser Modal ── */
     .modal-overlay {
@@ -462,20 +523,31 @@
     </div>
 
     <div class="editor-field">
-      <label for="post-cover">Cover Image URL</label>
-      <div class="cover-row">
-        <input type="text" id="post-cover" placeholder="https://example.com/image.jpg">
-        <button class="btn-outline btn-sm btn-browse" type="button" onclick="openCloudinaryBrowser('cover')">📁 Browse Cloudinary</button>
+      <label for="post-cover">Cover Image</label>
+      <div class="cover-section">
+        <input type="text" id="post-cover" placeholder="https://example.com/image.jpg" oninput="updateCoverPreview()">
+        <div class="cover-preview" id="cover-preview">
+          <button class="remove-cover" type="button" onclick="removeCoverImage()" title="Remove cover image">✕</button>
+          <img id="cover-preview-img" src="" alt="Cover preview">
+        </div>
+        <div class="cover-actions">
+          <button class="btn btn-outline" type="button" onclick="document.getElementById('cover-upload-input').click()">📤 Upload from Device</button>
+          <button class="btn btn-outline" type="button" onclick="openCloudinaryBrowser('cover')">📁 Browse Server</button>
+        </div>
       </div>
-      <div class="field-hint">Optional. URL of a cover image for the post.</div>
+      <input type="file" id="cover-upload-input" accept="image/*" style="display:none" onchange="handleCoverUpload(event)">
+      <div class="field-hint">Upload from your device, paste an image URL, or browse the server library.</div>
     </div>
 
       <div class="editor-field">
         <label>Content — click each block to edit</label>
         <div id="editorjs-container"></div>
-        <div style="margin-top:8px;">
-          <button class="btn-outline btn-sm" type="button" onclick="openCloudinaryBrowser('editor')">📁 Insert from Cloudinary Library</button>
+        <div class="body-image-actions">
+          <button class="btn btn-outline" type="button" onclick="document.getElementById('body-upload-input').click()">📤 Upload from Device</button>
+          <button class="btn btn-outline" type="button" onclick="openCloudinaryBrowser('editor')">📁 Browse Server</button>
         </div>
+        <input type="file" id="body-upload-input" accept="image/*" style="display:none" onchange="handleBodyUpload(event)">
+        <div class="field-hint">Upload an image from your device or browse the server library to insert into the content.</div>
       </div>
 
       <input type="hidden" id="edit-slug" value="">
@@ -494,7 +566,7 @@
 <div class="modal-overlay" id="cloudinary-modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>📁 Browse Cloudinary Images</h3>
+      <h3>📁 Browse Server Library</h3>
       <button class="modal-close" onclick="closeCloudinaryBrowser()">&times;</button>
     </div>
     <div class="modal-search">
@@ -503,7 +575,7 @@
     <div class="modal-body" id="cloudinary-modal-body">
       <div class="modal-loading" id="cloudinary-loading">Loading images...</div>
       <div class="modal-grid" id="cloudinary-grid"></div>
-      <div class="modal-empty" id="cloudinary-empty" style="display:none;">No images found in your Cloudinary library.</div>
+      <div class="modal-empty" id="cloudinary-empty" style="display:none;">No images found in your media library.</div>
       <div class="modal-load-more" id="cloudinary-load-more" style="display:none;">
         <button class="btn-outline btn-sm" onclick="loadMoreImages()">Load More</button>
       </div>
@@ -604,6 +676,7 @@ async function loadPostForEditing(slug) {
     slugAutoGenerated = false;
 
     document.getElementById('editor-loading').style.display = 'none';
+    updateCoverPreview();
     document.getElementById('editor-content').style.display = 'block';
 
     initEditor(post.content || { blocks: [] });
@@ -759,6 +832,142 @@ function showMsg(type, text) {
   el.style.display = text ? 'block' : 'none';
 }
 
+// ── Cover preview helpers ──
+function updateCoverPreview() {
+  const url = document.getElementById('post-cover').value.trim();
+  const preview = document.getElementById('cover-preview');
+  const img = document.getElementById('cover-preview-img');
+  if (url) {
+    img.src = url;
+    preview.classList.add('has-image');
+  } else {
+    img.src = '';
+    preview.classList.remove('has-image');
+  }
+}
+
+function removeCoverImage() {
+  document.getElementById('post-cover').value = '';
+  const preview = document.getElementById('cover-preview');
+  const img = document.getElementById('cover-preview-img');
+  img.src = '';
+  preview.classList.remove('has-image');
+}
+
+// Helper: find cover upload button for showing upload state
+function getCoverUploadBtn() {
+  const btns = document.querySelectorAll('.cover-actions .btn');
+  for (const btn of btns) {
+    if (btn.textContent.includes('Upload from Device')) return btn;
+  }
+  return null;
+}
+
+// ── Cover image upload from device ──
+async function handleCoverUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.size > 10 * 1024 * 1024) {
+    showMsg('error', 'Image must be less than 10MB.');
+    event.target.value = '';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const btn = getCoverUploadBtn();
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Uploading...';
+
+  try {
+    const res = await fetch('/blog/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      showMsg('error', 'Upload failed: ' + data.error);
+      return;
+    }
+
+    // Editor.js compatible response: data.success ? data.file.url : data.url
+    const imageUrl = data.file && data.file.url ? data.file.url : data.url;
+    if (imageUrl) {
+      document.getElementById('post-cover').value = imageUrl;
+      updateCoverPreview();
+      showMsg('success', 'Cover image uploaded successfully!');
+    } else {
+      showMsg('error', 'Upload succeeded but no URL returned.');
+    }
+  } catch (err) {
+    showMsg('error', 'Upload failed: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    event.target.value = '';
+  }
+}
+
+// ── Body image upload from device ──
+async function handleBodyUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.size > 10 * 1024 * 1024) {
+    showMsg('error', 'Image must be less than 10MB.');
+    event.target.value = '';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  // Show uploading state
+  const btns = document.querySelectorAll('.body-image-actions .btn');
+  let uploadBtn = null;
+  for (const b of btns) {
+    if (b.textContent.includes('Upload from Device')) { uploadBtn = b; break; }
+  }
+  if (!uploadBtn) return;
+  const originalText = uploadBtn.textContent;
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = '⏳ Uploading...';
+
+  try {
+    const res = await fetch('/blog/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      showMsg('error', 'Upload failed: ' + data.error);
+      return;
+    }
+
+    const imageUrl = data.file && data.file.url ? data.file.url : data.url;
+    if (imageUrl && editor) {
+      editor.blocks.insert('image', {
+        file: { url: imageUrl }
+      });
+      showMsg('success', 'Image inserted into content.');
+    } else {
+      showMsg('error', 'Upload succeeded but no URL returned.');
+    }
+  } catch (err) {
+    showMsg('error', 'Upload failed: ' + err.message);
+  } finally {
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = originalText;
+    event.target.value = '';
+  }
+}
+
 // ── Cloudinary Browser ──
 function openCloudinaryBrowser(context) {
   cloudinaryContext = context;
@@ -882,10 +1091,10 @@ function selectCloudinaryImage() {
   if (!cloudinarySelected) return;
 
   if (cloudinaryContext === 'cover') {
-    // Set the cover image URL
     document.getElementById('post-cover').value = cloudinarySelected.url;
+    updateCoverPreview();
     closeCloudinaryBrowser();
-    showMsg('success', 'Cover image set from Cloudinary.');
+    showMsg('success', 'Cover image selected from server library.');
   } else if (cloudinaryContext === 'editor') {
     // Insert image block into Editor.js
     if (editor) {
