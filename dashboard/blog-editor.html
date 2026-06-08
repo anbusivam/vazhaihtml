@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Blog Editor — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-container {
+      max-width: 860px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 20px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
+    .btn-outline {
+      padding: 10px 20px;
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-outline:hover { background: var(--green-light); }
+    .editor-field { margin-bottom: 16px; }
+    .editor-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .editor-field input,
+    .editor-field textarea,
+    .editor-field select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .editor-field input:focus,
+    .editor-field textarea:focus,
+    .editor-field select:focus { border-color: var(--green); }
+    .editor-field textarea { resize: vertical; min-height: 60px; font-size: 13px; }
+    .editor-field .field-hint { font-size: 11px; color: var(--text-light); margin-top: 3px; }
+    .editor-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .editor-row > div {
+      flex: 1;
+      min-width: 140px;
+    }
+    .editor-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .editor-actions .btn { flex: 1; min-width: 120px; }
+    #editorjs-container {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 250px;
+    }
+    #editorjs-container .codex-editor__redactor { padding-bottom: 0 !important; }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #editor-loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-light);
+    }
+    @media (max-width: 640px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+      .dashboard-container { padding: 0 12px; }
+      .card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1 id="page-title">📝 Create New Post</h1>
+  <div class="user-info">
+    <span id="user-email-display" style="font-weight:600;color:var(--green-dark);"></span>
+    <button class="btn-primary btn-sm" onclick="goBack()">← Back to Dashboard</button>
+  </div>
+</div>
+
+<div class="dashboard-container">
+  <div id="editor-loading">Loading editor...</div>
+
+  <div id="editor-content" style="display:none;">
+    <!-- Message area -->
+    <div id="msg-area" class="msg"></div>
+
+    <div class="card">
+      <div class="editor-field">
+        <label>Post Title *</label>
+        <input type="text" id="post-title" placeholder="Enter a title for your post" oninput="generateSlug()">
+      </div>
+
+      <div class="editor-field">
+        <label>Slug</label>
+        <input type="text" id="post-slug" placeholder="post-url-slug" oninput="slugEdited()">
+        <div class="field-hint">URL-friendly identifier. Auto-generated from title but can be customized.</div>
+      </div>
+
+      <div class="editor-row">
+        <div>
+          <label>Status</label>
+          <select id="post-status">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+        <div>
+          <label>Tags (comma separated)</label>
+          <input type="text" id="post-tags" placeholder="e.g. education, krishnagiri">
+        </div>
+      </div>
+
+      <div class="editor-field" style="margin-top:16px;">
+        <label>Cover Image URL</label>
+        <input type="text" id="post-cover" placeholder="https://example.com/image.jpg (optional)">
+      </div>
+
+      <div class="editor-field">
+        <label>Content — click each block to edit</label>
+        <div id="editorjs-container"></div>
+      </div>
+
+      <input type="hidden" id="edit-slug" value="">
+
+      <div class="editor-actions">
+        <button class="btn btn-primary" onclick="savePost()" id="save-post-btn">💾 Save Post</button>
+        <button class="btn btn-outline" onclick="goBack()">Cancel</button>
+      </div>
+    </div>
+
+    <a href="/dashboard/user.html" class="back-link">← Back to My Dashboard</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.27.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.7.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.8.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/list@1.8.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.5.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.3.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.0.1"></script>
+
+<script>
+// ── Globals ──
+let currentUserEmail = '';
+let userRoles = [];
+let editor = null;
+let slugAutoGenerated = true;
+let isSaving = false;
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', async function() {
+  // Check authentication
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+
+  currentUserEmail = data.email;
+  userRoles = data.roles || (data.role ? [data.role] : []);
+
+  // Check if user has blogger or admin role
+  const isBlogger = userRoles.includes('blogger') || userRoles.includes('admin');
+  if (!isBlogger) {
+    showMsg('error', 'You need the blogger or admin role to create or edit posts. Redirecting...');
+    setTimeout(() => { window.location.href = '/dashboard/user.html'; }, 2000);
+    return;
+  }
+
+  document.getElementById('user-email-display').textContent = data.email;
+
+  // Check for edit mode via query parameter
+  const params = new URLSearchParams(window.location.search);
+  const editSlug = params.get('edit');
+
+  if (editSlug) {
+    document.getElementById('page-title').textContent = '✏️ Edit Post';
+    document.getElementById('save-post-btn').textContent = '💾 Update Post';
+    await loadPostForEditing(editSlug);
+  } else {
+    // New post mode
+    document.getElementById('editor-loading').style.display = 'none';
+    document.getElementById('editor-content').style.display = 'block';
+    initEditor({ blocks: [] });
+  }
+});
+
+// ── Loading existing post for editing ──
+async function loadPostForEditing(slug) {
+  try {
+    const res = await fetch(`/blog/post?slug=${encodeURIComponent(slug)}`);
+    const data = await res.json();
+
+    if (!data.post) {
+      showMsg('error', 'Could not load post. Redirecting...');
+      setTimeout(() => { window.location.href = '/dashboard/user.html'; }, 1500);
+      return;
+    }
+
+    const post = data.post;
+    document.getElementById('post-title').value = post.title || '';
+    document.getElementById('post-slug').value = post.slug || '';
+    document.getElementById('post-status').value = post.status || 'draft';
+    document.getElementById('post-tags').value = (post.tags || []).join(', ');
+    document.getElementById('post-cover').value = post.coverImage || '';
+    document.getElementById('edit-slug').value = post.slug || '';
+    slugAutoGenerated = false;
+
+    document.getElementById('editor-loading').style.display = 'none';
+    document.getElementById('editor-content').style.display = 'block';
+
+    initEditor(post.content || { blocks: [] });
+  } catch (err) {
+    showMsg('error', 'Failed to load post: ' + err.message);
+    document.getElementById('editor-loading').textContent = 'Error loading post.';
+  }
+}
+
+// ── Editor.js Initialization ──
+function initEditor(data) {
+  if (editor) {
+    try { editor.destroy(); } catch(e) {}
+    editor = null;
+  }
+
+  const container = document.getElementById('editorjs-container');
+  container.innerHTML = '';
+
+  editor = new EditorJS({
+    holder: 'editorjs-container',
+    data: data,
+    tools: {
+      header: {
+        class: Header,
+        inlineToolbar: true,
+        config: { levels: [1, 2, 3, 4], defaultLevel: 2 }
+      },
+      image: {
+        class: ImageTool,
+        config: {
+          endpoints: {
+            byFile: '/blog/upload-image',
+          },
+        }
+      },
+      list: {
+        class: List,
+        inlineToolbar: true,
+      },
+      quote: {
+        class: Quote,
+        inlineToolbar: true,
+      },
+      delimiter: Delimiter,
+      table: {
+        class: Table,
+        inlineToolbar: true,
+      },
+    },
+    placeholder: 'Start writing your blog post...',
+  });
+}
+
+// ── Save Post ──
+async function savePost() {
+  if (isSaving) return;
+  isSaving = true;
+  const saveBtn = document.getElementById('save-post-btn');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="spinner"></span>Saving...';
+
+  try {
+    const title = document.getElementById('post-title').value.trim();
+    if (!title) {
+      showMsg('error', 'Please enter a title.');
+      isSaving = false;
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '💾 Save Post';
+      return;
+    }
+
+    const slug = document.getElementById('post-slug').value.trim() ||
+      title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
+    const status = document.getElementById('post-status').value;
+    const tags = document.getElementById('post-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    const coverImage = document.getElementById('post-cover').value.trim();
+    const existingSlug = document.getElementById('edit-slug').value;
+
+    // Get content from editor
+    let content = { blocks: [] };
+    if (editor) {
+      try {
+        const savedData = await editor.save();
+        content = savedData;
+      } catch (e) {
+        console.warn('Editor save failed, using empty content:', e);
+      }
+    }
+
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+
+    const body = { title, slug, content, tags, coverImage, status };
+    if (existingSlug) {
+      body.existingSlug = existingSlug;
+    }
+
+    const res = await fetch('/blog/save', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const result = await res.json();
+
+    if (result.error) {
+      showMsg('error', result.error);
+      isSaving = false;
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = existingSlug ? '💾 Update Post' : '💾 Save Post';
+      return;
+    }
+
+    // Success — redirect back to dashboard
+    window.location.href = '/dashboard/user.html?msg=saved';
+  } catch (err) {
+    showMsg('error', 'Save failed: ' + err.message);
+    isSaving = false;
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '💾 Save';
+  }
+}
+
+// ── Slug helpers ──
+function generateSlug() {
+  if (!slugAutoGenerated) return;
+  const title = document.getElementById('post-title').value.trim();
+  const slug = title.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
+  document.getElementById('post-slug').value = slug;
+}
+
+function slugEdited() {
+  slugAutoGenerated = false;
+}
+
+// ── Navigation ──
+function goBack() {
+  window.location.href = '/dashboard/user.html';
+}
+
+// ── Message display ──
+function showMsg(type, text) {
+  const el = document.getElementById('msg-area');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  el.style.display = text ? 'block' : 'none';
+}
+</script>
+
+</body>
+</html>

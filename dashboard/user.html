@@ -54,7 +54,7 @@
       gap: 12px;
     }
     .dashboard-container {
-      max-width: 760px;
+      max-width: 840px;
       margin: 24px auto;
       padding: 0 20px;
     }
@@ -101,7 +101,7 @@
       font-weight: 600;
     }
     .role-badge.admin { background: #e3f2fd; color: #1565c0; }
-    .role-badge.blogging { background: #fff3e0; color: #e65100; }
+    .role-badge.blogger { background: #fff3e0; color: #e65100; }
     .role-badge.none { background: #f5f5f5; color: #999; }
     .role-badge.member { background: var(--green-light); color: var(--green-dark); }
     .btn-primary {
@@ -118,11 +118,22 @@
       white-space: nowrap;
     }
     .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
     .btn-sm {
       padding: 6px 14px;
       font-size: 12px;
       border-radius: 6px;
     }
+    .btn-outline {
+      background: transparent;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+    }
+    .btn-outline:hover { background: var(--green-light); }
+    .btn-danger {
+      background: #d32f2f;
+    }
+    .btn-danger:hover { background: #b71c1c; }
     .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -175,7 +186,6 @@
     .back-link:hover { text-decoration: underline; }
     .admin-link {
       display: inline-block;
-      margin-top: 8px;
       padding: 8px 16px;
       background: #e3f2fd;
       color: #1565c0;
@@ -185,9 +195,44 @@
       text-decoration: none;
     }
     .admin-link:hover { background: #bbdefb; }
+    /* Blog management */
+    .blog-toolbar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+    .blog-post-list { display:flex; flex-direction:column; gap:8px; }
+    .blog-post-item {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 14px; border:1px solid var(--border); border-radius:8px;
+      background:#fafafa; transition:all .15s;
+    }
+    .blog-post-item:hover { border-color:var(--green-dark); background:var(--green-light); }
+    .blog-post-info { flex:1; min-width:0; }
+    .blog-post-title { font-size:14px; font-weight:600; color:var(--text); }
+    .blog-post-meta { font-size:11px; color:var(--text-light); margin-top:2px; display:flex; gap:8px; flex-wrap:wrap; }
+    .blog-post-status {
+      font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+      padding:2px 8px; border-radius:100px;
+    }
+    .blog-post-status.published { background:#e8f5e9; color:#2e7d32; }
+    .blog-post-status.draft { background:#fff3e0; color:#e65100; }
+    .blog-post-actions { display:flex; gap:6px; flex-shrink:0; }
+    .blog-post-actions button {
+      padding:4px 10px; font-size:11px; border-radius:5px; border:1px solid var(--border);
+      background:#fff; cursor:pointer; font-family:inherit; font-weight:600; transition:all .15s;
+    }
+    .blog-post-actions button:hover { border-color:var(--green-dark); }
+    .blog-post-actions .edit-btn { color:var(--green-dark); }
+    .blog-post-actions .view-btn { color:#1565c0; }
+    .blog-post-actions .del-btn { color:#d32f2f; }
+    .blog-post-actions .del-btn:hover { background:#fef2f2; border-color:#d32f2f; }
+    .blog-empty { text-align:center; padding:30px; color:var(--text-light); font-size:14px; }
+    .blog-loading { text-align:center; padding:30px; color:var(--text-light); }
+    .blog-success-msg { display:none; padding:12px 16px; background:#e8f5e9; border-radius:8px; border:1px solid #a5d6a7; margin-bottom:16px; font-size:13px; color:#2e7d32; font-weight:500; }
+    /* Blog role check message */
+    .blog-role-msg { display:none; padding:16px; background:#fff3e0; border-radius:8px; border:1px solid #ffcc80; margin-top:12px; font-size:13px; color:#e65100; line-height:1.6; }
     @media (max-width: 640px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; }
       .features-grid { grid-template-columns: 1fr; }
+      .blog-post-item { flex-wrap:wrap; }
+      .blog-post-actions { width:100%; justify-content:flex-end; }
     }
   </style>
 </head>
@@ -221,16 +266,7 @@
           <span class="profile-label">Session Expires</span>
           <span class="profile-value" id="profile-expires"></span>
         </div>
-        <div class="profile-row">
-          <span class="profile-label">First Login</span>
-          <span class="profile-value" id="profile-first-login">—</span>
-        </div>
-        <div class="profile-row">
-          <span class="profile-label">Last Login</span>
-          <span class="profile-value" id="profile-last-login">—</span>
-        </div>
       </div>
-      <!-- Admin link - only shown for admins -->
       <div id="admin-link-area" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
         <a href="/dashboard/manage" class="admin-link">⚙️ Go to Admin Dashboard →</a>
       </div>
@@ -241,7 +277,7 @@
   <div class="card">
     <h2>🚀 Available Features</h2>
     <div class="features-grid">
-      <div class="feature-card coming-soon">
+      <div class="feature-card" id="blog-feature-card" style="cursor:pointer;">
         <div class="icon">📝</div>
         <div class="title">Blogging</div>
         <div class="desc">Write and manage posts</div>
@@ -262,54 +298,187 @@
         <div class="desc">Connect with members</div>
       </div>
     </div>
+    <div class="blog-role-msg" id="blog-role-msg">
+      ⚠️ You need the <strong>blogger</strong> or <strong>admin</strong> role to create and manage blog posts.
+      Contact an administrator if you need access.
+    </div>
+  </div>
+
+  <!-- Blog Management Card (shown for bloggers/admins) -->
+  <div class="card" id="blog-manage-card" style="display:none;">
+    <div class="blog-toolbar">
+      <h2 style="margin:0;">📝 My Blog Posts</h2>
+      <button class="btn-primary" onclick="createNewPost()">+ New Post</button>
+    </div>
+    <div id="blog-success-msg" class="blog-success-msg"></div>
+    <div id="blog-list-loading" class="blog-loading">Loading your posts...</div>
+    <div id="blog-list-empty" class="blog-empty" style="display:none;">
+      No posts yet. Click "+ New Post" to create your first one!
+    </div>
+    <div id="blog-list" class="blog-post-list" style="display:none;"></div>
   </div>
 
   <a href="/" class="back-link">← Back to Home</a>
 </div>
 
 <script>
+// ── Globals ──
+let currentUserEmail = '';
+let userRoles = [];
+
+// ── Init ──
 document.addEventListener('DOMContentLoaded', async function() {
   const res = await fetch('/auth/check');
   const data = await res.json();
-  
+
   if (!data.authenticated) {
     window.location.href = '/login';
     return;
   }
-  
-  // Show user info
+
+  currentUserEmail = data.email;
+  userRoles = data.roles || (data.role ? [data.role] : []);
+
   document.getElementById('user-email-display').textContent = data.email;
   document.getElementById('profile-email').textContent = data.email;
-  
-  // Session expiry
+
   if (data.expiresAt) {
-    const expiryDate = new Date(data.expiresAt);
-    document.getElementById('profile-expires').textContent = expiryDate.toLocaleString();
+    document.getElementById('profile-expires').textContent = new Date(data.expiresAt).toLocaleString();
   }
-  
-  // Role badges — support multiple roles
+
+  // Role badges
   const roleBadge = document.getElementById('profile-role-badge');
-  const roles = data.roles || (data.role ? [data.role] : []);
-  
-  if (roles.length === 0) {
+  if (userRoles.length === 0) {
     roleBadge.className = 'role-badge member';
     roleBadge.textContent = 'Member';
   } else {
-    roleBadge.innerHTML = roles.map(r => {
-      const cls = r === 'admin' ? 'admin' : (r === 'blogging' ? 'blogging' : 'none');
+    roleBadge.innerHTML = userRoles.map(r => {
+      const cls = r === 'admin' ? 'admin' : (r === 'blogger' ? 'blogger' : (r === 'blogging' ? 'blogger' : 'none'));
       return `<span class="role-badge ${cls}" style="margin-right:4px;">${r}</span>`;
     }).join('');
   }
-  
-  // Show admin link for admins
-  if (roles.includes('admin')) {
+
+  if (userRoles.includes('admin')) {
     document.getElementById('admin-link-area').style.display = 'block';
   }
-  
+
   document.getElementById('profile-loading').style.display = 'none';
   document.getElementById('profile-content').style.display = 'block';
+
+  // Show success message if redirected from saving a post
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('msg') === 'saved') {
+    showSuccessMsg('✅ Post saved successfully!');
+  }
+
+  // Blog feature: show blog management if blogger or admin
+  const isBlogger = userRoles.includes('blogger') || userRoles.includes('admin');
+  const blogCard = document.getElementById('blog-feature-card');
+
+  if (isBlogger) {
+    blogCard.onclick = function() { scrollToBlog(); };
+    document.getElementById('blog-manage-card').style.display = 'block';
+    loadBlogPosts();
+  } else {
+    blogCard.onclick = function() {
+      document.getElementById('blog-role-msg').style.display = 'block';
+      setTimeout(() => { document.getElementById('blog-role-msg').style.display = 'none'; }, 5000);
+    };
+  }
 });
 
+function showSuccessMsg(text) {
+  const el = document.getElementById('blog-success-msg');
+  if (el) {
+    el.textContent = text;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+    // Clean URL
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+}
+
+function scrollToBlog() {
+  document.getElementById('blog-manage-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Blog Post Management ──
+async function loadBlogPosts() {
+  const loadingEl = document.getElementById('blog-list-loading');
+  const emptyEl = document.getElementById('blog-list-empty');
+  const listEl = document.getElementById('blog-list');
+
+  loadingEl.style.display = 'block';
+  emptyEl.style.display = 'none';
+  listEl.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/blog/manage', { headers });
+    const data = await res.json();
+
+    loadingEl.style.display = 'none';
+
+    if (!data.posts || data.posts.length === 0) {
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    listEl.style.display = 'flex';
+    listEl.innerHTML = '';
+
+    for (const post of data.posts) {
+      const item = document.createElement('div');
+      item.className = 'blog-post-item';
+
+      const dateStr = post.updatedAt || post.createdAt;
+      const dateDisplay = dateStr ? new Date(dateStr).toLocaleDateString('en-IN', {
+        year: 'numeric', month: 'short', day: 'numeric'
+      }) : '';
+
+      const statusClass = post.status === 'published' ? 'published' : 'draft';
+
+      item.innerHTML = `
+        <div class="blog-post-info">
+          <div class="blog-post-title">${escapeHtml(post.title)}</div>
+          <div class="blog-post-meta">
+            <span class="blog-post-status ${statusClass}">${escapeHtml(post.status)}</span>
+            <span>📅 ${dateDisplay}</span>
+            <span>🔖 /blog/${escapeHtml(post.slug)}</span>
+          </div>
+        </div>
+        <div class="blog-post-actions">
+          <button class="view-btn" onclick="viewPost('${escapeHtml(post.slug)}')">👁 View</button>
+          <button class="edit-btn" onclick="editPost('${escapeHtml(post.slug)}')">✏️ Edit</button>
+        </div>
+      `;
+      listEl.appendChild(item);
+    }
+  } catch (err) {
+    loadingEl.style.display = 'none';
+    emptyEl.style.display = 'block';
+    emptyEl.textContent = 'Failed to load posts. Please try again.';
+    console.error('loadBlogPosts error:', err);
+  }
+}
+
+function viewPost(slug) {
+  window.open(`/blog/${slug}`, '_blank');
+}
+
+// ── Navigate to standalone blog editor ──
+function createNewPost() {
+  window.location.href = '/dashboard/blog-editor.html';
+}
+
+function editPost(slug) {
+  window.location.href = '/dashboard/blog-editor.html?edit=' + encodeURIComponent(slug);
+}
+
+// ── Auth ──
 async function logout() {
   try {
     const token = localStorage.getItem('vazhai_session');
@@ -320,6 +489,16 @@ async function logout() {
   localStorage.removeItem('vazhai_session');
   document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
   window.location.href = '/';
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&#039;');
 }
 </script>
 

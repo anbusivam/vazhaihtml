@@ -12,6 +12,7 @@
     "@netlify/blobs": "^10.7.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "editorjs-html": "^4.0.5",
     "express": "^4.19.2",
     "razorpay": "^2.9.2"
   },

@@ -124,6 +124,39 @@
   to = "/dashboard/manage.html"
   status = 200
 
+# Blog API endpoints (MUST come before the catch-all wildcard rule)
+[[redirects]]
+  from = "/blog/list"
+  to = "/.netlify/functions/blog-list"
+  status = 200
+
+[[redirects]]
+  from = "/blog/post"
+  to = "/.netlify/functions/blog-post"
+  status = 200
+
+[[redirects]]
+  from = "/blog/save"
+  to = "/.netlify/functions/blog-save"
+  status = 200
+
+[[redirects]]
+  from = "/blog/manage"
+  to = "/.netlify/functions/blog-manage"
+  status = 200
+
+[[redirects]]
+  from = "/blog/upload-image"
+  to = "/.netlify/functions/blog-image-upload"
+  status = 200
+
+# Blog: hybrid static/dynamic post rendering — force=false means Netlify checks for a static file first
+[[redirects]]
+  from = "/blog/*"
+  to = "/.netlify/functions/blog-render"
+  status = 200
+  force = false
+
 # Root fallback
 [[redirects]]
   from = "/"
