@@ -678,9 +678,37 @@ async function loadPostForEditing(slug) {
     }
 
     const post = data.post;
+
+    // ── Admin info bar for editing published/pending posts ──
+    if (userRoles.includes('admin') && (post.status === 'published' || post.status === 'pending')) {
+      const msgArea = document.getElementById('msg-area');
+      msgArea.className = 'msg info';
+      msgArea.style.cssText = 'display:block; padding:12px 16px; border-radius:8px; font-size:13px; font-weight:500; line-height:1.5; margin-bottom:16px;';
+      if (post.status === 'published') {
+        msgArea.style.background = '#e3f2fd';
+        msgArea.style.color = '#1565c0';
+        msgArea.style.border = '1px solid #90caf9';
+        msgArea.innerHTML = '📌 <strong>Admin:</strong> You are editing a <strong>published</strong> post. Changes will be saved with the selected status below. Choose <strong>"Published"</strong> to republish, or <strong>"Draft"</strong> to unpublish.';
+      } else {
+        msgArea.style.background = '#fff3e0';
+        msgArea.style.color = '#e65100';
+        msgArea.style.border = '1px solid #ffcc80';
+        msgArea.innerHTML = '⏳ <strong>Admin:</strong> You are editing a <strong>pending</strong> post. Choose <strong>"Published"</strong> to approve and publish it immediately, or <strong>"Draft"</strong> to reject it.';
+      }
+    }
+
     document.getElementById('post-title').value = post.title || '';
     document.getElementById('post-slug').value = post.slug || '';
-    document.getElementById('post-status').value = post.status || 'draft';
+    // Ensure the status value exists in the dropdown; add missing options dynamically
+    const statusSelect = document.getElementById('post-status');
+    const statusVal = post.status || 'draft';
+    if (!Array.from(statusSelect.options).some(o => o.value === statusVal)) {
+      const opt = document.createElement('option');
+      opt.value = statusVal;
+      opt.textContent = statusVal.charAt(0).toUpperCase() + statusVal.slice(1);
+      statusSelect.appendChild(opt);
+    }
+    statusSelect.value = statusVal;
     document.getElementById('post-tags').value = (post.tags || []).join(', ');
     document.getElementById('post-cover').value = post.coverImage || '';
     document.getElementById('edit-slug').value = post.slug || '';
