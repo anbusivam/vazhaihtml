@@ -68,6 +68,10 @@ exports.handler = async function (event, context) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
+    // Variables to hold name/phone from OTP token
+    let pendingName = '';
+    let pendingPhone = '';
+
     // ── Primary path: stateless OTP verification via signed token ──────────
     if (otp_token) {
       const result = verifyOtpToken(otp_token, normalizedEmail, otp);
@@ -75,7 +79,11 @@ exports.handler = async function (event, context) {
         console.log('[auth-verify-otp] Token verification failed:', result.reason);
         return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: result.reason }) };
       }
-      // OTP verified via token — proceed to create session
+      // Extract name/phone from token payload if present
+      if (result.data) {
+        pendingName = result.data.name || '';
+        pendingPhone = result.data.phone || '';
+      }
       console.log('[auth-verify-otp] OTP verified via signed token for', normalizedEmail);
     } else {
       // ── Fallback: blob-based OTP verification (for backward compatibility) ──
@@ -124,6 +132,8 @@ exports.handler = async function (event, context) {
       const roles = ADMIN_EMAILS.includes(normalizedEmail) ? ['admin'] : [];
       await store.setJSON(`user:${normalizedEmail}`, {
         email: normalizedEmail,
+        name: pendingName || '',
+        phone: pendingPhone || '',
         roles: roles,
         role: roles.length > 0 ? roles[0] : null, // kept for backward compat
         firstLogin: new Date().toISOString(),
@@ -148,6 +158,13 @@ exports.handler = async function (event, context) {
         }
         // Also keep old format for backward compat
         userData.role = 'admin';
+      }
+      // Update name/phone if provided via OTP token and user doesn't already have them set
+      if (pendingName && !userData.name) {
+        userData.name = pendingName;
+      }
+      if (pendingPhone && !userData.phone) {
+        userData.phone = pendingPhone;
       }
       // Also ensure user is in the users list
       const usersList = await store.get('users:list', { type: 'json' }) || [];

@@ -23,7 +23,7 @@ exports.handler = async function (event, context) {
     }
 
     const body = JSON.parse(event.body || '{}');
-    const { slug, title, content, tags, coverImage, status, existingSlug } = body;
+    const { slug, title, content, tags, coverImage, status, existingSlug, authorName } = body;
 
     // Validate
     if (!title || !title.trim()) {
@@ -40,6 +40,22 @@ exports.handler = async function (event, context) {
     }
     postSlug = postSlug.replace(/[^a-z0-9-]/g, '').toLowerCase();
     if (!postSlug) postSlug = 'post';
+
+    // If user has no name in their profile but provided one, update their profile
+    if (authorName && authorName.trim()) {
+      try {
+        const userData = await aStore.get(`user:${auth.email}`, { type: 'json' });
+        if (userData && !userData.name) {
+          userData.name = authorName.trim();
+          userData.lastUpdated = new Date().toISOString();
+          await aStore.setJSON(`user:${auth.email}`, userData);
+          console.log('[blog-save] Updated profile name for', auth.email, 'to', authorName.trim());
+        }
+      } catch (nameErr) {
+        console.warn('[blog-save] Could not update user profile name:', nameErr.message);
+        // Non-fatal — allow the blog save to proceed
+      }
+    }
 
     // Check if we're updating an existing post (editing)
     const isNew = !existingSlug;

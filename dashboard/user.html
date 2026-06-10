@@ -233,6 +233,72 @@
     .blog-success-msg { display:none; padding:12px 16px; background:#e8f5e9; border-radius:8px; border:1px solid #a5d6a7; margin-bottom:16px; font-size:13px; color:#2e7d32; font-weight:500; }
     /* Blog role check message */
     .blog-role-msg { display:none; padding:16px; background:#fff3e0; border-radius:8px; border:1px solid #ffcc80; margin-top:12px; font-size:13px; color:#e65100; line-height:1.6; }
+    /* Profile edit styles */
+    .profile-edit-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .profile-edit-input:focus {
+      border-color: var(--green);
+    }
+    .profile-edit-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+    .profile-editing {
+      display: none;
+    }
+    .profile-editing.active {
+      display: block;
+    }
+    .profile-viewing {
+      display: block;
+    }
+    .profile-viewing.hidden {
+      display: none;
+    }
+    .success-msg {
+      display: none;
+      padding: 12px 16px;
+      background: #e8f5e9;
+      border-radius: 8px;
+      border: 1px solid #a5d6a7;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #2e7d32;
+      font-weight: 500;
+    }
+    .error-msg {
+      display: none;
+      padding: 12px 16px;
+      background: #fef2f2;
+      border-radius: 8px;
+      border: 1px solid #fecaca;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #d32f2f;
+      font-weight: 500;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 640px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; }
       .features-grid { grid-template-columns: 1fr; }
@@ -246,7 +312,8 @@
 <div class="dashboard-header">
   <h1>👤 My Dashboard</h1>
   <div class="user-info">
-    <span id="user-email-display" style="font-weight:600;color:var(--green-dark);"></span>
+    <span id="user-name-display" style="font-weight:600;color:var(--green-dark);"></span>
+    <span id="user-email-display" style="font-size:12px;color:var(--text-light);"></span>
     <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
   </div>
 </div>
@@ -258,20 +325,56 @@
     <h2>📋 Account Details</h2>
     <div id="profile-loading" style="padding:20px;text-align:center;color:var(--text-light);">Loading...</div>
     <div id="profile-content" style="display:none;">
-      <div class="profile-info">
-        <div class="profile-row">
-          <span class="profile-label">Email</span>
-          <span class="profile-value" id="profile-email"></span>
+      
+      <!-- Success/Error messages -->
+      <div id="profile-success-msg" class="success-msg"></div>
+      <div id="profile-error-msg" class="error-msg"></div>
+      
+      <!-- View mode -->
+      <div id="profile-view" class="profile-viewing">
+        <div class="profile-info">
+          <div class="profile-row">
+            <span class="profile-label">Name</span>
+            <span class="profile-value" id="profile-name"></span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">Email</span>
+            <span class="profile-value" id="profile-email"></span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">Phone</span>
+            <span class="profile-value" id="profile-phone"></span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">Role</span>
+            <span class="profile-value"><span id="profile-role-badge"></span></span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">Session Expires</span>
+            <span class="profile-value" id="profile-expires"></span>
+          </div>
         </div>
-        <div class="profile-row">
-          <span class="profile-label">Role</span>
-          <span class="profile-value"><span id="profile-role-badge"></span></span>
-        </div>
-        <div class="profile-row">
-          <span class="profile-label">Session Expires</span>
-          <span class="profile-value" id="profile-expires"></span>
+        <div style="margin-top:16px;">
+          <button class="btn-primary btn-sm" onclick="showEditProfile()">✏️ Edit Profile</button>
         </div>
       </div>
+      
+      <!-- Edit mode -->
+      <div id="profile-edit" class="profile-editing">
+        <div class="form-group">
+          <label class="profile-label" for="edit-name">Name *</label>
+          <input type="text" id="edit-name" class="profile-edit-input" placeholder="Your name">
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label class="profile-label" for="edit-phone">Phone (optional)</label>
+          <input type="tel" id="edit-phone" class="profile-edit-input" placeholder="e.g. +91 98765 43210">
+        </div>
+        <div class="profile-edit-actions">
+          <button class="btn-primary btn-sm" onclick="saveProfile()" id="btn-save-profile">💾 Save</button>
+          <button class="btn-primary btn-sm btn-outline" onclick="cancelEditProfile()">Cancel</button>
+        </div>
+      </div>
+      
       <div id="admin-link-area" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
         <a href="/dashboard/manage" class="admin-link">⚙️ Go to Admin Dashboard →</a>
       </div>
@@ -330,6 +433,7 @@
 // ── Globals ──
 let currentUserEmail = '';
 let userRoles = [];
+let currentUserName = '';
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', async function() {
@@ -343,9 +447,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   currentUserEmail = data.email;
   userRoles = data.roles || (data.role ? [data.role] : []);
+  currentUserName = data.name || '';
 
+  document.getElementById('user-name-display').textContent = currentUserName || data.email;
   document.getElementById('user-email-display').textContent = data.email;
+  document.getElementById('profile-name').textContent = currentUserName || '(not set)';
   document.getElementById('profile-email').textContent = data.email;
+  document.getElementById('profile-phone').textContent = data.phone || '(not set)';
+
+  // ── If user has no name set, auto-prompt to fill profile ──
+  if (!currentUserName) {
+    showEditProfile();
+  }
 
   if (data.expiresAt) {
     document.getElementById('profile-expires').textContent = new Date(data.expiresAt).toLocaleString();
@@ -377,7 +490,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   // Blog feature: show blog management for all authenticated users
-  // All logged-in users can write posts — bloggers/admins bypass approval
   const isBlogger = userRoles.includes('blogger') || userRoles.includes('admin');
   const blogCard = document.getElementById('blog-feature-card');
 
@@ -399,6 +511,79 @@ function showSuccessMsg(text) {
 
 function scrollToBlog() {
   document.getElementById('blog-manage-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Profile Editing ──
+function showEditProfile() {
+  document.getElementById('profile-success-msg').style.display = 'none';
+  document.getElementById('profile-error-msg').style.display = 'none';
+  document.getElementById('edit-name').value = document.getElementById('profile-name').textContent === '(not set)' ? '' : document.getElementById('profile-name').textContent;
+  document.getElementById('edit-phone').value = document.getElementById('profile-phone').textContent === '(not set)' ? '' : document.getElementById('profile-phone').textContent;
+  document.getElementById('profile-view').classList.add('hidden');
+  document.getElementById('profile-edit').classList.add('active');
+}
+
+function cancelEditProfile() {
+  document.getElementById('profile-view').classList.remove('hidden');
+  document.getElementById('profile-edit').classList.remove('active');
+  document.getElementById('profile-success-msg').style.display = 'none';
+  document.getElementById('profile-error-msg').style.display = 'none';
+}
+
+async function saveProfile() {
+  const name = document.getElementById('edit-name').value.trim();
+  const phone = document.getElementById('edit-phone').value.trim();
+
+  if (!name) {
+    document.getElementById('profile-error-msg').textContent = 'Name is required.';
+    document.getElementById('profile-error-msg').style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-profile');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving...';
+  document.getElementById('profile-success-msg').style.display = 'none';
+  document.getElementById('profile-error-msg').style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/auth/update-profile', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ name, phone }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      document.getElementById('profile-error-msg').textContent = data.error || 'Failed to update profile.';
+      document.getElementById('profile-error-msg').style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '💾 Save';
+      return;
+    }
+
+    // Update displayed values
+    currentUserName = data.name || name;
+    document.getElementById('profile-name').textContent = data.name || name;
+    document.getElementById('profile-phone').textContent = data.phone || '(not set)';
+    document.getElementById('user-name-display').textContent = data.name || name;
+
+    document.getElementById('profile-success-msg').textContent = '✅ Profile updated successfully!';
+    document.getElementById('profile-success-msg').style.display = 'block';
+
+    cancelEditProfile();
+  } catch (e) {
+    document.getElementById('profile-error-msg').textContent = 'Network error. Please try again.';
+    document.getElementById('profile-error-msg').style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '💾 Save';
 }
 
 // ── Blog Post Management ──
@@ -458,12 +643,15 @@ async function loadBlogPosts() {
         }
       }
 
+      const authorName = post.authorName || post.author;
+
       item.innerHTML = `
         <div class="blog-post-info">
           <div class="blog-post-title">${escapeHtml(post.title)}</div>
           <div class="blog-post-meta">
             <span class="blog-post-status ${statusClass}">${escapeHtml(post.status)}</span>
             <span>📅 ${dateDisplay}</span>
+            <span>✍️ ${escapeHtml(authorName)}</span>
             <span>🔖 /blog/${escapeHtml(post.slug)}</span>
           </div>
         </div>

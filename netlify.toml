@@ -110,6 +110,11 @@
   status = 200
 
 [[redirects]]
+  from = "/auth/update-profile"
+  to = "/.netlify/functions/auth-update-profile"
+  status = 200
+
+[[redirects]]
   from = "/login"
   to = "/login.html"
   status = 200

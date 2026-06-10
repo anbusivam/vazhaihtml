@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', async function() {
           ${post.excerpt ? `<div class="blog-card-excerpt">${escapeHtml(post.excerpt)}</div>` : ''}
           <div class="blog-card-meta">
             <span>📅 ${dateDisplay}</span>
-            <span>✍️ ${escapeHtml(post.author)}</span>
+            <span>✍️ ${escapeHtml(post.authorName || post.author)}</span>
           </div>
         </div>
       `;

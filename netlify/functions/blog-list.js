@@ -19,6 +19,22 @@ exports.handler = async function (event, context) {
     // Sort by publish date descending
     published.sort((a, b) => new Date(b.publishedAt || b.createdAt) - new Date(a.publishedAt || a.createdAt));
 
+    // Enrich posts with author display names
+    const authStore = require('./auth-store').getStore;
+    const aStore = await authStore(event);
+    const nameCache = {};
+    for (const post of published) {
+      if (!nameCache[post.author]) {
+        try {
+          const userData = await aStore.get(`user:${post.author}`, { type: 'json' });
+          nameCache[post.author] = (userData && userData.name) ? userData.name : post.author;
+        } catch {
+          nameCache[post.author] = post.author;
+        }
+      }
+      post.authorName = nameCache[post.author];
+    }
+
     return {
       statusCode: 200,
       headers: CORS_HEADERS,

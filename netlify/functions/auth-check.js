@@ -49,6 +49,8 @@ exports.handler = async function (event, context) {
     // regardless of when their user record was created
     const userData = await store.get(`user:${session.email}`, { type: 'json' });
     let roles = [];
+    let userName = '';
+    let userPhone = '';
     if (userData) {
       // Support both old single-role format and new array format
       if (Array.isArray(userData.roles)) {
@@ -56,6 +58,8 @@ exports.handler = async function (event, context) {
       } else if (userData.role) {
         roles = [userData.role];
       }
+      userName = userData.name || '';
+      userPhone = userData.phone || '';
     }
     // Hardcoded admin emails always get 'admin' role
     if (ADMIN_EMAILS.includes(session.email) && !roles.includes('admin')) {
@@ -70,6 +74,8 @@ exports.handler = async function (event, context) {
       body: JSON.stringify({ 
         authenticated: true, 
         email: session.email, 
+        name: userName,
+        phone: userPhone,
         expiresAt: session.expiresAt,
         roles: roles,
         role: primaryRole

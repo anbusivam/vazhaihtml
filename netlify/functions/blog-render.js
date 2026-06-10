@@ -274,6 +274,19 @@ exports.handler = async function (event, context) {
       }
     }
 
+    // Look up author display name from user store
+    let authorDisplayName = post.author;
+    try {
+      const authStore = require('./auth-store').getStore;
+      const aStore = await authStore(event);
+      const authorData = await aStore.get(`user:${post.author}`, { type: 'json' });
+      if (authorData && authorData.name) {
+        authorDisplayName = authorData.name;
+      }
+    } catch (e) {
+      console.warn('[blog-render] Could not fetch author name, falling back to email');
+    }
+
     // Convert Editor.js JSON to HTML
     const blocks = post.content && post.content.blocks ? post.content.blocks : [];
     let postHtml = '';
@@ -306,7 +319,7 @@ exports.handler = async function (event, context) {
         <h1 class="post-title">${escapeHtml(post.title)}</h1>
         <div class="post-meta">
           <span>\uD83D\uDCC5 ${dateStr}</span>
-          <span>\u270D\uFE0F ${escapeHtml(post.author)}</span>
+          <span>\u270D\uFE0F ${escapeHtml(authorDisplayName)}</span>
         </div>
       </div>
       ${coverHtml}

@@ -16,10 +16,14 @@ function generateOTP() {
 }
 
 /** Create an HMAC-signed OTP token (stateless — no blob storage needed for OTP) */
-function createOtpToken(email, otp) {
+function createOtpToken(email, otp, extra) {
   const secret = process.env.OTP_SIGNING_SECRET || process.env.SITE_ID || 'vazhai-dev-fallback-key';
   const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
   const payload = { email, otp, expiresAt };
+  if (extra) {
+    if (extra.name) payload.name = extra.name;
+    if (extra.phone) payload.phone = extra.phone;
+  }
   const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
   const signature = crypto
     .createHmac('sha256', secret)
@@ -38,7 +42,7 @@ exports.handler = async function (event, context) {
   }
 
   try {
-    const { email } = JSON.parse(event.body || '{}');
+    const { email, name, phone } = JSON.parse(event.body || '{}');
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Valid email is required.' }) };
@@ -57,7 +61,7 @@ exports.handler = async function (event, context) {
     });
 
     // Create stateless signed token (primary verification method)
-    const otpToken = createOtpToken(normalizedEmail, otp);
+    const otpToken = createOtpToken(normalizedEmail, otp, { name: name ? name.trim() : '', phone: phone ? phone.trim() : '' });
 
     // Send email via Resend
     const resendApiKey = process.env.RESEND_API_KEY;
