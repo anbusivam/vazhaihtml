@@ -199,6 +199,18 @@ body {
   :root { --nav-h:0px; --bnav-h:0px; --sb-w:220px; }
   .top-bar { display:none; }
   .bottom-nav { display:none; }
+
+  #auth-float {
+    background: rgba(255,255,255,.95);
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  #auth-float a#auth-float-email {
+    mix-blend-mode: normal;
+  }
+
   .sidebar {
     display:flex !important; flex-direction:column;
     position:fixed; left:0; top:0; bottom:0; width:var(--sb-w);
