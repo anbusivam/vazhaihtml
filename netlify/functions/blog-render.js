@@ -244,12 +244,34 @@ exports.handler = async function (event, context) {
     const store = await getBlogStore(event);
     const post = await store.get('blog:post:' + slug, { type: 'json' });
 
-    if (!post || post.status !== 'published') {
+    if (!post) {
       return {
         statusCode: 404,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
         body: HTML_ERROR,
       };
+    }
+
+    // Published posts are public. Non-published (draft, pending) require admin or author.
+    if (post.status !== 'published') {
+      const authStore = require('./auth-store').getStore;
+      const { getSession, getUserRoles } = require('./blog-auth');
+      const aStore = await authStore(event);
+      const session = await getSession(aStore, event);
+      let canView = false;
+      if (session) {
+        const roles = await getUserRoles(aStore, session.email);
+        const isAdmin = roles.includes('admin');
+        const isAuthor = post.author === session.email;
+        canView = isAdmin || isAuthor;
+      }
+      if (!canView) {
+        return {
+          statusCode: 404,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          body: HTML_ERROR,
+        };
+      }
     }
 
     // Convert Editor.js JSON to HTML

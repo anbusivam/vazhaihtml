@@ -628,15 +628,26 @@ document.addEventListener('DOMContentLoaded', async function() {
   currentUserEmail = data.email;
   userRoles = data.roles || (data.role ? [data.role] : []);
 
-  // Check if user has blogger or admin role
-  const isBlogger = userRoles.includes('blogger') || userRoles.includes('admin');
-  if (!isBlogger) {
-    showMsg('error', 'You need the blogger or admin role to create or edit posts. Redirecting...');
-    setTimeout(() => { window.location.href = '/dashboard/user.html'; }, 2000);
-    return;
-  }
-
   document.getElementById('user-email-display').textContent = data.email;
+
+  // Check roles for UI hints
+  const isBloggerOrAdmin = userRoles.includes('blogger') || userRoles.includes('admin');
+
+  // Show a hint to regular users that their posts need approval
+  if (!isBloggerOrAdmin) {
+    const statusSelect = document.getElementById('post-status');
+    // Remove "published" option for non-blogger users since it will become pending
+    const publishedOption = statusSelect.querySelector('option[value="published"]');
+    if (publishedOption) {
+      publishedOption.textContent = 'Publish (requires admin approval)';
+      publishedOption.value = 'pending';
+    }
+    const hint = document.createElement('div');
+    hint.className = 'field-hint';
+    hint.style.cssText = 'color:#c62828;font-weight:600;margin-top:6px;padding:8px 12px;background:#fce4ec;border-radius:6px;';
+    hint.textContent = '⚠️ Your posts will need admin approval before being published publicly. Bloggers and admins can publish directly.';
+    statusSelect.parentNode.appendChild(hint);
+  }
 
   // Check for edit mode via query parameter
   const params = new URLSearchParams(window.location.search);

@@ -213,6 +213,7 @@
     }
     .blog-post-status.published { background:#e8f5e9; color:#2e7d32; }
     .blog-post-status.draft { background:#fff3e0; color:#e65100; }
+    .blog-post-status.pending { background:#fce4ec; color:#c62828; }
     .blog-post-actions { display:flex; gap:6px; flex-shrink:0; }
     .blog-post-actions button {
       padding:4px 10px; font-size:11px; border-radius:5px; border:1px solid var(--border);
@@ -223,6 +224,10 @@
     .blog-post-actions .view-btn { color:#1565c0; }
     .blog-post-actions .del-btn { color:#d32f2f; }
     .blog-post-actions .del-btn:hover { background:#fef2f2; border-color:#d32f2f; }
+    .blog-post-actions .approve-btn { color:#2e7d32; border-color:#a5d6a7; }
+    .blog-post-actions .approve-btn:hover { background:#e8f5e9; border-color:#2e7d32; }
+    .blog-post-actions .reject-btn { color:#c62828; border-color:#ef9a9a; }
+    .blog-post-actions .reject-btn:hover { background:#fce4ec; border-color:#c62828; }
     .blog-empty { text-align:center; padding:30px; color:var(--text-light); font-size:14px; }
     .blog-loading { text-align:center; padding:30px; color:var(--text-light); }
     .blog-success-msg { display:none; padding:12px 16px; background:#e8f5e9; border-radius:8px; border:1px solid #a5d6a7; margin-bottom:16px; font-size:13px; color:#2e7d32; font-weight:500; }
@@ -371,20 +376,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     showSuccessMsg('✅ Post saved successfully!');
   }
 
-  // Blog feature: show blog management if blogger or admin
+  // Blog feature: show blog management for all authenticated users
+  // All logged-in users can write posts — bloggers/admins bypass approval
   const isBlogger = userRoles.includes('blogger') || userRoles.includes('admin');
   const blogCard = document.getElementById('blog-feature-card');
 
-  if (isBlogger) {
-    blogCard.onclick = function() { scrollToBlog(); };
-    document.getElementById('blog-manage-card').style.display = 'block';
-    loadBlogPosts();
-  } else {
-    blogCard.onclick = function() {
-      document.getElementById('blog-role-msg').style.display = 'block';
-      setTimeout(() => { document.getElementById('blog-role-msg').style.display = 'none'; }, 5000);
-    };
-  }
+  blogCard.onclick = function() { scrollToBlog(); };
+  document.getElementById('blog-manage-card').style.display = 'block';
+  loadBlogPosts();
 });
 
 function showSuccessMsg(text) {
@@ -439,7 +438,25 @@ async function loadBlogPosts() {
         year: 'numeric', month: 'short', day: 'numeric'
       }) : '';
 
-      const statusClass = post.status === 'published' ? 'published' : 'draft';
+      const statusClass = post.status === 'published' ? 'published' : (post.status === 'pending' ? 'pending' : 'draft');
+      const isAdmin = userRoles.includes('admin');
+
+      let actionsHtml = `
+        <button class="view-btn" onclick="viewPost('${escapeHtml(post.slug)}')">👁 View</button>
+        <button class="edit-btn" onclick="editPost('${escapeHtml(post.slug)}')">✏️ Edit</button>
+      `;
+
+      // Admins get approve/reject buttons for pending posts
+      if (isAdmin && (post.status === 'pending' || post.status === 'draft')) {
+        actionsHtml += `
+          <button class="approve-btn" onclick="approvePost('${escapeHtml(post.slug)}')">✓ Approve</button>
+        `;
+        if (post.status === 'pending') {
+          actionsHtml += `
+            <button class="reject-btn" onclick="rejectPost('${escapeHtml(post.slug)}')">✕ Reject</button>
+          `;
+        }
+      }
 
       item.innerHTML = `
         <div class="blog-post-info">
@@ -451,8 +468,7 @@ async function loadBlogPosts() {
           </div>
         </div>
         <div class="blog-post-actions">
-          <button class="view-btn" onclick="viewPost('${escapeHtml(post.slug)}')">👁 View</button>
-          <button class="edit-btn" onclick="editPost('${escapeHtml(post.slug)}')">✏️ Edit</button>
+          ${actionsHtml}
         </div>
       `;
       listEl.appendChild(item);
@@ -476,6 +492,45 @@ function createNewPost() {
 
 function editPost(slug) {
   window.location.href = '/dashboard/blog-editor.html?edit=' + encodeURIComponent(slug);
+}
+
+// ── Admin: Approve / Reject posts ──
+async function approvePost(slug) {
+  if (!confirm('Approve this post? It will be published publicly.')) return;
+  await moderatePost(slug, 'approve');
+}
+
+async function rejectPost(slug) {
+  if (!confirm('Reject this post? It will be moved to drafts.')) return;
+  await moderatePost(slug, 'reject');
+}
+
+async function moderatePost(slug, action) {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+
+    const res = await fetch('/blog/approve', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ slug, action }),
+    });
+
+    const result = await res.json();
+
+    if (result.error) {
+      alert('Error: ' + result.error);
+      return;
+    }
+
+    showSuccessMsg(result.message || 'Post updated.');
+    loadBlogPosts(); // Refresh list
+  } catch (err) {
+    alert('Failed: ' + err.message);
+  }
 }
 
 // ── Auth ──

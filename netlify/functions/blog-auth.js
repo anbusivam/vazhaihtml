@@ -42,6 +42,13 @@ async function requireBloggerOrAdmin(store, event) {
   return { authorized: true, session, roles, email: session.email };
 }
 
+async function requireAnyAuthenticated(store, event) {
+  const session = await getSession(store, event);
+  if (!session) return { authorized: false, error: 'Unauthorized', status: 401 };
+  const roles = await getUserRoles(store, session.email);
+  return { authorized: true, session, roles, email: session.email };
+}
+
 function corsHeaders(extraMethods) {
   return {
     'Content-Type': 'application/json',
@@ -65,4 +72,4 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-module.exports = { getSession, getUserRoles, requireBloggerOrAdmin, corsHeaders, handleOptions, CORS_HEADERS };
+module.exports = { getSession, getUserRoles, requireBloggerOrAdmin, requireAnyAuthenticated, corsHeaders, handleOptions, CORS_HEADERS };

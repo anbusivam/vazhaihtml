@@ -155,6 +155,11 @@
   to = "/.netlify/functions/blog-cloudinary-search"
   status = 200
 
+[[redirects]]
+  from = "/blog/approve"
+  to = "/.netlify/functions/blog-approve"
+  status = 200
+
 # Blog: hybrid static/dynamic post rendering — force=false means Netlify checks for a static file first
 [[redirects]]
   from = "/blog/*"

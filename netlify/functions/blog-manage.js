@@ -1,18 +1,19 @@
 // Netlify Function: GET /blog/manage
-// Returns all posts (drafts + published) for the authenticated blogger/admin.
-// Bloggers see only their own posts. Admins see all posts.
+// Returns all posts the authenticated user is allowed to see.
+// All authenticated users see their own posts (all statuses).
+// Admins see ALL posts (draft, pending, published).
 const { getBlogStore } = require('./blog-store');
-const { requireBloggerOrAdmin, handleOptions, CORS_HEADERS } = require('./blog-auth');
+const { requireAnyAuthenticated, handleOptions, CORS_HEADERS } = require('./blog-auth');
 
 exports.handler = async function (event, context) {
   const optPre = handleOptions(event);
   if (optPre) return optPre;
 
   try {
-    // Authenticate
+    // Authenticate — any logged-in user can manage their posts
     const authStore = require('./auth-store').getStore;
     const aStore = await authStore(event);
-    const auth = await requireBloggerOrAdmin(aStore, event);
+    const auth = await requireAnyAuthenticated(aStore, event);
     if (!auth.authorized) {
       return { statusCode: auth.status, headers: CORS_HEADERS, body: JSON.stringify({ error: auth.error }) };
     }
@@ -22,7 +23,7 @@ exports.handler = async function (event, context) {
 
     let posts = index.posts;
 
-    // Filter: bloggers see only their own posts, admins see all
+    // Filter: non-admins see only their own posts, admins see all
     if (!auth.roles.includes('admin')) {
       posts = posts.filter(p => p.author === auth.email);
     }

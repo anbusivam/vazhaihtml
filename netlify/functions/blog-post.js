@@ -1,7 +1,9 @@
 // Netlify Function: GET /blog/post?slug=my-post
-// Returns full Editor.js JSON content for a single blog post
+// Returns full Editor.js JSON content for a single blog post.
+// Published posts are public. Draft/pending posts require auth (admin or author).
 const { getBlogStore } = require('./blog-store');
-const { handleOptions, CORS_HEADERS } = require('./blog-auth');
+const { getSession, getUserRoles, handleOptions, CORS_HEADERS } = require('./blog-auth');
+const { ADMIN_EMAILS } = require('./auth-store');
 
 exports.handler = async function (event, context) {
   const optPre = handleOptions(event);
@@ -39,8 +41,40 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // Only return published posts to public
-    // Auth-checking callers (editor) can see drafts too
+    // Published posts are public
+    if (post.status === 'published') {
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ post }),
+      };
+    }
+
+    // Non-published posts (draft, pending) require auth
+    const authStore = require('./auth-store').getStore;
+    const aStore = await authStore(event);
+    const session = await getSession(aStore, event);
+
+    if (!session) {
+      return {
+        statusCode: 404,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: 'Post not found' }),
+      };
+    }
+
+    const roles = await getUserRoles(aStore, session.email);
+    const isAdmin = roles.includes('admin');
+    const isAuthor = post.author === session.email;
+
+    if (!isAdmin && !isAuthor) {
+      return {
+        statusCode: 404,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: 'Post not found' }),
+      };
+    }
+
     return {
       statusCode: 200,
       headers: CORS_HEADERS,

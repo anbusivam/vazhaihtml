@@ -2,7 +2,7 @@
 // Creates or updates a blog post. Requires blogger or admin role.
 // Bloggers can only edit their own posts. Admins can edit any post.
 const { getBlogStore } = require('./blog-store');
-const { requireBloggerOrAdmin, handleOptions, CORS_HEADERS } = require('./blog-auth');
+const { requireAnyAuthenticated, handleOptions, CORS_HEADERS } = require('./blog-auth');
 
 exports.handler = async function (event, context) {
   const optPre = handleOptions(event);
@@ -13,11 +13,11 @@ exports.handler = async function (event, context) {
   }
 
   try {
-    // Authenticate
+    // Authenticate — any logged-in user can write
     const authStore = require('./auth-store').getStore;
     const store = await getBlogStore(event);
     const aStore = await authStore(event);
-    const auth = await requireBloggerOrAdmin(aStore, event);
+    const auth = await requireAnyAuthenticated(aStore, event);
     if (!auth.authorized) {
       return { statusCode: auth.status, headers: CORS_HEADERS, body: JSON.stringify({ error: auth.error }) };
     }
@@ -61,6 +61,15 @@ exports.handler = async function (event, context) {
     const now = new Date().toISOString();
     let post = {};
 
+    // Determine effective status:
+    // - Bloggers & admins: respect their chosen status (published, draft, etc.)
+    // - Regular users: 'published' → 'pending' (needs admin approval), anything else stays as-is
+    const isBloggerOrAdmin = auth.roles.includes('blogger') || auth.roles.includes('admin');
+    let effectiveStatus = status || 'draft';
+    if (!isBloggerOrAdmin && effectiveStatus === 'published') {
+      effectiveStatus = 'pending';
+    }
+
     if (isNew) {
       post = {
         slug: postSlug,
@@ -69,10 +78,10 @@ exports.handler = async function (event, context) {
         tags: tags || [],
         coverImage: coverImage || '',
         author: auth.email,
-        status: status || 'draft',
+        status: effectiveStatus,
         createdAt: now,
         updatedAt: now,
-        publishedAt: status === 'published' ? now : null,
+        publishedAt: effectiveStatus === 'published' ? now : null,
       };
     } else {
       const existingPost = await store.get(`blog:post:${targetSlug}`, { type: 'json' }) || {};
@@ -83,10 +92,10 @@ exports.handler = async function (event, context) {
         tags: tags || existingPost.tags || [],
         coverImage: coverImage !== undefined ? coverImage : existingPost.coverImage || '',
         updatedAt: now,
-        status: status || existingPost.status || 'draft',
+        status: effectiveStatus,
       };
       // Update publishedAt if transitioning to published
-      if (status === 'published' && existingPost.status !== 'published') {
+      if (effectiveStatus === 'published' && existingPost.status !== 'published') {
         post.publishedAt = now;
       }
       post.slug = existingSlug; // preserve original slug
