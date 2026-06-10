@@ -102,6 +102,38 @@ body {
 .live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
+/* ═══════════════════════
+   AUTH FLOAT — fixed top-right login/email badge
+═══════════════════════ */
+#auth-float {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 9999;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#auth-float a {
+  color: var(--amber);
+  text-decoration: none;
+  transition: opacity .15s;
+}
+#auth-float a:hover {
+  opacity: .8;
+  text-decoration: underline;
+}
+#auth-float a#auth-float-email {
+  mix-blend-mode: difference;
+  color: var(--ink2);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
 /* ── Utility ── */
 .hidden { display: none !important; }
 

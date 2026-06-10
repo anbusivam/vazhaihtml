@@ -11,8 +11,10 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@netlify/blobs@^10.7.9",
         "npm:cors@^2.8.5",
         "npm:dotenv@^16.4.5",
+        "npm:editorjs-html@^4.0.5",
         "npm:express@^4.19.2",
         "npm:nodemon@^3.1.4",
         "npm:razorpay@^2.9.2"
