@@ -123,6 +123,31 @@ main { padding-top:var(--nav-h); min-height:100vh; }
 /* Back link */
 .back-link { display:inline-flex; align-items:center; gap:6px; color:var(--muted); text-decoration:none; font-size:.8rem; font-weight:600; margin-bottom:16px; transition:color .15s; }
 .back-link:hover { color:var(--amber); }
+/* Comments section */
+.comments-section { margin-top:48px; padding-top:32px; border-top:2px solid var(--border); }
+.comments-heading { font-size:1.3rem; font-weight:800; margin-bottom:6px; color:var(--ink); }
+.comments-sub { font-size:.8rem; color:var(--muted); margin-bottom:24px; }
+.comment { padding:16px 0; border-bottom:1px solid var(--border); }
+.comment:last-child { border-bottom:none; }
+.comment-meta { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+.comment-avatar { width:32px; height:32px; border-radius:50%; background:var(--amber-l); color:var(--amber-d); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; flex-shrink:0; }
+.comment-author { font-weight:700; font-size:.85rem; color:var(--ink); }
+.comment-date { font-size:.7rem; color:var(--muted); }
+.comment-text { font-size:.95rem; line-height:1.6; color:var(--ink2); margin-left:40px; word-wrap:break-word; }
+.comment-form { margin-top:24px; }
+.comment-form textarea { width:100%; padding:12px 16px; border:2px solid var(--border); border-radius:10px; font-family:var(--ff); font-size:.95rem; resize:vertical; min-height:90px; outline:none; transition:border-color .15s; }
+.comment-form textarea:focus { border-color:var(--amber); }
+.comment-form .cf-footer { display:flex; align-items:center; justify-content:space-between; margin-top:10px; gap:10px; }
+.comment-form .cf-btn { background:var(--amber); color:#fff; border:none; border-radius:10px; padding:10px 24px; font-weight:700; font-size:.85rem; cursor:pointer; transition:background .15s; font-family:var(--ff); }
+.comment-form .cf-btn:hover { background:var(--amber-d); }
+.comment-form .cf-btn:disabled { background:#ccc; cursor:not-allowed; }
+.comment-form .cf-login-msg { font-size:.8rem; color:var(--muted); }
+.comment-form .cf-login-msg a { color:var(--amber-d); font-weight:700; text-decoration:none; }
+.comment-form .cf-login-msg a:hover { text-decoration:underline; }
+.comment-form .cf-error { font-size:.8rem; color:var(--red); margin-top:6px; display:none; }
+.comment-spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; vertical-align:middle; margin-right:6px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.comments-empty { font-size:.9rem; color:var(--muted); padding:12px 0; }
 /* Edit link in post-meta */
 .post-meta .post-edit-link { display:inline-flex; align-items:center; gap:2px; color:var(--muted); text-decoration:none; transition:color .15s; }
 .post-meta .post-edit-link:hover { color:var(--green); }
@@ -344,6 +369,159 @@ exports.handler = async function (event, context) {
               document.getElementById('post-edit-link').style.display = '';
             }
           } catch(e) {}
+        })();
+      <\/script>
+      <!-- Comments section -->
+      <div class="comments-section" id="comments-section">
+        <h2 class="comments-heading">💬 Comments</h2>
+        <div class="comments-sub">Join the conversation</div>
+        <div id="comments-list" class="comments-list"></div>
+
+        <div class="comment-form" id="comment-form">
+          <textarea id="comment-input" placeholder="Write a comment..." maxlength="2000"></textarea>
+          <div class="cf-footer">
+            <button class="cf-btn" id="comment-submit-btn" onclick="submitComment()">Post Comment</button>
+            <div class="cf-login-msg" id="comment-login-msg">
+              <a href="/login?redirect=${escapeHtml('/blog/' + slug)}">Log in</a> to comment
+            </div>
+          </div>
+          <div class="cf-error" id="comment-error"></div>
+        </div>
+      </div>
+      <script>
+        // ── Comments System ──────────────────────────────────────────
+        (function() {
+          var slug = ${JSON.stringify(slug)};
+          var listEl = document.getElementById('comments-list');
+          var formEl = document.getElementById('comment-form');
+          var loginMsg = document.getElementById('comment-login-msg');
+          var submitBtn = document.getElementById('comment-submit-btn');
+          var inputEl = document.getElementById('comment-input');
+          var errorEl = document.getElementById('comment-error');
+
+          // Load comments
+          fetch('/blog/comment?slug=' + encodeURIComponent(slug))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              var comments = data.comments || [];
+              if (comments.length === 0) {
+                listEl.innerHTML = '<div class="comments-empty">No comments yet. Be the first!</div>';
+              } else {
+                listEl.innerHTML = '';
+                comments.forEach(function(c) {
+                  var d = new Date(c.createdAt);
+                  var dateStr = d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
+                  var initial = (c.name || '?')[0].toUpperCase();
+                  listEl.innerHTML +=
+                    '<div class="comment">' +
+                      '<div class="comment-meta">' +
+                        '<div class="comment-avatar">' + initial + '</div>' +
+                        '<span class="comment-author">' + escHtml(c.name) + '</span>' +
+                        '<span class="comment-date">' + dateStr + '</span>' +
+                      '</div>' +
+                      '<div class="comment-text">' + escHtml(c.text) + '</div>' +
+                    '</div>';
+                });
+              }
+            })
+            .catch(function() {
+              listEl.innerHTML = '<div class="comments-empty">Could not load comments.</div>';
+            });
+
+          // Check login status for the submit form
+          var token = localStorage.getItem('vazhai_session');
+          if (token) {
+            var h = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+            fetch('/auth/check', { headers: h })
+              .then(function(r) { return r.json(); })
+              .then(function(d) {
+                if (d.authenticated) {
+                  loginMsg.style.display = 'none';
+                  submitBtn.style.display = '';
+                } else {
+                  loginMsg.style.display = '';
+                  submitBtn.style.display = 'none';
+                }
+              })
+              .catch(function() {});
+          } else {
+            loginMsg.style.display = '';
+            submitBtn.style.display = 'none';
+          }
+
+          window.submitComment = function() {
+            var text = inputEl.value.trim();
+            if (!text) {
+              errorEl.textContent = 'Please write a comment.';
+              errorEl.style.display = 'block';
+              return;
+            }
+            if (text.length > 2000) {
+              errorEl.textContent = 'Comment is too long (max 2000 characters).';
+              errorEl.style.display = 'block';
+              return;
+            }
+            errorEl.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="comment-spinner"></span>Posting...';
+
+            var t = localStorage.getItem('vazhai_session');
+            var headers = { 'Content-Type': 'application/json' };
+            if (t) headers['Authorization'] = 'Bearer ' + t;
+
+            fetch('/blog/comment', {
+              method: 'POST',
+              headers: headers,
+              body: JSON.stringify({ slug: slug, text: text }),
+            })
+              .then(function(r) { return r.json(); })
+              .then(function(data) {
+                if (data.ok && data.comment) {
+                  inputEl.value = '';
+                  // Prepend the new comment
+                  var c = data.comment;
+                  var d = new Date(c.createdAt);
+                  var dateStr = d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
+                  var initial = (c.name || '?')[0].toUpperCase();
+                  var newHtml =
+                    '<div class="comment">' +
+                      '<div class="comment-meta">' +
+                        '<div class="comment-avatar">' + initial + '</div>' +
+                        '<span class="comment-author">' + escHtml(c.name) + '</span>' +
+                        '<span class="comment-date">' + dateStr + '</span>' +
+                      '</div>' +
+                      '<div class="comment-text">' + escHtml(c.text) + '</div>' +
+                    '</div>';
+                  var existingEmpty = listEl.querySelector('.comments-empty');
+                  if (existingEmpty) {
+                    listEl.innerHTML = newHtml;
+                  } else {
+                    listEl.insertAdjacentHTML('afterbegin', newHtml);
+                  }
+                } else {
+                  errorEl.textContent = data.error || 'Failed to post comment.';
+                  errorEl.style.display = 'block';
+                }
+              })
+              .catch(function() {
+                errorEl.textContent = 'Network error. Please try again.';
+                errorEl.style.display = 'block';
+              })
+              .finally(function() {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Post Comment';
+              });
+          };
+
+          function escHtml(str) {
+            if (!str) return '';
+            return String(str)
+              .replace(/[&]/g, '&' + 'amp;')
+              .replace(/[<]/g, '&' + 'lt;')
+              .replace(/[>]/g, '&' + 'gt;')
+              .replace(/["]/g, '&' + 'quot;')
+              .replace(/[']/g, '&#' + '039;');
+          }
         })();
       <\/script>
     `;
