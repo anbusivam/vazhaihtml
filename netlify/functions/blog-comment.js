@@ -319,19 +319,52 @@ async function handleEditComment(store, event) {
       return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Forbidden: only comment author or admin can edit this comment' }) };
     }
 
+    // Determine if the comment author is a blogger/admin (auto-approved).
+    // Use getUserRoles which handles roles array, role string, and ADMIN_EMAILS.
+    const commentAuthorRoles = await getUserRoles(aStore, comment.email);
+    const isCommentAuthorBlogger = commentAuthorRoles.includes('blogger') || commentAuthorRoles.includes('admin');
+
     // Update the comment text and mark as edited
     comment.text = text.trim();
     comment.editedAt = new Date().toISOString();
-    await store.setJSON(`blog:comment:${slug}:${commentId}`, comment);
 
-    // If the comment was in the pending list, update its text there too
-    const pendingKey = 'blog:pending-comments';
-    const pendingList = await store.get(pendingKey, { type: 'json' }) || [];
-    const pendingIdx = pendingList.findIndex(p => p.slug === slug && p.commentId === commentId);
-    if (pendingIdx !== -1) {
-      pendingList[pendingIdx].text = text.trim();
-      await store.setJSON(pendingKey, pendingList);
+    // If the comment author is not a blogger/admin, reset to unapproved and add to pending
+    if (!isCommentAuthorBlogger) {
+      comment.approved = false;
+
+      // Get the post title for display in admin list
+      const post = await store.get(`blog:post:${slug}`, { type: 'json' });
+      const postTitle = post ? post.title : slug;
+
+      const pendingKey = 'blog:pending-comments';
+      const pendingList = await store.get(pendingKey, { type: 'json' }) || [];
+
+      // Remove any existing entry for this comment from the pending list
+      const filteredPending = pendingList.filter(p => !(p.slug === slug && p.commentId === commentId));
+
+      // Add updated entry to pending list
+      filteredPending.push({
+        commentId,
+        slug,
+        email: comment.email,
+        name: comment.name,
+        text: text.trim(),
+        createdAt: comment.createdAt,
+        postTitle,
+      });
+      await store.setJSON(pendingKey, filteredPending);
+    } else {
+      // If the comment was in the pending list (e.g., admin approving then editing), update its text there too
+      const pendingKey = 'blog:pending-comments';
+      const pendingList = await store.get(pendingKey, { type: 'json' }) || [];
+      const pendingIdx = pendingList.findIndex(p => p.slug === slug && p.commentId === commentId);
+      if (pendingIdx !== -1) {
+        pendingList[pendingIdx].text = text.trim();
+        await store.setJSON(pendingKey, pendingList);
+      }
     }
+
+    await store.setJSON(`blog:comment:${slug}:${commentId}`, comment);
 
     return {
       statusCode: 200,
