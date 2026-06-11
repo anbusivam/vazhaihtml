@@ -159,6 +159,7 @@ main { padding-top:var(--nav-h); min-height:100vh; }
       <div class="post-meta">
         <span>📅 July 6, 2026</span>
         <span>✍️ Vazhai Team</span>
+        <span id="post-edit-link" style="display:none;"><a href="/dashboard/blog-editor?edit=welcome-to-vazhai-blog">✏️ Edit</a></span>
       </div>
     </div>
 
@@ -203,5 +204,21 @@ main { padding-top:var(--nav-h); min-height:100vh; }
   </div>
 </main>
 
+<script>
+// Show edit button if current user matches the author (stored in data)
+(async function() {
+  try {
+    var t = localStorage.getItem('vazhai_session');
+    var h = { 'Content-Type': 'application/json' };
+    if (t) h['Authorization'] = 'Bearer ' + t;
+    var r = await fetch('/auth/check', { headers: h });
+    var d = await r.json();
+    // Static post authored by "Vazhai Team" — only admins can edit
+    if (d.authenticated && d.email === 'anbu@vazhai.in') {
+      document.getElementById('post-edit-link').style.display = '';
+    }
+  } catch(e) {}
+})();
+</script>
 </body>
 </html>
