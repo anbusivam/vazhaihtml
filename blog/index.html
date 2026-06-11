@@ -141,24 +141,6 @@
   </div>
 
   <div class="blog-listing">
-    <!-- Static post card (hardcoded in repo) -->
-    <a href="/blog/welcome-to-vazhai-blog" class="blog-card" id="static-post-card">
-      <div class="blog-card-cover">
-        <img src="/images/school1.jpg" alt="Welcome to the Vazhai Blog" loading="lazy">
-      </div>
-      <div class="blog-card-body" style="padding-left:18px;">
-        <div class="blog-card-tags">
-          <span class="blog-card-tag">Announcement</span>
-          <span class="blog-card-tag">Static</span>
-        </div>
-        <div class="blog-card-title">Welcome to the Vazhai Blog!</div>
-        <div class="blog-card-excerpt">Welcome to the Vazhai Blog — a space for stories, updates, and reflections from our work in rural education across Tamil Nadu...</div>
-        <div class="blog-card-meta">
-          <span>📅 Jul 6, 2026</span>
-          <span>✍️ Vazhai Team</span>
-        </div>
-      </div>
-    </a>
     <div id="blog-posts">
       <!-- Skeleton loading -->
       <div class="blog-skeleton" id="blog-skeleton">
@@ -224,19 +206,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       return;
     }
     
-    // Deduplicate: skip slugs that already have a hardcoded static card
-    const staticCard = document.getElementById('static-post-card');
-    const existingSlugs = new Set();
-    if (staticCard) {
-      const href = staticCard.getAttribute('href');
-      const slug = href.replace('/blog/', '').replace(/\/$/, '');
-      existingSlugs.add(slug);
-    }
-    
     for (const post of data.posts) {
-      // Skip if a static post with this slug already exists
-      if (existingSlugs.has(post.slug)) continue;
-      
       const card = document.createElement('a');
       card.href = `/blog/${post.slug}`;
       card.className = 'blog-card';
