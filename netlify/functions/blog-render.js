@@ -148,6 +148,12 @@ main { padding-top:var(--nav-h); min-height:100vh; }
 .comment-spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; vertical-align:middle; margin-right:6px; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .comments-empty { font-size:.9rem; color:var(--muted); padding:12px 0; }
+/* Comment approval styles */
+.comment.approved { opacity:1; }
+.comment.pending { opacity:0.85; background:#fff8e1; border-left:3px solid #ffa000; border-radius:0 8px 8px 0; padding-left:8px; }
+.comment .approve-comment-btn { display:inline-block; padding:3px 10px; font-size:11px; font-weight:700; color:#fff; background:var(--green); border:none; border-radius:4px; cursor:pointer; font-family:var(--ff); margin:6px 0 0 40px; }
+.comment .approve-comment-btn:hover { background:var(--green-d); }
+.pending-label { font-size:11px; color:#ffa000; font-weight:700; margin-left:8px; text-transform:uppercase; letter-spacing:.03em; }
 /* Edit link in post-meta */
 .post-meta .post-edit-link { display:inline-flex; align-items:center; gap:2px; color:var(--muted); text-decoration:none; transition:color .15s; }
 .post-meta .post-edit-link:hover { color:var(--green); }
@@ -389,7 +395,7 @@ exports.handler = async function (event, context) {
         </div>
       </div>
       <script>
-        // ── Comments System ──────────────────────────────────────────
+      // ── Comments System (with approval support) ─────────────────
         (function() {
           var slug = ${JSON.stringify(slug)};
           var listEl = document.getElementById('comments-list');
@@ -398,57 +404,150 @@ exports.handler = async function (event, context) {
           var submitBtn = document.getElementById('comment-submit-btn');
           var inputEl = document.getElementById('comment-input');
           var errorEl = document.getElementById('comment-error');
+          var postAuthor = ${JSON.stringify(post.author)};
 
-          // Load comments
-          fetch('/blog/comment?slug=' + encodeURIComponent(slug))
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-              var comments = data.comments || [];
-              if (comments.length === 0) {
-                listEl.innerHTML = '<div class="comments-empty">No comments yet. Be the first!</div>';
-              } else {
+          // Track whether current user can approve comments
+          var canApprove = false;
+          var token = localStorage.getItem('vazhai_session');
+
+          // Approve a comment (called via event delegation)
+          function doApprove(commentId) {
+            var t = localStorage.getItem('vazhai_session');
+            var hdrs = { 'Content-Type': 'application/json' };
+            if (t) hdrs['Authorization'] = 'Bearer ' + t;
+
+            fetch('/blog/comment/approve', {
+              method: 'POST',
+              headers: hdrs,
+              body: JSON.stringify({ slug: slug, commentId: commentId }),
+            })
+              .then(function(r) { return r.json(); })
+              .then(function(data) {
+                if (data.success) {
+                  loadComments(); // Reload to move from pending to approved
+                } else {
+                  alert(data.error || 'Failed to approve comment.');
+                }
+              })
+              .catch(function() {
+                alert('Network error.');
+              });
+          }
+
+          // Event delegation for approve buttons
+          document.getElementById('comments-list').addEventListener('click', function(e) {
+            var btn = e.target.closest('.approve-comment-btn');
+            if (btn) {
+              doApprove(btn.getAttribute('data-comment-id'));
+            }
+          });
+
+          // Load comments - separate approved from pending
+          function loadComments() {
+            fetch('/blog/comment?slug=' + encodeURIComponent(slug))
+              .then(function(r) { return r.json(); })
+              .then(function(data) {
+                var allComments = data.comments || [];
+                var approved = [];
+                var pending = [];
+
+                allComments.forEach(function(c) {
+                  if (c.approved) {
+                    approved.push(c);
+                  } else if (canApprove) {
+                    pending.push(c);
+                  }
+                });
+
+                if (approved.length === 0 && pending.length === 0) {
+                  listEl.innerHTML = '<div class="comments-empty">No comments yet. Be the first!</div>';
+                  return;
+                }
+
                 listEl.innerHTML = '';
-                comments.forEach(function(c) {
-                  var d = new Date(c.createdAt);
-                  var dateStr = d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
-                  var initial = (c.name || '?')[0].toUpperCase();
-                  listEl.innerHTML +=
-                    '<div class="comment">' +
+
+                // Show pending comments first (only visible to post author / admin)
+                if (pending.length > 0) {
+                  var pendHead = document.createElement('div');
+                  pendHead.className = 'comments-sub';
+                  pendHead.style.marginTop = '16px';
+                  pendHead.textContent = '⏳ Pending Approval (' + pending.length + ')';
+                  listEl.appendChild(pendHead);
+
+                  pending.forEach(function(c) {
+                    var d = new Date(c.createdAt);
+                    var ds = d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
+                    var initial = (c.name || '?')[0].toUpperCase();
+                    var el = document.createElement('div');
+                    el.className = 'comment pending';
+                    el.innerHTML =
                       '<div class="comment-meta">' +
                         '<div class="comment-avatar">' + initial + '</div>' +
                         '<span class="comment-author">' + escHtml(c.name) + '</span>' +
-                        '<span class="comment-date">' + dateStr + '</span>' +
+                        '<span class="comment-date">' + ds + '</span>' +
+                        '<span class="pending-label">Pending</span>' +
                       '</div>' +
                       '<div class="comment-text">' + escHtml(c.text) + '</div>' +
-                    '</div>';
-                });
-              }
-            })
-            .catch(function() {
-              listEl.innerHTML = '<div class="comments-empty">Could not load comments.</div>';
-            });
+                      '<button class="approve-comment-btn" data-comment-id="' + escHtmlAttr(c.id) + '">✓ Approve</button>';
+                    listEl.appendChild(el);
+                  });
+                }
 
-          // Check login status for the submit form
-          var token = localStorage.getItem('vazhai_session');
+                // Show approved comments
+                if (approved.length > 0) {
+                  var apprHead = document.createElement('div');
+                  apprHead.className = 'comments-sub';
+                  apprHead.style.marginTop = '16px';
+                  apprHead.textContent = '💬 ' + (pending.length > 0 ? 'Approved Comments' : 'Comments') + ' (' + approved.length + ')';
+                  listEl.appendChild(apprHead);
+
+                  approved.forEach(function(c) {
+                    var d = new Date(c.createdAt);
+                    var ds = d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
+                    var initial = (c.name || '?')[0].toUpperCase();
+                    var el = document.createElement('div');
+                    el.className = 'comment approved';
+                    el.innerHTML =
+                      '<div class="comment-meta">' +
+                        '<div class="comment-avatar">' + initial + '</div>' +
+                        '<span class="comment-author">' + escHtml(c.name) + '</span>' +
+                        '<span class="comment-date">' + ds + '</span>' +
+                      '</div>' +
+                      '<div class="comment-text">' + escHtml(c.text) + '</div>';
+                    listEl.appendChild(el);
+                  });
+                }
+              })
+              .catch(function() {
+                listEl.innerHTML = '<div class="comments-empty">Could not load comments.</div>';
+              });
+          }
+
+          // Check login & determine if can approve
           if (token) {
             var h = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
             fetch('/auth/check', { headers: h })
               .then(function(r) { return r.json(); })
               .then(function(d) {
                 if (d.authenticated) {
+                  canApprove = (d.email === postAuthor) || (d.roles && d.roles.indexOf('admin') !== -1);
                   loginMsg.style.display = 'none';
                   submitBtn.style.display = '';
+                  loadComments(); // Reload with approval context
                 } else {
                   loginMsg.style.display = '';
                   submitBtn.style.display = 'none';
+                  loadComments();
                 }
               })
-              .catch(function() {});
+              .catch(function() { loadComments(); });
           } else {
             loginMsg.style.display = '';
             submitBtn.style.display = 'none';
+            loadComments();
           }
 
+          // Submit a comment
           window.submitComment = function() {
             var text = inputEl.value.trim();
             if (!text) {
@@ -478,32 +577,22 @@ exports.handler = async function (event, context) {
               .then(function(data) {
                 if (data.ok && data.comment) {
                   inputEl.value = '';
-                  // Prepend the new comment
-                  var c = data.comment;
-                  var d = new Date(c.createdAt);
-                  var dateStr = d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
-                  var initial = (c.name || '?')[0].toUpperCase();
-                  var newHtml =
-                    '<div class="comment">' +
-                      '<div class="comment-meta">' +
-                        '<div class="comment-avatar">' + initial + '</div>' +
-                        '<span class="comment-author">' + escHtml(c.name) + '</span>' +
-                        '<span class="comment-date">' + dateStr + '</span>' +
-                      '</div>' +
-                      '<div class="comment-text">' + escHtml(c.text) + '</div>' +
-                    '</div>';
-                  var existingEmpty = listEl.querySelector('.comments-empty');
-                  if (existingEmpty) {
-                    listEl.innerHTML = newHtml;
+                  if (data.approved) {
+                    loadComments(); // Reload to show immediately
                   } else {
-                    listEl.insertAdjacentHTML('afterbegin', newHtml);
+                    errorEl.style.color = '#ffa000';
+                    errorEl.textContent = '✅ Comment submitted! It will appear once approved by the post author or admin.';
+                    errorEl.style.display = 'block';
+                    setTimeout(function() { errorEl.style.display = 'none'; }, 5000);
                   }
                 } else {
+                  errorEl.style.color = '#C0392B';
                   errorEl.textContent = data.error || 'Failed to post comment.';
                   errorEl.style.display = 'block';
                 }
               })
               .catch(function() {
+                errorEl.style.color = '#C0392B';
                 errorEl.textContent = 'Network error. Please try again.';
                 errorEl.style.display = 'block';
               })
@@ -521,6 +610,16 @@ exports.handler = async function (event, context) {
               .replace(/[>]/g, '&' + 'gt;')
               .replace(/["]/g, '&' + 'quot;')
               .replace(/[']/g, '&#' + '039;');
+          }
+
+          function escHtmlAttr(str) {
+            if (!str) return '';
+            return String(str)
+              .replace(/[&]/g, '&' + 'amp;')
+              .replace(/["]/g, '&' + 'quot;')
+              .replace(/[']/g, '&#' + '039;')
+              .replace(/[<]/g, '&' + 'lt;')
+              .replace(/[>]/g, '&' + 'gt;');
           }
         })();
       <\/script>

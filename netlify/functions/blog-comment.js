@@ -1,25 +1,30 @@
 // Netlify Function: /blog/comment
 // POST   — submit a comment (requires auth)
-// GET    — list comments for a post slug
+// GET    — list comments for a post slug (public: approved only; with auth: includes pending for author/admin)
+// POST /approve — approve a pending comment (post author or admin only)
+// GET /pending  — get all pending comments globally (admin only)
 const { getBlogStore } = require('./blog-store');
-
-const CORS_HEADERS = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+const { getSession, getUserRoles, handleOptions, CORS_HEADERS } = require('./blog-auth');
 
 exports.handler = async function (event, context) {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   }
 
+  // ── Path routing ──────────────────────────────────────────────
+  const path = (event.path || '').replace(/\/\.netlify\/functions\/blog-comment/, '/blog/comment');
+  const isApprove = path.endsWith('/approve');
+  const isPending = path.endsWith('/pending') || event.queryStringParameters?.pending === 'true';
+
   try {
     const store = await getBlogStore(event);
 
+    // ── GET: Retrieve comments ──────────────────────────────────
     if (event.httpMethod === 'GET') {
-      // GET /blog/comment?slug=xxx  — retrieve comments for a post
+      if (isPending) {
+        return await handleGetPendingComments(store, event);
+      }
+
       const params = new URLSearchParams(event.queryStringParameters || {});
       const slug = params.get('slug');
       if (!slug) {
@@ -38,8 +43,13 @@ exports.handler = async function (event, context) {
       };
     }
 
+    // ── POST: Submit a comment or approve a comment ─────────────
     if (event.httpMethod === 'POST') {
-      // POST /blog/comment  — submit a comment (requires authentication)
+      if (isApprove) {
+        return await handleApproveComment(store, event);
+      }
+
+      // ── Submit a comment ──────────────────────────────────────
       const authHeader = event.headers['authorization'] || '';
       const cookies = event.headers['cookie'] || '';
 
@@ -101,9 +111,14 @@ exports.handler = async function (event, context) {
         };
       }
 
-      // Get user display name
+      // Get user display name and roles
       const userData = await authStore.get(`user:${session.email}`, { type: 'json' });
       const userName = (userData && userData.name) || session.email.split('@')[0];
+      const roles = await getUserRoles(authStore, session.email);
+
+      // Determine if auto-approved (bloggers auto-approve, others need approval)
+      const isBlogger = roles.includes('blogger') || roles.includes('admin');
+      const autoApproved = isBlogger;
 
       // Create comment
       const id = Date.now().toString() + '-' + Math.random().toString(36).slice(2, 6);
@@ -114,6 +129,7 @@ exports.handler = async function (event, context) {
         name: userName,
         text,
         createdAt: new Date().toISOString(),
+        approved: autoApproved,
       };
 
       // Store comment in blobs
@@ -126,10 +142,34 @@ exports.handler = async function (event, context) {
       indexList.push(id);
       await store.setJSON(indexKey, indexList);
 
+      // If not auto-approved, add to global pending comments list (for admin dashboard)
+      if (!autoApproved) {
+        // Get the post title for display in admin list
+        const post = await store.get(`blog:post:${slug}`, { type: 'json' });
+        const postTitle = post ? post.title : slug;
+
+        const pendingKey = 'blog:pending-comments';
+        const pendingList = await store.get(pendingKey, { type: 'json' }) || [];
+        pendingList.push({
+          commentId: id,
+          slug,
+          email: session.email,
+          name: userName,
+          text,
+          createdAt: comment.createdAt,
+          postTitle,
+        });
+        await store.setJSON(pendingKey, pendingList);
+      }
+
       return {
         statusCode: 200,
         headers: CORS_HEADERS,
-        body: JSON.stringify({ comment, ok: true }),
+        body: JSON.stringify({
+          comment: { ...comment, approved: autoApproved },
+          ok: true,
+          approved: autoApproved,
+        }),
       };
     }
 
@@ -148,6 +188,92 @@ exports.handler = async function (event, context) {
   }
 };
 
+// ── GET: Pending comments (admin only) ───────────────────────────────
+async function handleGetPendingComments(store, event) {
+  try {
+    const authStore = require('./auth-store').getStore;
+    const aStore = await authStore(event);
+    const session = await getSession(aStore, event);
+    if (!session) {
+      return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Unauthorized' }) };
+    }
+
+    const roles = await getUserRoles(aStore, session.email);
+    const isAdmin = roles.includes('admin');
+
+    if (!isAdmin) {
+      return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Forbidden: admin access required' }) };
+    }
+
+    const pendingKey = 'blog:pending-comments';
+    const pendingList = await store.get(pendingKey, { type: 'json' }) || [];
+
+    return {
+      statusCode: 200,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ pendingComments: pendingList }),
+    };
+  } catch (err) {
+    console.error('[blog-comment] handleGetPendingComments error:', err.message);
+    return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Server error.' }) };
+  }
+}
+
+// ── POST: Approve a comment (post author or admin only) ──────────────
+async function handleApproveComment(store, event) {
+  try {
+    const authStore = require('./auth-store').getStore;
+    const aStore = await authStore(event);
+    const session = await getSession(aStore, event);
+    if (!session) {
+      return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Unauthorized' }) };
+    }
+
+    const body = JSON.parse(event.body || '{}');
+    const { slug, commentId } = body;
+
+    if (!slug || !commentId) {
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Missing slug or commentId' }) };
+    }
+
+    // Fetch the comment
+    const comment = await store.get(`blog:comment:${slug}:${commentId}`, { type: 'json' });
+    if (!comment) {
+      return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Comment not found' }) };
+    }
+
+    // Check authorization: admin or post author can approve
+    const roles = await getUserRoles(aStore, session.email);
+    const isAdmin = roles.includes('admin');
+    const post = await store.get(`blog:post:${slug}`, { type: 'json' });
+    const isAuthor = post && post.author === session.email;
+
+    if (!isAdmin && !isAuthor) {
+      return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Forbidden: only post author or admin can approve comments' }) };
+    }
+
+    // Update the comment to approved
+    comment.approved = true;
+    await store.setJSON(`blog:comment:${slug}:${commentId}`, comment);
+
+    // Remove from global pending list
+    const pendingKey = 'blog:pending-comments';
+    const pendingList = await store.get(pendingKey, { type: 'json' }) || [];
+    const updatedPending = pendingList.filter(p => !(p.slug === slug && p.commentId === commentId));
+    await store.setJSON(pendingKey, updatedPending);
+
+    return {
+      statusCode: 200,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ success: true, comment, message: 'Comment approved.' }),
+    };
+  } catch (err) {
+    console.error('[blog-comment] handleApproveComment error:', err.message);
+    return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Server error.' }) };
+  }
+}
+
+// ── Get comments for a post ──────────────────────────────────────────
 async function getComments(store, slug) {
   try {
     const indexKey = `blog:comments:${slug}`;

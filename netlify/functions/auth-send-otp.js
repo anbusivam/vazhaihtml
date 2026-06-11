@@ -63,6 +63,22 @@ exports.handler = async function (event, context) {
     // Create stateless signed token (primary verification method)
     const otpToken = createOtpToken(normalizedEmail, otp, { name: name ? name.trim() : '', phone: phone ? phone.trim() : '' });
 
+    // ── Test email bypass (local dev only): skip Resend for emails starting with "test" ──
+    const isLocalDev = process.env.NETLIFY_DEV === 'true' || (event.headers && event.headers.host && event.headers.host.includes('localhost'));
+    const isTestEmail = isLocalDev && normalizedEmail.startsWith('test');
+    if (isTestEmail) {
+      console.log('[auth-send-otp] Test email detected (local dev), skipping Resend for', normalizedEmail, '- OTP:', otp);
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({
+          success: true,
+          message: 'OTP sent to your email.',
+          otp_token: otpToken,
+        }),
+      };
+    }
+
     // Send email via Resend
     const resendApiKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.OTP_FROM_EMAIL || 'do-not-reply@vazhai.in';

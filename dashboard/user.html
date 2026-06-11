@@ -412,6 +412,15 @@
     </div>
   </div>
 
+  <!-- Pending Comments Card (shown for admins) -->
+  <div class="card" id="pending-comments-card" style="display:none;">
+    <h2>⏳ Pending Comment Approvals</h2>
+    <div id="pending-comments-loading" class="blog-loading">Loading pending comments...</div>
+    <div id="pending-comments-empty" class="blog-empty" style="display:none;">No pending comments.</div>
+    <div id="pending-comments-list" class="blog-post-list" style="display:none;"></div>
+    <div id="pending-comments-error" class="cf-error" style="display:none;margin-top:8px;"></div>
+  </div>
+
   <!-- Blog Management Card (shown for bloggers/admins) -->
   <div class="card" id="blog-manage-card" style="display:none;">
     <div class="blog-toolbar">
@@ -491,6 +500,12 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Show success message if redirected from saving a post
   if (params.get('msg') === 'saved') {
     showSuccessMsg('✅ Post saved successfully!');
+  }
+
+  // Pending comments card for admins
+  if (userRoles.includes('admin')) {
+    document.getElementById('pending-comments-card').style.display = 'block';
+    loadPendingComments();
   }
 
   // Blog feature: show blog management for all authenticated users
@@ -726,6 +741,104 @@ async function moderatePost(slug, action) {
 
     showSuccessMsg(result.message || 'Post updated.');
     loadBlogPosts(); // Refresh list
+  } catch (err) {
+    alert('Failed: ' + err.message);
+  }
+}
+
+// ── Admin: Pending Comments ──
+async function loadPendingComments() {
+  const loadingEl = document.getElementById('pending-comments-loading');
+  const emptyEl = document.getElementById('pending-comments-empty');
+  const listEl = document.getElementById('pending-comments-list');
+  const errorEl = document.getElementById('pending-comments-error');
+
+  loadingEl.style.display = 'block';
+  emptyEl.style.display = 'none';
+  listEl.style.display = 'none';
+  errorEl.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/blog/comment/pending', { headers });
+    const data = await res.json();
+
+    loadingEl.style.display = 'none';
+
+    if (data.error) {
+      errorEl.textContent = data.error;
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const pendingComments = data.pendingComments || [];
+
+    if (pendingComments.length === 0) {
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    listEl.style.display = 'flex';
+    listEl.innerHTML = '';
+
+    pendingComments.forEach(function(pc) {
+      const item = document.createElement('div');
+      item.className = 'blog-post-item';
+
+      const dateStr = pc.createdAt ? new Date(pc.createdAt).toLocaleDateString('en-IN', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      }) : '';
+
+      item.innerHTML = `
+        <div class="blog-post-info">
+          <div class="blog-post-title">💬 "${escapeHtml(pc.text.substring(0, 80))}${pc.text.length > 80 ? '…' : ''}"</div>
+          <div class="blog-post-meta">
+            <span>✍️ ${escapeHtml(pc.name)}</span>
+            <span>📅 ${dateStr}</span>
+            <span>📄 ${escapeHtml(pc.postTitle || pc.slug)}</span>
+            <span><a href="/blog/${escapeHtml(pc.slug)}#comments-section" target="_blank" style="color:#1565c0;">🔗 /blog/${escapeHtml(pc.slug)}</a></span>
+          </div>
+        </div>
+        <div class="blog-post-actions">
+          <button class="approve-btn" onclick="approvePendingComment('${escapeHtml(pc.slug)}', '${escapeHtml(pc.commentId)}')">✓ Approve</button>
+        </div>
+      `;
+      listEl.appendChild(item);
+    });
+  } catch (err) {
+    loadingEl.style.display = 'none';
+    errorEl.textContent = 'Failed to load pending comments.';
+    errorEl.style.display = 'block';
+    console.error('loadPendingComments error:', err);
+  }
+}
+
+async function approvePendingComment(slug, commentId) {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+
+    const res = await fetch('/blog/comment/approve', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ slug, commentId }),
+    });
+
+    const result = await res.json();
+
+    if (result.error) {
+      alert('Error: ' + result.error);
+      return;
+    }
+
+    showSuccessMsg('✅ Comment approved!');
+    loadPendingComments(); // Refresh list
   } catch (err) {
     alert('Failed: ' + err.message);
   }

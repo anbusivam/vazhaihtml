@@ -68,12 +68,31 @@ exports.handler = async function (event, context) {
 
     const normalizedEmail = email.toLowerCase().trim();
 
+    // ── Test email bypass (local dev only): accept any OTP for emails starting with "test" ──
+    const isLocalDev = process.env.NETLIFY_DEV === 'true' || (event.headers && event.headers.host && event.headers.host.includes('localhost'));
+    const isTestEmail = isLocalDev && normalizedEmail.startsWith('test');
+
     // Variables to hold name/phone from OTP token
     let pendingName = '';
     let pendingPhone = '';
 
-    // ── Primary path: stateless OTP verification via signed token ──────────
-    if (otp_token) {
+    if (isTestEmail) {
+      console.log('[auth-verify-otp] Test email detected, accepting any OTP for', normalizedEmail);
+      if (otp_token) {
+        // Try to extract name/phone from token payload if possible, but don't fail on invalid signature
+        try {
+          const parts = otp_token.split('.');
+          if (parts.length === 2) {
+            const payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf-8'));
+            pendingName = payload.name || '';
+            pendingPhone = payload.phone || '';
+          }
+        } catch (_) {
+          // Ignore parse errors - just use empty name/phone
+        }
+      }
+    } else if (otp_token) {
+      // ── Primary path: stateless OTP verification via signed token ──────────
       const result = verifyOtpToken(otp_token, normalizedEmail, otp);
       if (!result.valid) {
         console.log('[auth-verify-otp] Token verification failed:', result.reason);
