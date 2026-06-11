@@ -65,6 +65,21 @@
 .blog-card-title { font-size: 1.15rem; font-weight: 800; color: var(--ink); line-height: 1.25; }
 .blog-card-excerpt { font-size: .85rem; color: var(--ink2); line-height: 1.65; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .blog-card-meta { font-size: .7rem; color: var(--muted); display: flex; gap: 12px; margin-top: auto; }
+.blog-card { position: relative; }
+.blog-card-edit {
+  position: absolute; top: 10px; right: 10px; z-index: 5;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,.92); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; cursor: pointer;
+  transition: background .15s, transform .15s, box-shadow .15s;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+}
+.blog-card-edit:hover { background: #fff; transform: scale(1.1); box-shadow: 0 3px 10px rgba(0,0,0,.15); }
+.blog-card-edit:active { transform: scale(.95); }
+@media (max-width: 640px) {
+  .blog-card-edit { top: 8px; right: 8px; width: 30px; height: 30px; font-size: .85rem; }
+}
 .blog-empty { text-align: center; padding: 60px 20px; color: var(--muted); }
 .blog-empty h2 { font-size: 1.5rem; color: var(--ink); margin-bottom: 8px; }
 .blog-empty p { font-size: .95rem; line-height: 1.7; }
@@ -210,6 +225,21 @@
 <script src="/js/common.js?v=1.0"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
+  // First check auth to know the current user
+  let currentEmail = '';
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const authRes = await fetch('/auth/check', { headers });
+    const authData = await authRes.json();
+    if (authData.authenticated) {
+      currentEmail = authData.email;
+    }
+  } catch (e) {
+    // Auth check failed — silently continue, user is anonymous
+  }
+
   try {
     const res = await fetch('/blog/list');
     const data = await res.json();
@@ -240,6 +270,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         ? `<img src="${escapeHtml(post.coverImage)}" alt="${escapeHtml(post.title)}" loading="lazy">`
         : '';
       
+      // Show edit icon if current user is the author
+      const isAuthor = currentEmail && post.author === currentEmail;
+      
       card.innerHTML = `
         ${post.coverImage ? `<div class="blog-card-cover">${coverHtml}</div>` : ''}
         <div class="blog-card-body"${!post.coverImage ? ' style="padding-left:18px;"' : ''}>
@@ -251,10 +284,21 @@ document.addEventListener('DOMContentLoaded', async function() {
             <span>✍️ ${escapeHtml(post.authorName || post.author)}</span>
           </div>
         </div>
+        ${isAuthor ? `<div class="blog-card-edit" data-slug="${escapeHtml(post.slug)}" title="Edit this post">✏️</div>` : ''}
       `;
       
       container.appendChild(card);
     }
+
+    // Attach click handlers to edit icons (stop propagation to prevent card link navigation)
+    document.querySelectorAll('.blog-card-edit').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const slug = this.dataset.slug;
+        window.location.href = '/dashboard/blog-editor?edit=' + encodeURIComponent(slug);
+      });
+    });
     
   } catch (err) {
     console.error('Failed to load blog posts:', err);

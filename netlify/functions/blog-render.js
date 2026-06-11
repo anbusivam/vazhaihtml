@@ -123,6 +123,10 @@ main { padding-top:var(--nav-h); min-height:100vh; }
 /* Back link */
 .back-link { display:inline-flex; align-items:center; gap:6px; color:var(--muted); text-decoration:none; font-size:.8rem; font-weight:600; margin-bottom:16px; transition:color .15s; }
 .back-link:hover { color:var(--amber); }
+/* Edit button for authors */
+.post-edit-bar { margin-top:32px; padding-top:20px; border-top:1.5px solid var(--border); text-align:center; }
+.post-edit-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 24px; background:var(--green); color:#fff; border-radius:100px; font-size:.85rem; font-weight:700; text-decoration:none; transition:background .15s; }
+.post-edit-btn:hover { background:var(--green-d); }
 .page-legal { display:flex; align-items:center; justify-content:center; gap:12px; padding:12px 16px; font-size:.48rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
 .page-legal a { color:var(--muted); text-decoration:none; transition:color .15s; }
 .page-legal a:hover { color:var(--amber); text-decoration:underline; }
@@ -326,6 +330,25 @@ exports.handler = async function (event, context) {
       <div class="editorjs">
         ${postHtml}
       </div>
+      <div class="post-edit-bar" id="post-edit-bar" style="display:none;">
+        <a href="/dashboard/blog-editor?edit=${escapeHtml(slug)}" class="post-edit-btn">✏️ Edit this post</a>
+      </div>
+      <script>
+        // Author email embedded for client-side auth check
+        var __postAuthor = ${JSON.stringify(post.author)};
+        (async function() {
+          try {
+            var t = localStorage.getItem('vazhai_session');
+            var h = { 'Content-Type': 'application/json' };
+            if (t) h['Authorization'] = 'Bearer ' + t;
+            var r = await fetch('/auth/check', { headers: h });
+            var d = await r.json();
+            if (d.authenticated && d.email === __postAuthor) {
+              document.getElementById('post-edit-bar').style.display = 'block';
+            }
+          } catch(e) {}
+        })();
+      <\/script>
     `;
 
     // Build metadata for the HTML head
