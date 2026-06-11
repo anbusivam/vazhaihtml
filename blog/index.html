@@ -77,6 +77,24 @@
 .skeleton-card .sk-line.w80 { width: 80%; }
 .skeleton-card .sk-line.w40 { width: 40%; }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.new-blog-btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: #fff;
+  color: var(--green);
+  border: 2px solid #fff;
+  border-radius: 100px;
+  font-size: .88rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.new-blog-btn:hover {
+  background: rgba(255,255,255,.15);
+  color: #fff;
+}
 @media (max-width: 640px) {
   .blog-card { flex-direction: column; }
   .blog-card-cover { width: 100%; height: 180px; }
@@ -138,6 +156,7 @@
   <div class="blog-hero">
     <h1 class="blog-hero-h">📝 Vazhai Blog</h1>
     <p class="blog-hero-p">Stories, updates, and insights from the field — rural education in Tamil Nadu, one school at a time.</p>
+    <button id="new-blog-btn" class="new-blog-btn" onclick="handleNewBlog()">+ New Blog Post</button>
   </div>
 
   <div class="blog-listing">
@@ -254,6 +273,40 @@ function escapeHtml(str) {
     .replace(/>/g, '>')
     .replace(/"/g, '"')
     .replace(/'/g, '&#039;');
+}
+
+/**
+ * Handle the "New Blog Post" button click.
+ * 1. Check auth state via /auth/check
+ * 2. If not authenticated → redirect to /login?redirect=/dashboard/blog-editor
+ * 3. If authenticated but no name → redirect to /dashboard/user?redirect=/dashboard/blog-editor
+ * 4. If authenticated with name → redirect directly to /dashboard/blog-editor
+ */
+async function handleNewBlog() {
+  try {
+    const res = await fetch('/auth/check');
+    const data = await res.json();
+
+    if (!data.authenticated) {
+      // Not logged in → go to login with redirect back to blog editor
+      window.location.href = '/login?redirect=/dashboard/blog-editor';
+      return;
+    }
+
+    // Logged in — check if user has a name set
+    if (!data.name) {
+      // No name set → go to dashboard/user with redirect to blog editor
+      window.location.href = '/dashboard/user?redirect=/dashboard/blog-editor';
+      return;
+    }
+
+    // Authenticated with name → go straight to editor
+    window.location.href = '/dashboard/blog-editor';
+  } catch (e) {
+    console.error('handleNewBlog error:', e);
+    // Fallback: go to login
+    window.location.href = '/login?redirect=/dashboard/blog-editor';
+  }
 }
 </script>
 

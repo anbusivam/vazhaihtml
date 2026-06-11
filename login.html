@@ -323,8 +323,12 @@ let currentEmail = '';
 let currentOtpToken = '';
 let resendTimer = null;
 let resendCountdown = 0;
+let redirectAfterLogin = '';
 // Check if already logged in on page load
 document.addEventListener('DOMContentLoaded', function() {
+  // Parse ?redirect= parameter
+  const params = new URLSearchParams(window.location.search);
+  redirectAfterLogin = params.get('redirect') || '';
   checkSession(true);
 });
 
@@ -351,7 +355,7 @@ async function checkSession(redirectToDashboard) {
     const data = await res.json();
     if (data.authenticated) {
       if (redirectToDashboard) {
-        window.location.href = '/dashboard';
+        window.location.href = redirectAfterLogin || '/dashboard';
         return;
       }
       document.getElementById('loggedin-email').textContent = data.email;
@@ -469,8 +473,8 @@ async function verifyOTP() {
     document.cookie = `vazhai_session=${data.token}; Path=/; Max-Age=${30*24*60*60}; SameSite=Lax`;
     localStorage.setItem('vazhai_session', data.token);
 
-    // Redirect directly to user dashboard
-    window.location.href = '/dashboard';
+    // Redirect to specified redirect URL or default to dashboard
+    window.location.href = redirectAfterLogin || '/dashboard';
   } catch (e) {
     console.error('[/auth/verify-otp] Network error:', e);
     showError('otp-error', 'Network error. Please check your connection and try again.');

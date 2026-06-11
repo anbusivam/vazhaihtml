@@ -434,6 +434,7 @@
 let currentUserEmail = '';
 let userRoles = [];
 let currentUserName = '';
+let redirectAfterProfile = '';
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded', async function() {
@@ -480,11 +481,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('admin-link-area').style.display = 'block';
   }
 
+  // Parse ?redirect= parameter
+  const params = new URLSearchParams(window.location.search);
+  redirectAfterProfile = params.get('redirect') || '';
+
   document.getElementById('profile-loading').style.display = 'none';
   document.getElementById('profile-content').style.display = 'block';
 
   // Show success message if redirected from saving a post
-  const params = new URLSearchParams(window.location.search);
   if (params.get('msg') === 'saved') {
     showSuccessMsg('✅ Post saved successfully!');
   }
@@ -572,6 +576,12 @@ async function saveProfile() {
     document.getElementById('profile-name').textContent = data.name || name;
     document.getElementById('profile-phone').textContent = data.phone || '(not set)';
     document.getElementById('user-name-display').textContent = data.name || name;
+
+    if (redirectAfterProfile) {
+      // Redirect to the target URL after profile save
+      window.location.href = redirectAfterProfile;
+      return;
+    }
 
     document.getElementById('profile-success-msg').textContent = '✅ Profile updated successfully!';
     document.getElementById('profile-success-msg').style.display = 'block';
