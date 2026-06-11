@@ -582,9 +582,8 @@ exports.handler = async function (event, context) {
               .then(function(data) {
                 if (data.ok && data.comment) {
                   inputEl.value = '';
-                  if (data.approved) {
-                    loadComments(); // Reload to show immediately
-                  } else {
+                  loadComments(); // Reload to show the comment immediately (pending for non-bloggers, approved for bloggers)
+                  if (!data.approved) {
                     errorEl.style.color = '#ffa000';
                     errorEl.textContent = '✅ Comment submitted! It will appear once approved by the post author or admin.';
                     errorEl.style.display = 'block';
