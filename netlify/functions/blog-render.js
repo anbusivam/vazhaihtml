@@ -408,6 +408,7 @@ exports.handler = async function (event, context) {
 
           // Track whether current user can approve comments
           var canApprove = false;
+          var currentUserEmail = null;
           var token = localStorage.getItem('vazhai_session');
 
           // Approve a comment (called via event delegation)
@@ -454,7 +455,7 @@ exports.handler = async function (event, context) {
                 allComments.forEach(function(c) {
                   if (c.approved) {
                     approved.push(c);
-                  } else if (canApprove) {
+                  } else if (canApprove || c.email === currentUserEmail) {
                     pending.push(c);
                   }
                 });
@@ -480,6 +481,9 @@ exports.handler = async function (event, context) {
                     var initial = (c.name || '?')[0].toUpperCase();
                     var el = document.createElement('div');
                     el.className = 'comment pending';
+                    var approveBtnHtml = canApprove
+                      ? '<button class="approve-comment-btn" data-comment-id="' + escHtmlAttr(c.id) + '">✓ Approve</button>'
+                      : '';
                     el.innerHTML =
                       '<div class="comment-meta">' +
                         '<div class="comment-avatar">' + initial + '</div>' +
@@ -488,7 +492,7 @@ exports.handler = async function (event, context) {
                         '<span class="pending-label">Pending</span>' +
                       '</div>' +
                       '<div class="comment-text">' + escHtml(c.text) + '</div>' +
-                      '<button class="approve-comment-btn" data-comment-id="' + escHtmlAttr(c.id) + '">✓ Approve</button>';
+                      approveBtnHtml;
                     listEl.appendChild(el);
                   });
                 }
@@ -530,6 +534,7 @@ exports.handler = async function (event, context) {
               .then(function(r) { return r.json(); })
               .then(function(d) {
                 if (d.authenticated) {
+                  currentUserEmail = d.email;
                   canApprove = (d.email === postAuthor) || (d.roles && d.roles.indexOf('admin') !== -1);
                   loginMsg.style.display = 'none';
                   submitBtn.style.display = '';
