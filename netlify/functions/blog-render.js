@@ -154,6 +154,9 @@ main { padding-top:var(--nav-h); min-height:100vh; }
 .comment .approve-comment-btn { display:inline-block; padding:3px 10px; font-size:11px; font-weight:700; color:#fff; background:var(--green); border:none; border-radius:4px; cursor:pointer; font-family:var(--ff); margin:6px 0 0 40px; }
 .comment .approve-comment-btn:hover { background:var(--green-d); }
 .pending-label { font-size:11px; color:#ffa000; font-weight:700; margin-left:8px; text-transform:uppercase; letter-spacing:.03em; }
+.edited-label { font-size:11px; color:var(--muted); font-weight:600; font-style:italic; }
+.comment .edit-comment-btn { display:inline-block; padding:3px 10px; font-size:11px; font-weight:700; color:var(--amber-d); background:var(--amber-l); border:1px solid var(--amber); border-radius:4px; cursor:pointer; font-family:var(--ff); }
+.comment .edit-comment-btn:hover { background:var(--amber); color:#fff; }
 /* Edit link in post-meta */
 .post-meta .post-edit-link { display:inline-flex; align-items:center; gap:2px; color:var(--muted); text-decoration:none; transition:color .15s; }
 .post-meta .post-edit-link:hover { color:var(--green); }
@@ -395,7 +398,7 @@ exports.handler = async function (event, context) {
         </div>
       </div>
       <script>
-      // ── Comments System (with approval support) ─────────────────
+      // ── Comments System (with approval and edit support) ─────────
         (function() {
           var slug = ${JSON.stringify(slug)};
           var listEl = document.getElementById('comments-list');
@@ -435,13 +438,129 @@ exports.handler = async function (event, context) {
               });
           }
 
-          // Event delegation for approve buttons
+          // Edit a comment (called from inline edit UI)
+          function doEditComment(commentId, newText) {
+            var t = localStorage.getItem('vazhai_session');
+            var hdrs = { 'Content-Type': 'application/json' };
+            if (t) hdrs['Authorization'] = 'Bearer ' + t;
+
+            fetch('/blog/comment/edit', {
+              method: 'POST',
+              headers: hdrs,
+              body: JSON.stringify({ slug: slug, commentId: commentId, text: newText }),
+            })
+              .then(function(r) { return r.json(); })
+              .then(function(data) {
+                if (data.success) {
+                  loadComments(); // Reload to show updated text
+                } else {
+                  alert(data.error || 'Failed to edit comment.');
+                }
+              })
+              .catch(function() {
+                alert('Network error.');
+              });
+          }
+
+          // Event delegation for approve and edit buttons
           document.getElementById('comments-list').addEventListener('click', function(e) {
             var btn = e.target.closest('.approve-comment-btn');
             if (btn) {
               doApprove(btn.getAttribute('data-comment-id'));
+              return;
+            }
+            var editBtn = e.target.closest('.edit-comment-btn');
+            if (editBtn) {
+              var commentId = editBtn.getAttribute('data-comment-id');
+              var textEl = document.getElementById('comment-text-' + escHtmlAttr(commentId));
+              var actionsEl = document.getElementById('comment-actions-' + escHtmlAttr(commentId));
+              var editContainer = document.getElementById('comment-edit-' + escHtmlAttr(commentId));
+              if (textEl && actionsEl && editContainer) {
+                textEl.style.display = 'none';
+                actionsEl.style.display = 'none';
+                editContainer.style.display = 'block';
+                editContainer.querySelector('textarea').focus();
+              }
+            }
+            var saveBtn = e.target.closest('.edit-save-btn');
+            if (saveBtn) {
+              var commentId = saveBtn.getAttribute('data-comment-id');
+              var editContainer = document.getElementById('comment-edit-' + escHtmlAttr(commentId));
+              var textarea = editContainer.querySelector('textarea');
+              var newText = textarea.value.trim();
+              if (!newText) {
+                alert('Comment cannot be empty.');
+                return;
+              }
+              if (newText.length > 2000) {
+                alert('Comment too long (max 2000 characters).');
+                return;
+              }
+              doEditComment(commentId, newText);
+            }
+            var cancelBtn = e.target.closest('.edit-cancel-btn');
+            if (cancelBtn) {
+              var commentId = cancelBtn.getAttribute('data-comment-id');
+              var textEl = document.getElementById('comment-text-' + escHtmlAttr(commentId));
+              var actionsEl = document.getElementById('comment-actions-' + escHtmlAttr(commentId));
+              var editContainer = document.getElementById('comment-edit-' + escHtmlAttr(commentId));
+              if (textEl && actionsEl && editContainer) {
+                textEl.style.display = '';
+                actionsEl.style.display = '';
+                editContainer.style.display = 'none';
+                editContainer.querySelector('textarea').value = textEl.getAttribute('data-original-text') || '';
+              }
             }
           });
+
+          // Check if current user can edit a comment
+          function canEditComment(c) {
+            if (!currentUserEmail) return false;
+            return c.email === currentUserEmail || canApprove;
+          }
+
+          // Build HTML for a single comment (both pending and approved)
+          function buildCommentEl(c, isPending) {
+            var d = new Date(c.createdAt);
+            var ds = d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
+            var initial = (c.name || '?')[0].toUpperCase();
+            var el = document.createElement('div');
+            el.className = 'comment ' + (isPending ? 'pending' : 'approved');
+            el.id = 'comment-el-' + escHtmlAttr(c.id);
+
+            var editable = canEditComment(c);
+            var editedLabel = c.editedAt ? ' <span class="edited-label">(edited)</span>' : '';
+            var approveBtnHtml = isPending && canApprove
+              ? '<button class="approve-comment-btn" data-comment-id="' + escHtmlAttr(c.id) + '">\u2713 Approve</button>'
+              : '';
+            var editBtnHtml = editable
+              ? '<button class="edit-comment-btn" data-comment-id="' + escHtmlAttr(c.id) + '">\u270F\uFE0F Edit</button>'
+              : '';
+            var pendingLabel = isPending ? '<span class="pending-label">Pending</span>' : '';
+
+            el.innerHTML =
+              '<div class="comment-meta">' +
+                '<div class="comment-avatar">' + initial + '</div>' +
+                '<span class="comment-author">' + escHtml(c.name) + '</span>' +
+                '<span class="comment-date">' + ds + '</span>' +
+                editedLabel +
+                pendingLabel +
+              '</div>' +
+              '<div class="comment-text" id="comment-text-' + escHtmlAttr(c.id) + '" data-original-text="' + escHtmlAttr(c.text) + '">' + escHtml(c.text) + '</div>' +
+              '<div class="comment-actions" id="comment-actions-' + escHtmlAttr(c.id) + '" style="margin:4px 0 0 40px;display:flex;gap:8px;">' +
+                approveBtnHtml +
+                editBtnHtml +
+              '</div>' +
+              '<div class="comment-edit" id="comment-edit-' + escHtmlAttr(c.id) + '" style="display:none;margin:4px 0 0 40px;">' +
+                '<textarea style="width:100%;padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-family:var(--ff);font-size:.9rem;resize:vertical;min-height:60px;outline:none;" maxlength="2000">' + escHtml(c.text) + '</textarea>' +
+                '<div style="margin-top:6px;display:flex;gap:8px;">' +
+                  '<button class="edit-save-btn" data-comment-id="' + escHtmlAttr(c.id) + '" style="padding:5px 16px;font-size:.8rem;font-weight:700;color:#fff;background:var(--green);border:none;border-radius:6px;cursor:pointer;font-family:var(--ff);">Save</button>' +
+                  '<button class="edit-cancel-btn" data-comment-id="' + escHtmlAttr(c.id) + '" style="padding:5px 16px;font-size:.8rem;font-weight:600;color:var(--ink2);background:var(--bg2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--ff);">Cancel</button>' +
+                '</div>' +
+              '</div>';
+
+            return el;
+          }
 
           // Load comments - separate approved from pending
           function loadComments() {
@@ -467,33 +586,16 @@ exports.handler = async function (event, context) {
 
                 listEl.innerHTML = '';
 
-                // Show pending comments first (only visible to post author / admin)
+                // Show pending comments first (only visible to post author / admin / comment owner)
                 if (pending.length > 0) {
                   var pendHead = document.createElement('div');
                   pendHead.className = 'comments-sub';
                   pendHead.style.marginTop = '16px';
-                  pendHead.textContent = '⏳ Pending Approval (' + pending.length + ')';
+                  pendHead.textContent = '\u23F3 Pending Approval (' + pending.length + ')';
                   listEl.appendChild(pendHead);
 
                   pending.forEach(function(c) {
-                    var d = new Date(c.createdAt);
-                    var ds = d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
-                    var initial = (c.name || '?')[0].toUpperCase();
-                    var el = document.createElement('div');
-                    el.className = 'comment pending';
-                    var approveBtnHtml = canApprove
-                      ? '<button class="approve-comment-btn" data-comment-id="' + escHtmlAttr(c.id) + '">✓ Approve</button>'
-                      : '';
-                    el.innerHTML =
-                      '<div class="comment-meta">' +
-                        '<div class="comment-avatar">' + initial + '</div>' +
-                        '<span class="comment-author">' + escHtml(c.name) + '</span>' +
-                        '<span class="comment-date">' + ds + '</span>' +
-                        '<span class="pending-label">Pending</span>' +
-                      '</div>' +
-                      '<div class="comment-text">' + escHtml(c.text) + '</div>' +
-                      approveBtnHtml;
-                    listEl.appendChild(el);
+                    listEl.appendChild(buildCommentEl(c, true));
                   });
                 }
 
@@ -502,23 +604,11 @@ exports.handler = async function (event, context) {
                   var apprHead = document.createElement('div');
                   apprHead.className = 'comments-sub';
                   apprHead.style.marginTop = '16px';
-                  apprHead.textContent = '💬 ' + (pending.length > 0 ? 'Approved Comments' : 'Comments') + ' (' + approved.length + ')';
+                  apprHead.textContent = '\uD83D\uDCAC ' + (pending.length > 0 ? 'Approved Comments' : 'Comments') + ' (' + approved.length + ')';
                   listEl.appendChild(apprHead);
 
                   approved.forEach(function(c) {
-                    var d = new Date(c.createdAt);
-                    var ds = d.toLocaleDateString('en-IN', { year:'numeric', month:'short', day:'numeric' });
-                    var initial = (c.name || '?')[0].toUpperCase();
-                    var el = document.createElement('div');
-                    el.className = 'comment approved';
-                    el.innerHTML =
-                      '<div class="comment-meta">' +
-                        '<div class="comment-avatar">' + initial + '</div>' +
-                        '<span class="comment-author">' + escHtml(c.name) + '</span>' +
-                        '<span class="comment-date">' + ds + '</span>' +
-                      '</div>' +
-                      '<div class="comment-text">' + escHtml(c.text) + '</div>';
-                    listEl.appendChild(el);
+                    listEl.appendChild(buildCommentEl(c, false));
                   });
                 }
               })

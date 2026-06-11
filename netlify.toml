@@ -180,6 +180,11 @@
   to = "/.netlify/functions/blog-comment"
   status = 200
 
+[[redirects]]
+  from = "/blog/comment/edit"
+  to = "/.netlify/functions/blog-comment"
+  status = 200
+
 # Blog: hybrid static/dynamic post rendering — force=false means Netlify checks for a static file first
 [[redirects]]
   from = "/blog/*"

@@ -2,6 +2,7 @@
 // POST   — submit a comment (requires auth)
 // GET    — list comments for a post slug (public: approved only; with auth: includes pending for author/admin)
 // POST /approve — approve a pending comment (post author or admin only)
+// POST /edit    — edit a comment text (comment author or admin only)
 // GET /pending  — get all pending comments globally (admin only)
 const { getBlogStore } = require('./blog-store');
 const { getSession, getUserRoles, handleOptions, CORS_HEADERS } = require('./blog-auth');
@@ -15,6 +16,7 @@ exports.handler = async function (event, context) {
   const path = (event.path || '').replace(/\/\.netlify\/functions\/blog-comment/, '/blog/comment');
   const isApprove = path.endsWith('/approve');
   const isPending = path.endsWith('/pending') || event.queryStringParameters?.pending === 'true';
+  const isEdit = path.endsWith('/edit');
 
   try {
     const store = await getBlogStore(event);
@@ -43,10 +45,14 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // ── POST: Submit a comment or approve a comment ─────────────
+    // ── POST: Submit a comment or approve a comment or edit a comment ──
     if (event.httpMethod === 'POST') {
       if (isApprove) {
         return await handleApproveComment(store, event);
+      }
+
+      if (isEdit) {
+        return await handleEditComment(store, event);
       }
 
       // ── Submit a comment ──────────────────────────────────────
@@ -269,6 +275,71 @@ async function handleApproveComment(store, event) {
     };
   } catch (err) {
     console.error('[blog-comment] handleApproveComment error:', err.message);
+    return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Server error.' }) };
+  }
+}
+
+// ── POST: Edit a comment (comment author or admin only) ──────────────
+async function handleEditComment(store, event) {
+  try {
+    const authStore = require('./auth-store').getStore;
+    const aStore = await authStore(event);
+    const session = await getSession(aStore, event);
+    if (!session) {
+      return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Unauthorized' }) };
+    }
+
+    const body = JSON.parse(event.body || '{}');
+    const { slug, commentId, text } = body;
+
+    if (!slug || !commentId) {
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Missing slug or commentId' }) };
+    }
+
+    if (!text || !text.trim()) {
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Comment text cannot be empty' }) };
+    }
+
+    if (text.length > 2000) {
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Comment too long (max 2000 characters)' }) };
+    }
+
+    // Fetch the comment
+    const comment = await store.get(`blog:comment:${slug}:${commentId}`, { type: 'json' });
+    if (!comment) {
+      return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Comment not found' }) };
+    }
+
+    // Check authorization: comment author or admin can edit
+    const roles = await getUserRoles(aStore, session.email);
+    const isAdmin = roles.includes('admin');
+    const isCommentAuthor = comment.email === session.email;
+
+    if (!isAdmin && !isCommentAuthor) {
+      return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Forbidden: only comment author or admin can edit this comment' }) };
+    }
+
+    // Update the comment text and mark as edited
+    comment.text = text.trim();
+    comment.editedAt = new Date().toISOString();
+    await store.setJSON(`blog:comment:${slug}:${commentId}`, comment);
+
+    // If the comment was in the pending list, update its text there too
+    const pendingKey = 'blog:pending-comments';
+    const pendingList = await store.get(pendingKey, { type: 'json' }) || [];
+    const pendingIdx = pendingList.findIndex(p => p.slug === slug && p.commentId === commentId);
+    if (pendingIdx !== -1) {
+      pendingList[pendingIdx].text = text.trim();
+      await store.setJSON(pendingKey, pendingList);
+    }
+
+    return {
+      statusCode: 200,
+      headers: CORS_HEADERS,
+      body: JSON.stringify({ success: true, comment, message: 'Comment updated.' }),
+    };
+  } catch (err) {
+    console.error('[blog-comment] handleEditComment error:', err.message);
     return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Server error.' }) };
   }
 }
