@@ -53,6 +53,82 @@
   to = "/.netlify/functions/donate-verify-subscription"
   status = 200
 
+# Tamil language pages
+[[redirects]]
+  from = "/ta"
+  to = "/ta/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/"
+  to = "/ta/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/who-we-are"
+  to = "/ta/who-we-are.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/what-we-do"
+  to = "/ta/what-we-do.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/join"
+  to = "/ta/join.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/donate"
+  to = "/ta/donate.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/contact"
+  to = "/ta/contact.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/events"
+  to = "/ta/events.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/login"
+  to = "/ta/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/thankyou"
+  to = "/ta/thankyou.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/vazhai"
+  to = "/ta/vazhai.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/terms"
+  to = "/ta/terms.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/privacy-policy"
+  to = "/ta/privacy-policy.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/404"
+  to = "/ta/404.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/blog"
+  to = "/ta/blog/index.html"
+  status = 200
+
 # Clean URL rewrites (status=200 means internal rewrite, no client redirect)
 [[redirects]]
   from = "/who-we-are"

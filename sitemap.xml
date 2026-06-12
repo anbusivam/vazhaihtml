@@ -1,49 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://vazhai.in/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/"/>
     <lastmod>2026-02-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://vazhai.in/ta/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://vazhai.in/who-we-are.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/who-we-are.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/who-we-are"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/who-we-are.html"/>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vazhai.in/what-we-do.html</loc>
-    <lastmod>2026-02-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://vazhai.in/join.html</loc>
-    <lastmod>2026-02-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://vazhai.in/donate.html</loc>
-    <lastmod>2026-02-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://vazhai.in/contact.html</loc>
-    <lastmod>2026-02-06</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://vazhai.in/events.html</loc>
+    <loc>https://vazhai.in/ta/who-we-are</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/who-we-are.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/who-we-are"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/who-we-are.html"/>
     <lastmod>2026-02-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://vazhai.in/what-we-do.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/what-we-do.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/what-we-do"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/what-we-do.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/ta/what-we-do</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/what-we-do.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/what-we-do"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/what-we-do.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/join.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/join.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/join"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/join.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/ta/join</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/join.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/join"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/join.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/donate.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/donate.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/donate"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/donate.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/ta/donate</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/donate.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/donate"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/donate.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/contact.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/contact"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/contact.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/ta/contact</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/contact"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/contact.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/events.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/events.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/events"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/events.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/ta/events</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/events.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/events"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/events.html"/>
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://vazhai.in/thankyou.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/thankyou.html"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/thankyou"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/thankyou.html"/>
     <lastmod>2026-02-06</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
