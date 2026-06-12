@@ -103,6 +103,85 @@ body {
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
 /* ═══════════════════════
+   LANGUAGE SWITCHER
+═══════════════════════ */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 6px 16px;
+  position: fixed;
+  top: var(--nav-h);
+  left: 0;
+  right: 0;
+  z-index: 199;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  font-size: .65rem;
+  font-weight: 700;
+}
+.lang-switcher a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color .15s, background .15s;
+}
+.lang-switcher a:hover {
+  color: var(--ink);
+  background: var(--bg3);
+}
+.lang-switcher a.active {
+  color: var(--amber);
+  background: var(--amber-l);
+}
+.lang-sep {
+  color: var(--border);
+  font-size: .7rem;
+}
+
+/* Sidebar language switcher */
+.sb-lang {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 10px 4px;
+  margin: 0 10px 8px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sb-lang .lang-link {
+  color: rgba(255,255,255,.4);
+  text-decoration: none;
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color .15s, background .15s;
+}
+.sb-lang .lang-link:hover {
+  color: rgba(255,255,255,.7);
+  background: rgba(255,255,255,.07);
+}
+.sb-lang .lang-link.active {
+  color: var(--sun);
+  background: rgba(232,146,10,.18);
+}
+.sb-lang .lang-sep {
+  color: rgba(255,255,255,.2);
+  font-size: .7rem;
+}
+
+@media (min-width:768px) {
+  .lang-switcher {
+    display: none;
+  }
+}
+
+/* ═══════════════════════
    AUTH FLOAT — fixed top-right login/email badge
 ═══════════════════════ */
 #auth-float {
