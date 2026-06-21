@@ -567,7 +567,7 @@
       </div>
     </div>
 
-    <a href="/dashboard/user.html" class="back-link">← Back to My Dashboard</a>
+    <a href="javascript:void(0)" onclick="goBack()" class="back-link">← Back</a>
   </div>
 </div>
 
@@ -896,7 +896,7 @@ function slugEdited() {
 
 // ── Navigation ──
 function goBack() {
-  window.location.href = '/dashboard/user.html';
+  window.history.back();
 }
 
 // ── Delete Post ──
