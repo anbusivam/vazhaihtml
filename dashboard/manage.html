@@ -412,9 +412,12 @@ async function loadUsers() {
       ? '<span class="active">● Logged in</span>' 
       : '<span class="pending">○ Not yet</span>';
     
-    // Actions column: for system admins, show static text; for others, show checkboxes
+    // Actions column: for hardcoded system admin accounts, show static text; for others, show editable checkboxes
+    const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
+    const isHardcodedAdmin = SYSTEM_ADMINS.includes(user.email);
+    
     let actionsHtml = '';
-    if (hasAdminRole) {
+    if (isHardcodedAdmin) {
       actionsHtml = '<span class="user-status"><span class="active">System Admin</span></span>';
     } else {
       // Create checkboxes for each possible role
