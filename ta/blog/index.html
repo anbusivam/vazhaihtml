@@ -247,73 +247,77 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Auth check failed — silently continue, user is anonymous
   }
 
-  try {
-    const res = await fetch('/blog/list');
-    const data = await res.json();
-    
-    const container = document.getElementById('blog-posts');
-    const skeleton = document.getElementById('blog-skeleton');
-    const empty = document.getElementById('blog-empty');
-    
-    if (skeleton) skeleton.remove();
-    
-    if (!data.posts || data.posts.length === 0) {
-      empty.style.display = 'block';
-      return;
-    }
-    
-    for (const post of data.posts) {
-      const card = document.createElement('a');
-      card.href = `/ta/blog/${post.slug}`;
-      card.className = 'blog-card';
+    try {
+      const token = localStorage.getItem('vazhai_session');
+      const listHeaders = { 'Content-Type': 'application/json' };
+      if (token) listHeaders['Authorization'] = 'Bearer ' + token;
+      const res = await fetch('/blog/list', { headers: listHeaders });
+      const data = await res.json();
       
-      const dateStr = post.publishedAt || post.createdAt;
-      const dateDisplay = dateStr ? new Date(dateStr).toLocaleDateString('ta-IN', {
-        year: 'numeric', month: 'long', day: 'numeric'
-      }) : '';
+      const container = document.getElementById('blog-posts');
+      const skeleton = document.getElementById('blog-skeleton');
+      const empty = document.getElementById('blog-empty');
       
-      const tagsHtml = (post.tags || []).map(t => `<span class="blog-card-tag">${escapeHtml(t)}</span>`).join('');
-      const coverHtml = post.coverImage
-        ? `<img src="${escapeHtml(post.coverImage)}" alt="${escapeHtml(post.title)}" loading="lazy">`
-        : '';
+      if (skeleton) skeleton.remove();
       
-      // Show edit icon if current user is the author
-      const isAuthor = currentEmail && post.author === currentEmail;
+      if (!data.posts || data.posts.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
       
-      card.innerHTML = `
-        ${post.coverImage ? `<div class="blog-card-cover">${coverHtml}</div>` : ''}
-        <div class="blog-card-body"${!post.coverImage ? ' style="padding-left:18px;"' : ''}>
-          ${tagsHtml ? `<div class="blog-card-tags">${tagsHtml}</div>` : ''}
-          <div class="blog-card-title">${escapeHtml(post.title)}</div>
-          ${post.excerpt ? `<div class="blog-card-excerpt">${escapeHtml(post.excerpt)}</div>` : ''}
-          <div class="blog-card-meta">
-            <span>📅 ${dateDisplay}</span>
-            <span>✍️ ${escapeHtml(post.authorName || post.author)}</span>
-            ${isAuthor ? `<span class="blog-card-edit" data-slug="${escapeHtml(post.slug)}" title="தொகு">✏️ தொகு</span>` : ''}
+      for (const post of data.posts) {
+        const card = document.createElement('a');
+        card.href = `/ta/blog/${post.slug}`;
+        card.className = 'blog-card';
+        
+        const dateStr = post.publishedAt || post.createdAt;
+        const dateDisplay = dateStr ? new Date(dateStr).toLocaleDateString('ta-IN', {
+          year: 'numeric', month: 'long', day: 'numeric'
+        }) : '';
+        
+        const tagsHtml = (post.tags || []).map(t => `<span class="blog-card-tag">${escapeHtml(t)}</span>`).join('');
+        const coverHtml = post.coverImage
+          ? `<img src="${escapeHtml(post.coverImage)}" alt="${escapeHtml(post.title)}" loading="lazy">`
+          : '';
+        
+        // Show edit icon if current user is the author
+        const isAuthor = currentEmail && post.author === currentEmail;
+        
+        card.innerHTML = `
+          ${post.coverImage ? `<div class="blog-card-cover">${coverHtml}</div>` : ''}
+          <div class="blog-card-body"${!post.coverImage ? ' style="padding-left:18px;"' : ''}>
+            ${tagsHtml ? `<div class="blog-card-tags">${tagsHtml}</div>` : ''}
+            <div class="blog-card-title">${escapeHtml(post.title)}</div>
+            ${post.excerpt ? `<div class="blog-card-excerpt">${escapeHtml(post.excerpt)}</div>` : ''}
+            <div class="blog-card-meta">
+              <span>📅 ${dateDisplay}</span>
+              <span>✍️ ${escapeHtml(post.authorName || post.author)}</span>
+              ${post.status === 'pending' ? `<span style="font-size:.6rem;font-weight:700;color:#ffa000;background:#fff3dc;padding:2px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:.04em;">⏳ ஒப்புதல் நிலுவை</span>` : ''}
+              ${isAuthor ? `<span class="blog-card-edit" data-slug="${escapeHtml(post.slug)}" title="தொகு">✏️ தொகு</span>` : ''}
+            </div>
           </div>
-        </div>
-      `;
-      
-      container.appendChild(card);
-    }
+        `;
+        
+        container.appendChild(card);
+      }
 
-    // Attach click handlers to edit icons (stop propagation to prevent card link navigation)
-    document.querySelectorAll('.blog-card-edit').forEach(function(el) {
-      el.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const slug = this.dataset.slug;
-        window.location.href = '/dashboard/blog-editor?edit=' + encodeURIComponent(slug);
+      // Attach click handlers to edit icons (stop propagation to prevent card link navigation)
+      document.querySelectorAll('.blog-card-edit').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const slug = this.dataset.slug;
+          window.location.href = '/dashboard/blog-editor?edit=' + encodeURIComponent(slug);
+        });
       });
-    });
-    
-  } catch (err) {
-    console.error('Failed to load blog posts:', err);
-    document.getElementById('blog-skeleton')?.remove();
-    document.getElementById('blog-empty').style.display = 'block';
-    document.querySelector('#blog-empty h2').textContent = 'பதிவுகளை ஏற்ற முடியவில்லை';
-    document.querySelector('#blog-empty p').textContent = 'தயவுசெய்து பின்னர் மீண்டும் முயற்சிக்கவும்.';
-  }
+      
+    } catch (err) {
+      console.error('Failed to load blog posts:', err);
+      document.getElementById('blog-skeleton')?.remove();
+      document.getElementById('blog-empty').style.display = 'block';
+      document.querySelector('#blog-empty h2').textContent = 'பதிவுகளை ஏற்ற முடியவில்லை';
+      document.querySelector('#blog-empty p').textContent = 'தயவுசெய்து பின்னர் மீண்டும் முயற்சிக்கவும்.';
+    }
 });
 
 function escapeHtml(str) {
