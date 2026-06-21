@@ -237,6 +237,11 @@
   status = 200
 
 [[redirects]]
+  from = "/blog/delete"
+  to = "/.netlify/functions/blog-delete"
+  status = 200
+
+[[redirects]]
   from = "/blog/approve"
   to = "/.netlify/functions/blog-approve"
   status = 200
