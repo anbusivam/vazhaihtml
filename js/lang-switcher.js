@@ -55,9 +55,24 @@
     const path = window.location.pathname;
     const currentLang = getCurrentLang();
 
+    // Handle blog post URLs dynamically: /blog/{slug} or /ta/blog/{slug}
     if (currentLang === 'en') {
+      // Check if this is a blog post page (/blog/...)
+      const blogMatch = path.match(/^\/blog\/(.+)/);
+      if (blogMatch) {
+        const slug = blogMatch[1];
+        // If /blog/{slug}, map to /ta/blog/{slug}
+        return '/ta/blog/' + slug;
+      }
       return pageMap[path] || pageMap[path + '.html'] || '/ta/';
     } else {
+      // Check if this is a Tamil blog post page (/ta/blog/...)
+      const blogMatch = path.match(/^\/ta\/blog\/(.+)/);
+      if (blogMatch) {
+        const slug = blogMatch[1];
+        // If /ta/blog/{slug}, map to /blog/{slug}
+        return '/blog/' + slug;
+      }
       return reverseMap[path] || reverseMap[path + '.html'] || '/';
     }
   }
