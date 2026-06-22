@@ -310,7 +310,7 @@
   </div>
 
   <!-- Razorpay Payments Card -->
-  <div class="card">
+  <div class="card" id="razorpay-card">
     <h2>💳 Razorpay Payments</h2>
     <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Fetch successful payments from Razorpay for a given date range.</p>
     <div class="add-user-form">
@@ -346,7 +346,7 @@
   </div>
 
   <!-- Sync & Update Card -->
-  <div class="card">
+  <div class="card" id="sync-card">
     <h2>🔄 Sync & Update Users</h2>
     <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">For a given date range, check each donor email in Razorpay against system users. If a user exists and has empty fields (name, phone, PAN, address), update them from the payment record. Also create payment history records (deduplicated by payment ID).</p>
     <div class="add-user-form">
@@ -380,6 +380,7 @@ let lastToDate = '';
 
 const ALL_ROLES = ['admin', 'volunteer', 'donor', 'blogger'];
 
+const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
 let currentUserEmail = null;
 let userRolesCache = {}; // email -> roles array (for tracking changes)
 
@@ -402,6 +403,14 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   currentUserEmail = data.email;
   document.getElementById('admin-email').textContent = data.email;
+
+  // Restrict Razorpay Payments and Sync sections to hardcoded admin users only
+  const isHardcodedAdmin = SYSTEM_ADMINS.includes(data.email);
+  if (!isHardcodedAdmin) {
+    document.getElementById('razorpay-card').style.display = 'none';
+    document.getElementById('sync-card').style.display = 'none';
+  }
+
   loadUsers();
 });
 
@@ -478,7 +487,6 @@ async function loadUsers() {
       : '<span class="pending">○ Not yet</span>';
     
     // Actions column: for hardcoded system admin accounts, show static text; for others, show editable checkboxes
-    const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
     const isHardcodedAdmin = SYSTEM_ADMINS.includes(user.email);
     
     let actionsHtml = '';
