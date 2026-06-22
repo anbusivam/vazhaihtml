@@ -345,11 +345,36 @@
     </div>
   </div>
 
+  <!-- Sync & Update Card -->
+  <div class="card">
+    <h2>🔄 Sync & Update Users</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">For a given date range, check each donor email in Razorpay against system users. If a user exists and has empty fields (name, phone, PAN, address), update them from the payment record. Also create payment history records (deduplicated by payment ID).</p>
+    <div class="add-user-form">
+      <input type="date" id="sync-from" style="flex:1;min-width:160px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
+      <input type="date" id="sync-to" style="flex:1;min-width:160px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
+      <button class="btn-primary" id="sync-btn" onclick="syncAndUpdate()">🔄 Update Now</button>
+    </div>
+    <div id="sync-msg" class="msg"></div>
+    <div id="sync-loading" class="loading-state" style="display:none;">Syncing payments... this may take a while.</div>
+    <div id="sync-report" style="display:none;">
+      <div style="background:var(--green-light);border:1px solid #a5d6a7;border-radius:8px;padding:16px;margin-bottom:16px;">
+        <h3 style="margin:0 0 12px;font-size:16px;color:var(--green-dark);">📊 Sync Report</h3>
+        <div id="sync-report-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px;"></div>
+        <div style="margin-top:8px;">
+          <button class="btn-primary btn-sm" onclick="toggleSyncDetails()" style="background:var(--green);">📋 Toggle Details</button>
+          <button class="btn-primary btn-sm btn-outline" onclick="exportSyncCSV()" style="margin-left:6px;">⬇ Export Report CSV</button>
+        </div>
+      </div>
+      <div id="sync-details" style="display:none;max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;"></div>
+    </div>
+  </div>
+
   <a href="javascript:void(0)" onclick="window.history.back()" class="back-link">← Back</a>
 </div>
 
 <script>
 let lastPaymentsData = [];
+let lastSyncReport = null;
 let lastFromDate = '';
 let lastToDate = '';
 
@@ -676,6 +701,216 @@ function exportCSV() {
   const a = document.createElement('a');
   a.href = url;
   a.download = `razorpay-payments_${lastFromDate}_to_${lastToDate}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ========== Sync & Update Functions ==========
+
+function syncShowMsg(type, text) {
+  const el = document.getElementById('sync-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+}
+
+async function syncAndUpdate() {
+  const fromDate = document.getElementById('sync-from').value;
+  const toDate = document.getElementById('sync-to').value;
+
+  if (!fromDate || !toDate) {
+    syncShowMsg('error', 'Please select both "From" and "To" dates.');
+    return;
+  }
+
+  if (fromDate > toDate) {
+    syncShowMsg('error', '"From" date cannot be after "To" date.');
+    return;
+  }
+
+  syncShowMsg('', '');
+  document.getElementById('sync-loading').style.display = 'block';
+  document.getElementById('sync-report').style.display = 'none';
+  document.getElementById('sync-btn').disabled = true;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/sync', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ from: fromDate, to: toDate }),
+    });
+
+    const data = await res.json();
+
+    document.getElementById('sync-loading').style.display = 'none';
+    document.getElementById('sync-btn').disabled = false;
+
+    if (data.error) {
+      syncShowMsg('error', data.error);
+      return;
+    }
+
+    if (!data.report) {
+      syncShowMsg('error', 'Invalid response from server.');
+      return;
+    }
+
+    lastSyncReport = data.report;
+    document.getElementById('sync-report').style.display = 'block';
+
+    // Build summary tiles
+    const report = data.report;
+    const summaryEl = document.getElementById('sync-report-summary');
+    summaryEl.innerHTML = '';
+
+    const tiles = [
+      { label: '📅 From', value: report.from },
+      { label: '📅 To', value: report.to },
+      { label: '💳 Total Payments', value: report.totalPayments },
+      { label: '👤 Users Found', value: report.usersFound },
+      { label: '👤 Users Not Found', value: report.usersNotFound },
+      { label: '✏️ Users Updated', value: report.usersUpdated },
+      { label: '✅ Users Already Current', value: report.usersAlreadyCurrent },
+      { label: '💾 Payments Recorded', value: report.paymentsRecorded },
+      { label: '♻️ Payments Already Exist', value: report.paymentsAlreadyExist },
+    ];
+
+    if (report.errors && report.errors.length > 0) {
+      tiles.push({ label: '⚠️ Errors', value: report.errors.length });
+    }
+
+    for (const t of tiles) {
+      const tile = document.createElement('div');
+      tile.style.cssText = 'background:white;border-radius:8px;padding:10px 14px;text-align:center;border:1px solid #c8e6c9;';
+      tile.innerHTML = `<div style="font-size:11px;color:var(--text-light);margin-bottom:4px;">${t.label}</div><div style="font-size:20px;font-weight:700;color:var(--green-dark);">${t.value}</div>`;
+      summaryEl.appendChild(tile);
+    }
+
+    // Build details (initially hidden)
+    buildSyncDetails(report.details, report.errors);
+
+    syncShowMsg('success', '✅ Sync completed successfully!');
+
+    // Reload user list to reflect any updates
+    loadUsers();
+
+  } catch (err) {
+    document.getElementById('sync-loading').style.display = 'none';
+    document.getElementById('sync-btn').disabled = false;
+    syncShowMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+function buildSyncDetails(details, errors) {
+  const el = document.getElementById('sync-details');
+  el.innerHTML = '';
+
+  if (!details || details.length === 0) {
+    el.innerHTML = '<div class="empty-state">No details to display.</div>';
+    return;
+  }
+
+  let html = '<table class="users-table" style="font-size:12px;"><thead><tr>' +
+    '<th>Payment ID</th><th>Date</th><th>Email</th><th>Amount</th><th>Status</th><th>User Action</th><th>Payment Action</th><th>Field Differences</th>' +
+    '</tr></thead><tbody>';
+
+  for (const d of details) {
+    const diffHtml = (d.userDifferences && d.userDifferences.length > 0)
+      ? d.userDifferences.map(df => {
+          const actionClass = df.action === 'Updated' ? 'color:#2e7d32;' : (df.action.startsWith('Kept') ? 'color:#e65100;' : 'color:var(--text-light);');
+          let text = `<span style="${actionClass}">${df.action}</span>`;
+          if (df.field) text += ` — ${df.field}`;
+          if (df.existing !== undefined && df.new !== undefined) text += `: "${df.existing}" → "${df.new}"`;
+          if (df.existing !== undefined && df.fromPayment !== undefined) text += `: existing="${df.existing}", fromPayment="${df.fromPayment}"`;
+          if (df.value !== undefined) text += `: "${df.value}"`;
+          return `<div style="font-size:11px;padding:2px 0;">${text}</div>`;
+        }).join('')
+      : '<span style="color:var(--text-light);">—</span>';
+
+    const amountStr = '₹' + Number(d.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    const statusBadge = d.status === 'captured'
+      ? '<span style="color:#2e7d32;">✅</span>'
+      : '<span style="color:#d32f2f;">❌</span>';
+
+    html += `<tr>
+      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;" title="${d.paymentId}">${d.paymentId}</td>
+      <td style="font-size:11px;white-space:nowrap;">${new Date(d.date).toLocaleDateString('en-IN')}</td>
+      <td>${d.email || '—'}</td>
+      <td>${amountStr}</td>
+      <td>${statusBadge}</td>
+      <td style="font-size:11px;">${d.userAction}</td>
+      <td style="font-size:11px;">${d.paymentAction}</td>
+      <td style="font-size:11px;">${diffHtml}</td>
+    </tr>`;
+  }
+
+  html += '</tbody></table>';
+
+  // Add errors section if any
+  if (errors && errors.length > 0) {
+    html += '<div style="padding:12px;margin-top:8px;background:#fef2f2;border-radius:8px;">';
+    html += '<div style="font-weight:600;color:#d32f2f;margin-bottom:8px;">⚠️ Errors:</div>';
+    for (const err of errors) {
+      html += `<div style="font-size:12px;color:#d32f2f;padding:2px 0;">• ${err}</div>`;
+    }
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function toggleSyncDetails() {
+  const el = document.getElementById('sync-details');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function exportSyncCSV() {
+  if (!lastSyncReport || !lastSyncReport.details || lastSyncReport.details.length === 0) return;
+
+  const headers = ['Payment ID', 'Date', 'Email', 'Amount', 'Status', 'User Action', 'Payment Action',
+    'Field Name', 'Existing Value', 'New/From Payment Value', 'Field Action'];
+  const rows = [];
+
+  for (const d of lastSyncReport.details) {
+    if (d.userDifferences && d.userDifferences.length > 0) {
+      for (const df of d.userDifferences) {
+        rows.push([
+          d.paymentId,
+          d.date,
+          d.email || '',
+          d.amount,
+          d.status,
+          d.userAction,
+          d.paymentAction,
+          df.field || '',
+          df.existing !== undefined ? String(df.existing) : '',
+          (df.new !== undefined ? String(df.new) : (df.fromPayment !== undefined ? String(df.fromPayment) : (df.value !== undefined ? String(df.value) : ''))),
+          df.action || '',
+        ]);
+      }
+    } else {
+      rows.push([
+        d.paymentId, d.date, d.email || '', d.amount, d.status,
+        d.userAction, d.paymentAction, '', '', '', '',
+      ]);
+    }
+  }
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(r => r.map(v => `"${v}"`).join(',')),
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sync-report_${lastSyncReport.from}_to_${lastSyncReport.to}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
