@@ -61,27 +61,6 @@ function formatAmountForLog(amount) {
   return `₹${n.toLocaleString('en-IN')}`;
 }
 
-// Cloudflare Turnstile verification
-// Returns { verified: boolean, errorCodes: string[], exception: Error|null }
-async function verifyTurnstile(token, remoteip) {
-  try {
-    const body = new URLSearchParams({
-      secret:   process.env.TURNSTILE_SECRET_KEY || '',
-      response: token,
-      ...(remoteip ? { remoteip } : {}),
-    });
-    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body:    body.toString(),
-    });
-    const data = await res.json();
-    return { verified: data.success === true, errorCodes: data['error-codes'] || [], exception: null };
-  } catch (ex) {
-    return { verified: false, errorCodes: [], exception: ex };
-  }
-}
-
 function buildNotes(donor) {
   return {
     donor: JSON.stringify({
@@ -110,7 +89,7 @@ exports.handler = async function (event, context) {
   console.info(`[vazhai] Mode: ${_isProd ? 'PRODUCTION' : 'TEST/DEV'} (host=${_hostForMode || 'none'})`);
 
   try {
-    const { planId, amount: customAmount, donor, turnstileToken } = JSON.parse(event.body || '{}');
+    const { planId, amount: customAmount, donor } = JSON.parse(event.body || '{}');
 
     // Validate required env vars
     const rzpKeyId = process.env.RAZORPAY_KEY_ID;
@@ -118,19 +97,6 @@ exports.handler = async function (event, context) {
     if (!rzpKeyId || !rzpKeySecret) {
       return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Server config error: missing Razorpay keys.' }) };
     }
-
-    // Turnstile check — log failure but proceed regardless, as real humans sometimes fail verification
-    const { verified: humanVerified, errorCodes: turnstileErrorCodes, exception: turnstileException } = await verifyTurnstile(
-      turnstileToken,
-      event.headers['client-ip'] || event.headers['x-forwarded-for'] || '',
-    );
-        if (!humanVerified) {
-          if (turnstileException) {
-            console.warn(`[vazhai] Turnstile communication error for /donate/subscribe host=${_hostForMode} — proceeding anyway`, turnstileException);
-          } else {
-            console.warn(`[vazhai] Turnstile verification failed for /donate/subscribe host=${_hostForMode} error-codes=${JSON.stringify(turnstileErrorCodes)} — proceeding anyway`);
-          }
-        }
 
     // Donor field validation
     const { name, email, phone, address, pan } = donor || {};

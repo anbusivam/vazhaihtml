@@ -164,7 +164,6 @@
         <div class="don-field-group"><label class="don-label" for="don-pan">PAN Number <span class="don-req">*</span></label><input class="don-input don-pan-input" type="text" id="don-pan" placeholder="ABCDE1234F" maxlength="10" oninput="this.value=this.value.toUpperCase()" autocomplete="off"><span class="don-field-hint">Format: ABCDE1234F · Stored securely</span></div>
         <div class="don-field-group" style="display: none;"><label class="don-label" for="don-comment">Comments <span class="don-opt">(optional)</span></label><textarea class="don-input don-textarea" id="don-comment" placeholder="Anything you'd like us to know…" rows="2"></textarea></div>
       </div>
-      <div class="don-turnstile-wrap"><div id="don-turnstile"></div></div>
       <div class="don-error" id="don-error" role="alert" aria-live="polite"></div>
       <button class="don-submit-btn" id="don-submit-btn" onclick="submitDonation()"><span id="don-submit-label">Proceed to Pay →</span><span id="don-submit-spinner" class="don-spinner" style="display:none;"></span></button>
       <p class="don-submit-note">Your details are passed securely to Razorpay. We do not store card information. By proceeding, you agree to our <a href="/terms" style="color:var(--amber);text-decoration:underline;">Terms</a> and <a href="/privacy-policy" style="color:var(--amber);text-decoration:underline;">Privacy Policy</a>.</p>

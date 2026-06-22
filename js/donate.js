@@ -10,10 +10,7 @@ let donState = {
   planLabel: null,
 };
 
-let rzpKeyId        = null;
-let turnstileSiteKey = null;
-let turnstileWidgetId = null;
-let turnstileToken  = null;
+let rzpKeyId = null;
 
 /* Load config from server on init */
 async function loadDonConfig() {
@@ -32,7 +29,6 @@ async function loadDonConfig() {
     }
     const data = await res.json();
     rzpKeyId         = data.razorpayKeyId;
-    turnstileSiteKey = data.turnstileSiteKey;
   } catch (e) {
     console.error('[donation] Could not load config:', e);
   }
@@ -177,7 +173,6 @@ function showStep2() {
     }
   }
 
-  renderTurnstile();
   window.scrollTo({ top: document.getElementById('don-step-2').getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
 }
 
@@ -186,52 +181,7 @@ function goBackToStep1() {
   document.getElementById('don-step-2').classList.add('don-step-hidden');
   document.getElementById('don-step-1').classList.remove('don-step-hidden');
   clearError();
-  turnstileToken = null;
   document.getElementById('don-custom-form-input').value = '';
-  if (turnstileWidgetId !== null && window.turnstile) {
-    window.turnstile.reset(turnstileWidgetId);
-  }
-}
-
-/* ── Turnstile ── */
-let turnstileScriptLoaded = false;
-
-function loadTurnstileScript() {
-  return new Promise((resolve) => {
-    if (window.turnstile) { resolve(); return; }
-    if (turnstileScriptLoaded) { resolve(); return; }
-    turnstileScriptLoaded = true;
-    const s = document.createElement('script');
-    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-    s.async = true;
-    s.onload = resolve;
-    document.head.appendChild(s);
-  });
-}
-
-function renderTurnstile() {
-  if (!turnstileSiteKey) return;
-  const container = document.getElementById('don-turnstile');
-  if (!container) return;
-  if (container.children.length > 0) {
-    if (turnstileWidgetId !== null && window.turnstile) {
-      window.turnstile.reset(turnstileWidgetId);
-    }
-    turnstileToken = null;
-    return;
-  }
-  loadTurnstileScript().then(() => {
-    setTimeout(() => {
-      if (window.turnstile) {
-        turnstileWidgetId = window.turnstile.render('#don-turnstile', {
-          sitekey:   turnstileSiteKey,
-          callback:  function(token) { turnstileToken = token; },
-          'expired-callback': function() { turnstileToken = null; },
-          'error-callback':   function() { turnstileToken = null; },
-        });
-      }
-    }, 200);
-  });
 }
 
 /* ── Validation ── */
@@ -285,14 +235,11 @@ async function submitDonation() {
     return;
   }
 
-  if (turnstileToken) {
-    setLoading(true);
-    if (donState.type === 'onetime') {
-      await handleOnetime(donor);
-    } else {
-      await handleMonthly(donor);
-    }
-    return;
+  setLoading(true);
+  if (donState.type === 'onetime') {
+    await handleOnetime(donor);
+  } else {
+    await handleMonthly(donor);
   }
 }
 
@@ -318,7 +265,7 @@ async function handleOnetime(donor) {
     const res  = await fetch(apiUrl('/donate/order'), {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: donState.amount, donor, turnstileToken }),
+      body: JSON.stringify({ amount: donState.amount, donor }),
     });
     const data = await res.json();
     if (!res.ok) { showError(data.error || 'Could not create payment. Please try again.'); setLoading(false); return; }
@@ -342,7 +289,7 @@ async function handleOnetime(donor) {
           setLoading(false);
         }
       },
-      modal: { ondismiss: function() { setLoading(false); resetTurnstile(); } },
+      modal: { ondismiss: function() { setLoading(false); } },
     });
     rzp.open();
   } catch (err) {
@@ -362,7 +309,7 @@ async function handleMonthly(donor) {
       return;
     }
 
-    const body = { donor, turnstileToken };
+    const body = { donor };
     if (donState.planId) {
       body.planId = donState.planId;
     } else {
@@ -395,7 +342,7 @@ async function handleMonthly(donor) {
           setLoading(false);
         }
       },
-      modal: { ondismiss: function() { setLoading(false); resetTurnstile(); } },
+      modal: { ondismiss: function() { setLoading(false); } },
     });
     rzp.open();
   } catch (err) {
@@ -424,10 +371,4 @@ function setLoading(on) {
   btn.disabled          = on;
   label.style.display   = on ? 'none'   : '';
   spinner.style.display = on ? 'inline-block' : 'none';
-}
-function resetTurnstile() {
-  turnstileToken = null;
-  if (turnstileWidgetId !== null && window.turnstile) {
-    window.turnstile.reset(turnstileWidgetId);
-  }
 }

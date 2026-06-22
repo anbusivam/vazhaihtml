@@ -1,5 +1,5 @@
 // Netlify Function: GET /config
-// Returns public keys (Razorpay key ID, Turnstile site key) to the client.
+// Returns public keys (Razorpay key ID) to the client.
 exports.handler = async function (event, context) {
   const headers = {
     'Content-Type': 'application/json',
@@ -18,7 +18,6 @@ exports.handler = async function (event, context) {
     headers,
     body: JSON.stringify({
       razorpayKeyId:   process.env.RAZORPAY_KEY_ID   || '',
-      turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || '',
     }),
   };
 };
