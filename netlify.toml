@@ -285,3 +285,8 @@
   from = "/"
   to = "/index.html"
   status = 200
+
+[[redirects]]
+  from = "/razorpay/payments"
+  to = "/.netlify/functions/razorpay-payments"
+  status = 200
