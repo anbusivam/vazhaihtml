@@ -300,3 +300,8 @@
   from = "/razorpay/user-payments"
   to = "/.netlify/functions/razorpay-payments-user"
   status = 200
+
+[[redirects]]
+  from = "/razorpay/admin-payments"
+  to = "/.netlify/functions/razorpay-admin-payments"
+  status = 200

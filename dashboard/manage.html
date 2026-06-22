@@ -309,6 +309,50 @@
     </div>
   </div>
 
+  <!-- Payment History Card (all users, paginated) -->
+  <div class="card" id="payment-history-card">
+    <h2>📋 Payment History (All Users)</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">View all payment records stored in the system, paginated for performance.</p>
+    <div class="add-user-form" style="gap:8px;">
+      <select id="ph-page-size" style="padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;background:white;">
+        <option value="25">25 per page</option>
+        <option value="50">50 per page</option>
+        <option value="100">100 per page</option>
+      </select>
+      <button class="btn-primary" id="ph-refresh-btn" onclick="loadPaymentHistory(1)">🔄 Load Payments</button>
+    </div>
+    <div id="ph-msg" class="msg"></div>
+    <div id="ph-loading" class="loading-state" style="display:none;">Loading payment history...</div>
+    <div id="ph-empty" class="empty-state" style="display:none;">No payment records found. Use the Sync tool to pull payments from Razorpay first.</div>
+    <div id="ph-table-wrap" style="display:none;">
+      <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <span>Showing page <strong id="ph-current-page">0</strong> of <strong id="ph-total-pages">0</strong> · Total records: <strong id="ph-total-count">0</strong></span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn-primary btn-sm btn-outline" id="ph-prev-btn" onclick="loadPaymentHistory(currentPage - 1)" disabled>← Prev</button>
+          <span style="font-size:13px;" id="ph-page-indicator">Page 1</span>
+          <button class="btn-primary btn-sm btn-outline" id="ph-next-btn" onclick="loadPaymentHistory(currentPage + 1)" disabled>Next →</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="users-table" style="min-width:800px;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Payment ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Amount (₹)</th>
+              <th>Status</th>
+              <th>Method</th>
+              <th>PAN</th>
+            </tr>
+          </thead>
+          <tbody id="ph-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Razorpay Payments Card -->
   <div class="card" id="razorpay-card">
     <h2>💳 Razorpay Payments</h2>
@@ -404,11 +448,12 @@ document.addEventListener('DOMContentLoaded', async function() {
   currentUserEmail = data.email;
   document.getElementById('admin-email').textContent = data.email;
 
-  // Restrict Razorpay Payments and Sync sections to hardcoded admin users only
+  // Restrict Razorpay Payments, Sync, and Payment History sections to hardcoded admin users only
   const isHardcodedAdmin = SYSTEM_ADMINS.includes(data.email);
   if (!isHardcodedAdmin) {
     document.getElementById('razorpay-card').style.display = 'none';
     document.getElementById('sync-card').style.display = 'none';
+    document.getElementById('payment-history-card').style.display = 'none';
   }
 
   loadUsers();
@@ -584,6 +629,105 @@ async function addUser() {
   showMsg('success', data.message);
   emailInput.value = '';
   loadUsers();
+}
+
+// ========== Payment History (All Users, Paginated) ==========
+
+let currentPage = 1;
+
+function phShowMsg(type, text) {
+  const el = document.getElementById('ph-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+}
+
+function updatePaginationUI(pagination) {
+  document.getElementById('ph-current-page').textContent = pagination.page;
+  document.getElementById('ph-total-pages').textContent = pagination.totalPages;
+  document.getElementById('ph-total-count').textContent = pagination.totalCount;
+  document.getElementById('ph-page-indicator').textContent = `Page ${pagination.page} of ${pagination.totalPages}`;
+
+  const prevBtn = document.getElementById('ph-prev-btn');
+  const nextBtn = document.getElementById('ph-next-btn');
+  prevBtn.disabled = !pagination.hasPrev;
+  nextBtn.disabled = !pagination.hasNext;
+}
+
+async function loadPaymentHistory(page) {
+  const limit = parseInt(document.getElementById('ph-page-size').value);
+
+  // Reset UI
+  phShowMsg('', '');
+  document.getElementById('ph-loading').style.display = 'block';
+  document.getElementById('ph-empty').style.display = 'none';
+  document.getElementById('ph-table-wrap').style.display = 'none';
+  document.getElementById('ph-refresh-btn').disabled = true;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`/razorpay/admin-payments?page=${page}&limit=${limit}`, { headers });
+    const data = await res.json();
+
+    document.getElementById('ph-loading').style.display = 'none';
+    document.getElementById('ph-refresh-btn').disabled = false;
+
+    if (data.error) {
+      phShowMsg('error', data.error);
+      return;
+    }
+
+    const payments = data.payments || [];
+    const pagination = data.pagination || { page: 1, totalPages: 1, totalCount: 0, hasNext: false, hasPrev: false };
+
+    if (payments.length === 0) {
+      document.getElementById('ph-empty').style.display = 'block';
+      updatePaginationUI(pagination);
+      currentPage = pagination.page;
+      return;
+    }
+
+    currentPage = pagination.page;
+    document.getElementById('ph-table-wrap').style.display = 'block';
+    updatePaginationUI(pagination);
+
+    const tbody = document.getElementById('ph-tbody');
+    tbody.innerHTML = '';
+
+    for (const p of payments) {
+      const tr = document.createElement('tr');
+
+      const ts = p.createdAt || p.createdAtDate ? new Date((p.createdAt || 0) * 1000).getTime() : Date.now();
+      const dateStr = new Date(ts).toLocaleString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      });
+
+      const statusBadge = p.status === 'captured'
+        ? '<span class="role-badge" style="background:#e8f5e9;color:#2e7d32;">✅ Captured</span>'
+        : '<span class="role-badge" style="background:#fef2f2;color:#d32f2f;">❌ ' + (p.status || 'Unknown') + '</span>';
+
+      const methodDisplay = p.method ? p.method.toUpperCase() : '—';
+      const amountDisplay = '₹' + Number(p.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+      tr.innerHTML = `
+        <td style="white-space:nowrap;font-size:12px;">${dateStr}</td>
+        <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${p.paymentId || p.id || ''}">${p.paymentId || p.id || '—'}</td>
+        <td><strong>${p.donorName || '—'}</strong></td>
+        <td>${p.email || p.donorEmail || '—'}</td>
+        <td style="font-weight:600;">${amountDisplay}</td>
+        <td>${statusBadge}</td>
+        <td style="font-size:12px;">${methodDisplay}</td>
+        <td style="font-size:12px;">${p.donorPan || '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  } catch (err) {
+    document.getElementById('ph-loading').style.display = 'none';
+    document.getElementById('ph-refresh-btn').disabled = false;
+    phShowMsg('error', 'Network error: ' + err.message);
+  }
 }
 
 // ========== Razorpay Payment Functions ==========
