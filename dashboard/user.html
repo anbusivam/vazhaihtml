@@ -350,6 +350,14 @@
             <span class="profile-value"><span id="profile-role-badge"></span></span>
           </div>
           <div class="profile-row">
+            <span class="profile-label">PAN</span>
+            <span class="profile-value" id="profile-pan"></span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">Address</span>
+            <span class="profile-value" id="profile-address"></span>
+          </div>
+          <div class="profile-row">
             <span class="profile-label">Session Expires</span>
             <span class="profile-value" id="profile-expires"></span>
           </div>
@@ -368,6 +376,14 @@
         <div class="form-group" style="margin-top:12px;">
           <label class="profile-label" for="edit-phone">Phone (optional)</label>
           <input type="tel" id="edit-phone" class="profile-edit-input" placeholder="e.g. +91 98765 43210">
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label class="profile-label" for="edit-pan">PAN</label>
+          <input type="text" id="edit-pan" class="profile-edit-input" placeholder="e.g. ABCDE1234F" style="text-transform:uppercase;">
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label class="profile-label" for="edit-address">Address</label>
+          <textarea id="edit-address" class="profile-edit-input" placeholder="Your mailing address" rows="3" style="resize:vertical;"></textarea>
         </div>
         <div class="profile-edit-actions">
           <button class="btn-primary btn-sm" onclick="saveProfile()" id="btn-save-profile">💾 Save</button>
@@ -490,6 +506,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.getElementById('profile-name').textContent = currentUserName || '(not set)';
   document.getElementById('profile-email').textContent = data.email;
   document.getElementById('profile-phone').textContent = data.phone || '(not set)';
+  document.getElementById('profile-pan').textContent = data.pan || '(not set)';
+  document.getElementById('profile-address').textContent = data.address || '(not set)';
 
   // ── If user has no name set, auto-prompt to fill profile ──
   if (!currentUserName) {
@@ -567,6 +585,8 @@ function showEditProfile() {
   document.getElementById('profile-error-msg').style.display = 'none';
   document.getElementById('edit-name').value = document.getElementById('profile-name').textContent === '(not set)' ? '' : document.getElementById('profile-name').textContent;
   document.getElementById('edit-phone').value = document.getElementById('profile-phone').textContent === '(not set)' ? '' : document.getElementById('profile-phone').textContent;
+  document.getElementById('edit-pan').value = document.getElementById('profile-pan').textContent === '(not set)' ? '' : document.getElementById('profile-pan').textContent;
+  document.getElementById('edit-address').value = document.getElementById('profile-address').textContent === '(not set)' ? '' : document.getElementById('profile-address').textContent;
   document.getElementById('profile-view').classList.add('hidden');
   document.getElementById('profile-edit').classList.add('active');
 }
@@ -581,6 +601,8 @@ function cancelEditProfile() {
 async function saveProfile() {
   const name = document.getElementById('edit-name').value.trim();
   const phone = document.getElementById('edit-phone').value.trim();
+  const pan = document.getElementById('edit-pan').value.trim().toUpperCase();
+  const address = document.getElementById('edit-address').value.trim();
 
   if (!name) {
     document.getElementById('profile-error-msg').textContent = 'Name is required.';
@@ -602,7 +624,7 @@ async function saveProfile() {
     const res = await fetch('/auth/update-profile', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ name, phone }),
+      body: JSON.stringify({ name, phone, pan, address }),
     });
 
     const data = await res.json();
@@ -619,6 +641,8 @@ async function saveProfile() {
     currentUserName = data.name || name;
     document.getElementById('profile-name').textContent = data.name || name;
     document.getElementById('profile-phone').textContent = data.phone || '(not set)';
+    document.getElementById('profile-pan').textContent = data.pan || '(not set)';
+    document.getElementById('profile-address').textContent = data.address || '(not set)';
     document.getElementById('user-name-display').textContent = data.name || name;
 
     if (redirectAfterProfile) {

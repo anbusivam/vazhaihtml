@@ -27,7 +27,7 @@ exports.handler = async function (event, context) {
       return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Unauthorized' }) };
     }
 
-    const { name, phone } = JSON.parse(event.body || '{}');
+    const { name, phone, pan, address } = JSON.parse(event.body || '{}');
 
     // Name is mandatory
     if (!name || !name.trim()) {
@@ -46,6 +46,12 @@ exports.handler = async function (event, context) {
     if (phone !== undefined) {
       userData.phone = phone.trim();
     }
+    if (pan !== undefined) {
+      userData.pan = pan.trim().toUpperCase();
+    }
+    if (address !== undefined) {
+      userData.address = address.trim();
+    }
     userData.lastUpdated = new Date().toISOString();
 
     await store.setJSON(`user:${normalizedEmail}`, userData);
@@ -58,6 +64,8 @@ exports.handler = async function (event, context) {
         message: 'Profile updated successfully.',
         name: userData.name,
         phone: userData.phone,
+        pan: userData.pan || '',
+        address: userData.address || '',
       }),
     };
   } catch (err) {

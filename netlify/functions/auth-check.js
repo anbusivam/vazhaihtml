@@ -51,6 +51,8 @@ exports.handler = async function (event, context) {
     let roles = [];
     let userName = '';
     let userPhone = '';
+    let userPan = '';
+    let userAddress = '';
     if (userData) {
       // Support both old single-role format and new array format
       if (Array.isArray(userData.roles)) {
@@ -60,6 +62,8 @@ exports.handler = async function (event, context) {
       }
       userName = userData.name || '';
       userPhone = userData.phone || '';
+      userPan = userData.pan || '';
+      userAddress = userData.address || '';
     }
     // Hardcoded admin emails always get 'admin' role
     if (ADMIN_EMAILS.includes(session.email) && !roles.includes('admin')) {
@@ -76,6 +80,8 @@ exports.handler = async function (event, context) {
         email: session.email, 
         name: userName,
         phone: userPhone,
+        pan: userPan,
+        address: userAddress,
         expiresAt: session.expiresAt,
         roles: roles,
         role: primaryRole

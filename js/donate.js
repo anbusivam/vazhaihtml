@@ -276,6 +276,17 @@ async function handleOnetime(donor) {
       image: '/images/favicon_io/logo192x192.png',
       prefill: { name: donor.name, email: donor.email, contact: donor.phone },
       theme: { color: '#f5c842' },
+      // Pass donor details as notes so they appear on the payment record for sync
+      notes: {
+        donor: JSON.stringify({
+          name: donor.name,
+          email: donor.email,
+          phone: donor.phone,
+          address: donor.address,
+          pan: donor.pan,
+          comment: donor.comment || '',
+        }),
+      },
       handler: async function(response) {
         const vres  = await fetch(apiUrl('/donate/verify'), {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -329,6 +340,17 @@ async function handleMonthly(donor) {
       image: '/images/favicon_io/logo192x192.png',
       prefill: { name: donor.name, email: donor.email, contact: donor.phone },
       theme: { color: '#f5c842' },
+      // Pass donor details as notes so they appear on the first payment record for sync
+      notes: {
+        donor: JSON.stringify({
+          name: donor.name,
+          email: donor.email,
+          phone: donor.phone,
+          address: donor.address,
+          pan: donor.pan,
+          comment: donor.comment || '',
+        }),
+      },
       handler: async function(response) {
         const vres  = await fetch(apiUrl('/donate/verify-subscription'), {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
