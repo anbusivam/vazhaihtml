@@ -315,3 +315,8 @@
   from = "/razorpay/thankletter-template"
   to = "/.netlify/functions/thankletter-template"
   status = 200
+
+[[redirects]]
+  from = "/razorpay/receipt-pdf"
+  to = "/.netlify/functions/razorpay-receipt-pdf"
+  status = 200

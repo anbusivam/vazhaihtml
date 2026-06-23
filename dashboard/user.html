@@ -298,6 +298,26 @@
       vertical-align: middle;
       margin-right: 6px;
     }
+    .btn-receipt {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #e8f5e9;
+      color: var(--green-dark);
+      border: 1px solid #a5d6a7;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn-receipt:hover {
+      background: var(--green-dark);
+      color: white;
+      border-color: var(--green-dark);
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 640px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; }
@@ -469,6 +489,7 @@
               <th>Status</th>
               <th>Method</th>
               <th>PAN</th>
+              <th>Receipt</th>
             </tr>
           </thead>
           <tbody id="payment-tbody"></tbody>
@@ -958,6 +979,9 @@ async function loadPaymentHistory() {
         <td>${statusBadge}</td>
         <td style="font-size:12px;">${methodDisplay}</td>
         <td style="font-size:12px;">${p.donorPan || '—'}</td>
+        <td>
+          <button class="btn-receipt" onclick="downloadReceipt('${p.paymentId}')" title="Download PDF Receipt">📄 PDF</button>
+        </td>
       `;
       tbody.appendChild(tr);
     }
@@ -966,6 +990,47 @@ async function loadPaymentHistory() {
     errorEl.textContent = 'Network error: ' + err.message;
     errorEl.style.display = 'block';
     card.style.display = 'block';
+  }
+}
+
+// ── Download Receipt PDF ──
+async function downloadReceipt(paymentId) {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`/razorpay/receipt-pdf?paymentId=${encodeURIComponent(paymentId)}`, { headers });
+
+    if (res.status === 400) {
+      const data = await res.json();
+      if (data.needsProfileUpdate) {
+        alert('Please update your name in your profile before downloading a receipt.');
+        showEditProfile();
+        return;
+      }
+      alert(data.error || 'Failed to generate receipt.');
+      return;
+    }
+
+    if (!res.ok) {
+      const data = await res.json();
+      alert(data.error || 'Failed to download receipt.');
+      return;
+    }
+
+    // Get the blob and trigger download
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Vazhai_Receipt_${paymentId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Network error: ' + err.message);
   }
 }
 
