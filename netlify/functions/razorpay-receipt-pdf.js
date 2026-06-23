@@ -163,10 +163,12 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
       doc.fontSize(11).font('Helvetica-Bold').fillColor('#ffffff')
         .text('DONOR DETAILS', 55, 200);
 
-      // Render text using the appropriate font.
-      // NotoSansTamil includes Latin glyphs, so for any string containing Tamil
-      // characters we can render the entire string in NotoSansTamil and both
-      // Tamil and English will display correctly. Pure ASCII strings use Helvetica.
+      // Render mixed Tamil+English text with per-word font switching.
+      // Each word is measured via widthOfString and rendered at calculated
+      // (cx, cy). Position tracking uses widthOfString exclusively to avoid
+      // font-metric mismatch from doc.x after rendering. Each font gets its
+      // own subset, so Latin glyphs in Helvetica and Tamil in NotoSansTamil
+      // are both independently embedded correctly.
       function renderMixedText(doc, text, x, y, opts) {
         if (!text || text === '—') {
           doc.fontSize(10).font('Helvetica').fillColor('#555').text('—', x, y, opts || {});
@@ -174,18 +176,41 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
         }
         opts = opts || {};
         doc.fontSize(10).fillColor('#555');
+        const maxWidth = opts.width || Infinity;
+        const lineHeight = 16;
+        let cx = x;
+        let cy = y;
 
-        // If text contains any Tamil/Unicode characters, use NotoSansTamil
-        // (it supports both Tamil and Latin glyphs). Otherwise use Helvetica.
-        if (hasUnicodeFont && hasUnicode(text)) {
-          doc.font('NotoSansTamil');
-        } else {
-          doc.font('Helvetica');
+        // Process each line for multiline support
+        const lines = text.split('\n');
+        for (let li = 0; li < lines.length; li++) {
+          const line = lines[li];
+          if (li > 0) { cx = x; cy += lineHeight; }
+          if (!line) continue;
+
+          // Split into words (preserving whitespace as tokens for spacing)
+          const tokens = line.match(/\S+|\s+/g) || [line];
+          if (tokens.length === 0) continue;
+
+          for (const token of tokens) {
+            const isUnicode = hasUnicodeFont && /[^\x00-\xFF]/.test(token);
+            doc.font(isUnicode ? 'NotoSansTamil' : 'Helvetica');
+            const w = doc.widthOfString(token);
+
+            // Word-wrap: if word exceeds maxWidth, move to next line
+            if (cx + w > x + maxWidth && cx > x) {
+              cy += lineHeight;
+              cx = x;
+            }
+
+            // Render word at calculated position. Each word renders independently
+            // at an absolute (cx, cy), so there's no cross-font baseline issue.
+            doc.text(token, cx, cy);
+
+            // Advance position using measured width
+            cx += w;
+          }
         }
-
-        // Use PDFKit's native text() which handles line wrapping and multiline
-        // properly via its own layout engine.
-        doc.text(text, x, y, opts);
       }
 
       function donorLabel(label, x, y) {
