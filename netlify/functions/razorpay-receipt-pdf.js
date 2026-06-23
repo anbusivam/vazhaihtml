@@ -1,6 +1,7 @@
 // Netlify Function: GET /razorpay/receipt-pdf?paymentId=pay_xxxxxx
 // Authenticated user: Generates and downloads a PDF receipt for a payment
 const PDFDocument = require('pdfkit');
+const path = require('path');
 const { getStore } = require('./auth-store');
 
 const CORS_HEADERS = {
@@ -8,6 +9,9 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
+
+// Path to the Noto Sans Tamil font for Unicode/Tamil text rendering
+const TAMIL_FONT_PATH = path.resolve(__dirname, '..', 'fonts', 'NotoSansTamil-Regular.ttf');
 
 async function getSession(store, event) {
   const cookies = event.headers['cookie'] || '';
@@ -70,6 +74,14 @@ function statusLabel(status) {
 }
 
 /**
+ * Detect if a string contains non-ASCII characters (Unicode beyond latin-1).
+ */
+function hasUnicode(str) {
+  if (!str) return false;
+  return /[^\x00-\xFF]/.test(str);
+}
+
+/**
  * Generate the PDF receipt as a Buffer.
  * Uses a clean NGO-style receipt template with Vazhai branding.
  */
@@ -90,6 +102,15 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
       doc.on('data', chunk => buffers.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(buffers)));
 
+      // ── Register Unicode font for Tamil/Unicode text ──
+      let hasUnicodeFont = false;
+      try {
+        doc.registerFont('NotoSansTamil', TAMIL_FONT_PATH);
+        hasUnicodeFont = true;
+      } catch (_) {
+        // Font file not found, will fall back to Helvetica
+      }
+
       // ── Colors ──
       const greenDark = '#2d5a3f';
       const green = '#4a7c59';
@@ -99,11 +120,12 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
 
       // ── Header: Decorative top bar ──
       doc.rect(0, 0, doc.page.width, 8).fill(greenDark);
+      doc.rect(0, doc.page.height - 8, doc.page.width, 8).fill(greenDark);
 
       // ── Logo & Organization Name ──
-      const logoPath = __dirname + '/../../images/vazahi-logo.gif';
+      const logoPath = __dirname + '/../../images/vazahi-logo.jpg';
       try {
-        doc.image(logoPath, 50, 28, { width: 60, height: 60 });
+        doc.image(logoPath, 50, 28, { width: 60 });
       } catch (_) {
         // Logo file not found, just skip it
       }
@@ -141,26 +163,41 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
       doc.fontSize(11).font('Helvetica-Bold').fillColor('#ffffff')
         .text('DONOR DETAILS', 55, 200);
 
+      // Helper for donor info lines — using per-character font switching for mixed English/Tamil
+      function donorLabel(label, x, y) {
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(textColor).text(label, x, y);
+      }
+
+      // donorValue handles mixed English+Tamil text using whole-string font selection
+      // If text contains any Unicode characters, render entire string with NotoSansTamil
+      // (which supports Latin characters too), otherwise use Helvetica.
+      function donorValue(text, x, y, opts) {
+        if (!text || text === '—') {
+          doc.fontSize(10).font('Helvetica').fillColor('#555').text('—', x, y, opts || {});
+          return;
+        }
+        doc.fontSize(10).fillColor('#555');
+        if (hasUnicodeFont && hasUnicode(text)) {
+          doc.font('NotoSansTamil');
+        } else {
+          doc.font('Helvetica');
+        }
+        doc.text(text, x, y, opts || {});
+      }
+
       const donorY = 224;
-      doc.fontSize(10).font('Helvetica-Bold').fillColor(textColor)
-        .text('Name:', 55, donorY);
-      doc.font('Helvetica').fillColor('#555')
-        .text(userName || '—', 110, donorY);
+      donorLabel('Name:', 55, donorY);
+      // For name, we also want per-character switching
+      donorValue(userName, 110, donorY);
 
-      doc.font('Helvetica-Bold').fillColor(textColor)
-        .text('Email:', 55, donorY + 20);
-      doc.font('Helvetica').fillColor('#555')
-        .text(userEmail || '—', 110, donorY + 20);
+      donorLabel('Email:', 55, donorY + 20);
+      donorValue(userEmail, 110, donorY + 20);
 
-      doc.font('Helvetica-Bold').fillColor(textColor)
-        .text('PAN:', 55, donorY + 40);
-      doc.font('Helvetica').fillColor('#555')
-        .text(userPan || '—', 110, donorY + 40);
+      donorLabel('PAN:', 55, donorY + 40);
+      donorValue(userPan, 110, donorY + 40);
 
-      doc.font('Helvetica-Bold').fillColor(textColor)
-        .text('Address:', 55, donorY + 60);
-      doc.font('Helvetica').fillColor('#555')
-        .text(userAddress || '—', 110, donorY + 60, { width: 400 });
+      donorLabel('Address:', 55, donorY + 60);
+      donorValue(userAddress, 110, donorY + 60, { width: 400 });
 
       // ── Payment Details Section ──
       const paymentSectionY = donorY + 110;
@@ -220,9 +257,6 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
         .text('Vazhai NGO | # 341/157, T.H. Road, Kaladipet, Thiruvottiyur, Chennai – 600 019', 50, footerY + 62, { align: 'center' });
       doc.text('Email: vazhai.connect@gmail.com | Website: https://vazhai.in | Reg. No. 296/05, Tamil Nadu', 50, footerY + 76, { align: 'center' });
       doc.text('This is a computer-generated receipt and does not require a physical signature.', 50, footerY + 90, { align: 'center' });
-
-      // ── Bottom bar ──
-      doc.rect(0, doc.page.height - 8, doc.page.width, 8).fill(greenDark);
 
       doc.end();
     } catch (err) {
