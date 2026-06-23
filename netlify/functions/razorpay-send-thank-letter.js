@@ -111,13 +111,24 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // ── Load the thank letter template ──
-    // In Netlify Functions, __dirname points to the function's directory (netlify/functions/)
-    // The template is at the project root, so we go up two levels
-    const templatePath = path.resolve(__dirname, '..', '..', 'ThankLetterTemplate.html');
+    // ── Load the thank letter template from Netlify Blobs ──
+    // The template is stored in the 'auth' store under the key 'thankletter_template'.
+    // This avoids filesystem path issues in production deployments.
     let templateHtml;
     try {
-      templateHtml = fs.readFileSync(templatePath, 'utf8');
+      templateHtml = await store.get('thankletter_template', { type: 'text' });
+      if (!templateHtml) {
+        // Fallback: try to read the static file (local development fallback)
+        const fs = require('fs');
+        const path = require('path');
+        const templatePath = path.resolve(__dirname, '..', '..', 'ThankLetterTemplate.html');
+        try {
+          templateHtml = fs.readFileSync(templatePath, 'utf8');
+        } catch (_) {
+          // Minimal fallback if nothing is available
+          templateHtml = '<html><body><p>Dear [donor-name],<br>Thank you for your donation of [donation-amount] on [donation-date].<br>Warm regards,<br>Vazhai Team<br>Email: [donor-mail-id]</p></body></html>';
+        }
+      }
     } catch (err) {
       console.error('[razorpay-send-thank-letter] Failed to read template:', err.message);
       return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ status: 'error', message: 'Failed to read thank letter template.' }) };

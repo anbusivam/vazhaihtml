@@ -414,6 +414,31 @@
     </div>
   </div>
 
+  <!-- Thank Letter Template Card (hardcoded admin only) -->
+  <div class="card" id="thankletter-card">
+    <h2>📝 Thank You Letter Template</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Edit the HTML template used when sending thank-you emails to donors. The template supports these placeholders that will be replaced dynamically:</p>
+    <div style="background:#f7fafc;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;border:1px solid #e2e8f0;">
+      <code><strong>[donor-name]</strong></code> — Donor's name<br>
+      <code><strong>[donation-amount]</strong></code> — Donation amount (e.g. ₹1,000.00)<br>
+      <code><strong>[donation-date]</strong></code> — Date of donation<br>
+      <code><strong>[donor-mail-id]</strong></code> — Donor's email address
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-primary" id="tl-view-btn" onclick="loadThankLetterTemplate()">📄 View Current Template</button>
+      <button class="btn-primary btn-outline" id="tl-edit-btn" onclick="openTemplateEditor()" disabled>✏️ Edit Template</button>
+      <button class="btn-primary btn-sm btn-outline" id="tl-reset-btn" onclick="resetToDefaultTemplate()" style="font-size:11px;">↩️ Reset to Default</button>
+    </div>
+    <div id="tl-msg" class="msg" style="margin-top:12px;"></div>
+    <div id="tl-preview" style="display:none;margin-top:16px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="background:#f7fafc;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text-light);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span>📋 Current Template Preview</span>
+        <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 10px;" onclick="document.getElementById('tl-preview').style.display='none'">✕ Close</button>
+      </div>
+      <div id="tl-preview-content" style="padding:16px;max-height:400px;overflow:auto;font-size:12px;background:white;white-space:pre-wrap;word-break:break-word;font-family:monospace;"></div>
+    </div>
+  </div>
+
   <a href="javascript:void(0)" onclick="window.history.back()" class="back-link">← Back</a>
 </div>
 
@@ -1128,6 +1153,228 @@ async function sendThankLetter(paymentId, btnEl, force) {
   }
 }
 
+// ========== Thank Letter Template Management ==========
+
+let currentTemplate = null; // Cached template content
+
+function tlShowMsg(type, text) {
+  const el = document.getElementById('tl-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  el.style.display = text ? 'block' : 'none';
+}
+
+async function fetchTemplate() {
+  const token = localStorage.getItem('vazhai_session');
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch('/razorpay/thankletter-template', { headers });
+  const data = await res.json();
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  currentTemplate = data.template;
+  return data.template;
+}
+
+async function loadThankLetterTemplate() {
+  const viewBtn = document.getElementById('tl-view-btn');
+  const editBtn = document.getElementById('tl-edit-btn');
+  const previewEl = document.getElementById('tl-preview');
+  const previewContent = document.getElementById('tl-preview-content');
+
+  viewBtn.disabled = true;
+  viewBtn.innerHTML = '<span class="spinner"></span>Loading...';
+  tlShowMsg('', '');
+
+  try {
+    const template = await fetchTemplate();
+    editBtn.disabled = false;
+    // Show preview (truncated to first 2000 chars for display)
+    previewContent.textContent = template.length > 2000
+      ? template.substring(0, 2000) + '\n\n... (template truncated for preview, click Edit to see full content)'
+      : template;
+    previewEl.style.display = 'block';
+    tlShowMsg('success', '✅ Template loaded successfully. It has ' + template.length + ' characters.');
+  } catch (err) {
+    tlShowMsg('error', 'Failed to load template: ' + err.message);
+  } finally {
+    viewBtn.disabled = false;
+    viewBtn.textContent = '📄 View Current Template';
+  }
+}
+
+async function openTemplateEditor() {
+  const textarea = document.getElementById('tl-editor-textarea');
+  const saveBtn = document.getElementById('tl-save-btn');
+  const statusEl = document.getElementById('tl-editor-status');
+
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="spinner"></span>Loading...';
+  statusEl.textContent = 'Loading template...';
+
+  try {
+    const template = await fetchTemplate();
+    textarea.value = template;
+    document.getElementById('tl-modal-overlay').style.display = 'flex';
+    statusEl.textContent = 'Template loaded (' + template.length + ' chars). Edit and click Save.';
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+    tlShowMsg('error', 'Failed to load template for editing: ' + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '💾 Save Template';
+  }
+}
+
+function closeTemplateEditor() {
+  document.getElementById('tl-modal-overlay').style.display = 'none';
+  document.getElementById('tl-editor-status').textContent = '';
+}
+
+async function saveTemplateEditor() {
+  const textarea = document.getElementById('tl-editor-textarea');
+  const saveBtn = document.getElementById('tl-save-btn');
+  const statusEl = document.getElementById('tl-editor-status');
+  const template = textarea.value;
+
+  if (!template || template.trim().length === 0) {
+    statusEl.textContent = '⚠️ Template cannot be empty.';
+    return;
+  }
+
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="spinner"></span>Saving...';
+  statusEl.textContent = 'Saving template...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/thankletter-template', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ template }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      statusEl.textContent = '❌ ' + data.error;
+      tlShowMsg('error', 'Failed to save template: ' + data.error);
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '💾 Save Template';
+      return;
+    }
+
+    currentTemplate = template;
+    statusEl.textContent = '✅ Template saved successfully!';
+    tlShowMsg('success', '✅ Thank letter template updated successfully.');
+
+    // Close modal after short delay
+    setTimeout(() => {
+      closeTemplateEditor();
+      // Re-enable edit button
+      document.getElementById('tl-edit-btn').disabled = false;
+    }, 1200);
+  } catch (err) {
+    statusEl.textContent = '❌ Network error: ' + err.message;
+    tlShowMsg('error', 'Network error while saving template: ' + err.message);
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '💾 Save Template';
+  }
+}
+
+async function resetToDefaultTemplate() {
+  if (!confirm('Are you sure you want to reset the thank-you letter template to the default version? This cannot be undone.')) {
+    return;
+  }
+
+  const resetBtn = document.getElementById('tl-reset-btn');
+  resetBtn.disabled = true;
+  resetBtn.innerHTML = '<span class="spinner"></span>Resetting...';
+  tlShowMsg('', '');
+
+  try {
+    // Fetch the current default by passing an empty string (triggers server to re-seed from default)
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    // To reset, we send the current template back - but we need the default.
+    // Instead, we'll read the default from ThankLetterTemplate.html via a special approach:
+    // First, fetch the default by calling the API with a reset flag approach.
+    // The simplest: just load the current template and let the admin edit manually,
+    // OR we set an empty blob key and let the function re-seed on next GET.
+    // Better approach: call POST with a special marker to trigger reset.
+
+    // We'll use a direct approach: fetch the template, then POST to clear it.
+    // But there's no explicit "reset" in the API. Let me add a simple approach:
+    // The default template is the one from ThankLetterTemplate.html. We'll fetch it
+    // from the static file URL and then POST it back.
+
+    tlShowMsg('', '');
+    tlShowMsg('success', 'Fetching default template...');
+
+    // Fetch the default template from the static file URL
+    const defaultRes = await fetch('/ThankLetterTemplate.html');
+    if (!defaultRes.ok) {
+      // If the static file isn't available (production), we need the server to provide a default.
+      // Reset by posting an empty instruction - the server might handle it.
+      // But the server doesn't have a reset endpoint. We'll handle it by opening the editor
+      // with an empty/instructive message.
+      tlShowMsg('error', 'Default template file not found on server. Please edit the template manually in the editor.');
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = '↩️ Reset to Default';
+      return;
+    }
+
+    let defaultTemplate = await defaultRes.text();
+
+    // Validate that the default has all placeholders
+    const required = ['[donor-name]', '[donation-amount]', '[donation-date]', '[donor-mail-id]'];
+    const missing = required.filter(p => !defaultTemplate.includes(p));
+    if (missing.length > 0) {
+      tlShowMsg('error', 'Default template is missing placeholders: ' + missing.join(', ') + '. Cannot reset.');
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = '↩️ Reset to Default';
+      return;
+    }
+
+    // POST the default template back
+    const saveRes = await fetch('/razorpay/thankletter-template', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ template: defaultTemplate }),
+    });
+
+    const saveData = await saveRes.json();
+
+    if (saveData.error) {
+      tlShowMsg('error', 'Failed to reset template: ' + saveData.error);
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = '↩️ Reset to Default';
+      return;
+    }
+
+    currentTemplate = defaultTemplate;
+    tlShowMsg('success', '✅ Template has been reset to the default version (' + defaultTemplate.length + ' chars).');
+  } catch (err) {
+    tlShowMsg('error', 'Error resetting template: ' + err.message);
+  } finally {
+    resetBtn.disabled = false;
+    resetBtn.innerHTML = '↩️ Reset to Default';
+  }
+}
+
 async function logout() {
   try {
     const token = localStorage.getItem('vazhai_session');
@@ -1140,6 +1387,32 @@ async function logout() {
   window.location.href = '/';
 }
 </script>
+
+<!-- Template Editor Modal -->
+<div id="tl-modal-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeTemplateEditor()">
+  <div style="background:white;border-radius:12px;max-width:800px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 30px rgba(0,0,0,0.15);" onclick="event.stopPropagation()">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;font-size:18px;color:var(--green-dark);">✏️ Edit Thank You Letter Template</h3>
+      <button onclick="closeTemplateEditor()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);padding:0 4px;">&times;</button>
+    </div>
+    <div style="padding:16px 20px;background:#f7fafc;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-light);line-height:1.6;">
+      Edit the HTML template below. The following placeholders will be replaced dynamically when sending emails:
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donor-name]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donation-amount]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donation-date]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donor-mail-id]</code>.
+      <br><span style="color:#d32f2f;">⚠️ Do not remove these placeholders or the email will be incomplete.</span>
+    </div>
+    <div style="flex:1;overflow:auto;padding:16px 20px;">
+      <textarea id="tl-editor-textarea" style="width:100%;min-height:400px;font-family:monospace;font-size:13px;padding:14px;border:2px solid var(--border);border-radius:8px;resize:vertical;outline:none;line-height:1.5;" spellcheck="false"></textarea>
+    </div>
+    <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+      <div style="flex:1;font-size:12px;color:var(--text-light);align-self:center;" id="tl-editor-status"></div>
+      <button class="btn-primary btn-outline" onclick="closeTemplateEditor()" style="padding:10px 20px;">Cancel</button>
+      <button class="btn-primary" id="tl-save-btn" onclick="saveTemplateEditor()" style="padding:10px 24px;">💾 Save Template</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
