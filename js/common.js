@@ -120,10 +120,11 @@ function copyLink(id) {
     const data = await res.json();
 
     if (data.authenticated) {
-      // Replace login link with email link to dashboard
+      // Replace login link with user name + icon link to dashboard
       const authFloat = document.getElementById('auth-float');
       if (authFloat) {
-        authFloat.innerHTML = `<a href="/dashboard" id="auth-float-email">${data.email}</a>`;
+        const displayName = data.name || data.email;
+        authFloat.innerHTML = `<a href="/dashboard" id="auth-float-email"><span class="user-icon">👤</span> ${displayName}</a>`;
       }
     }
   } catch (e) {
