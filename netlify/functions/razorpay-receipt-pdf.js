@@ -138,7 +138,7 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
         .text('# 341/157, T.H. Road, Kaladipet, Thiruvottiyur, Chennai – 600 019', 120, 79);
 
       // ── Receipt Title ──
-      doc.moveTo(50, 108).lineTo(545, 108).strokeColor(borderGray).lineWidth(1).stroke();
+      doc.moveTo(120, 108).lineTo(545, 108).strokeColor(borderGray).lineWidth(1).stroke();
 
       doc.fontSize(18).font('Helvetica-Bold').fillColor(greenDark)
         .text('DONATION RECEIPT', 50, 123, { align: 'center' });
@@ -163,31 +163,41 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
       doc.fontSize(11).font('Helvetica-Bold').fillColor('#ffffff')
         .text('DONOR DETAILS', 55, 200);
 
-      // Helper for donor info lines — using per-character font switching for mixed English/Tamil
-      function donorLabel(label, x, y) {
-        doc.fontSize(10).font('Helvetica-Bold').fillColor(textColor).text(label, x, y);
-      }
-
-      // donorValue handles mixed English+Tamil text using whole-string font selection
-      // If text contains any Unicode characters, render entire string with NotoSansTamil
-      // (which supports Latin characters too), otherwise use Helvetica.
-      function donorValue(text, x, y, opts) {
+      // Render text using the appropriate font.
+      // NotoSansTamil includes Latin glyphs, so for any string containing Tamil
+      // characters we can render the entire string in NotoSansTamil and both
+      // Tamil and English will display correctly. Pure ASCII strings use Helvetica.
+      function renderMixedText(doc, text, x, y, opts) {
         if (!text || text === '—') {
           doc.fontSize(10).font('Helvetica').fillColor('#555').text('—', x, y, opts || {});
           return;
         }
+        opts = opts || {};
         doc.fontSize(10).fillColor('#555');
+
+        // If text contains any Tamil/Unicode characters, use NotoSansTamil
+        // (it supports both Tamil and Latin glyphs). Otherwise use Helvetica.
         if (hasUnicodeFont && hasUnicode(text)) {
           doc.font('NotoSansTamil');
         } else {
           doc.font('Helvetica');
         }
-        doc.text(text, x, y, opts || {});
+
+        // Use PDFKit's native text() which handles line wrapping and multiline
+        // properly via its own layout engine.
+        doc.text(text, x, y, opts);
+      }
+
+      function donorLabel(label, x, y) {
+        doc.fontSize(10).font('Helvetica-Bold').fillColor(textColor).text(label, x, y);
+      }
+
+      function donorValue(text, x, y, opts) {
+        renderMixedText(doc, text, x, y, opts, 16);
       }
 
       const donorY = 224;
       donorLabel('Name:', 55, donorY);
-      // For name, we also want per-character switching
       donorValue(userName, 110, donorY);
 
       donorLabel('Email:', 55, donorY + 20);
