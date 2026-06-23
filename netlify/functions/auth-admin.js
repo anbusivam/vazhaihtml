@@ -72,14 +72,16 @@ exports.handler = async function (event, context) {
     if (event.httpMethod === 'POST') {
       const { action, email: targetEmail, roles, role } = JSON.parse(event.body || '{}');
 
-      if (!targetEmail) {
-        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Email is required.' }) };
+      if (action !== 'bulk-update') {
+        if (!targetEmail) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Email is required.' }) };
+        }
       }
 
-      const normalizedEmail = targetEmail.toLowerCase().trim();
+      const normalizedEmail = targetEmail ? targetEmail.toLowerCase().trim() : '';
 
       // Cannot change admin emails
-      if (ADMIN_EMAILS.includes(normalizedEmail)) {
+      if (normalizedEmail && ADMIN_EMAILS.includes(normalizedEmail)) {
         return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Cannot modify admin users.' }) };
       }
 

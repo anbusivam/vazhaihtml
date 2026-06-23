@@ -281,6 +281,118 @@
       font-size: 12px;
       color: var(--text-light);
     }
+    /* Row-level edit button */
+    .edit-row-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 4px 6px;
+      font-size: 13px;
+      color: var(--text-light);
+      transition: all 0.15s;
+    }
+    .edit-row-btn:hover {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--green-dark);
+    }
+    .edit-row-btn.editing {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+      color: white;
+    }
+    /* Readonly cell text */
+    .cell-readonly {
+      display: block;
+      font-size: 12px;
+      color: var(--text);
+      padding: 4px 2px;
+      min-height: 22px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 48px;
+      overflow-y: auto;
+    }
+    .cell-readonly.empty {
+      color: #bbb;
+      font-style: italic;
+    }
+    .cell-readonly.address-cell,
+    .cell-readonly.notes-cell {
+      cursor: pointer;
+    }
+    .cell-readonly.address-cell:hover,
+    .cell-readonly.notes-cell:hover {
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+    /* Zoomed field overlay */
+    .zoom-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .zoom-overlay.open {
+      display: flex;
+    }
+    .zoom-modal {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+      max-width: 600px;
+      width: 100%;
+      padding: 24px;
+      position: relative;
+    }
+    .zoom-modal h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      color: var(--green-dark);
+    }
+    .zoom-modal textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+    }
+    .zoom-modal textarea:focus {
+      border-color: var(--green);
+    }
+    .zoom-modal .zoom-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+    /* Table column widths */
+    .users-table .col-edit { width: 44px; text-align: center; }
+    .users-table .col-email { min-width: 200px; }
+    .users-table .col-name { min-width: 140px; }
+    .users-table .col-phone { min-width: 130px; }
+    .users-table .col-pan { min-width: 110px; }
+    .users-table .col-address { min-width: 200px; max-width: 260px; }
+    .users-table .col-tamil { min-width: 130px; }
+    .users-table .col-notes { min-width: 180px; max-width: 240px; }
+    .users-table .col-roles { min-width: 180px; }
+    .users-table .col-dates { min-width: 100px; }
+    /* Hide inputs by default when not editing */
+    .users-table .edit-mode-field { display: none; }
+    .users-table tr.editing .edit-mode-field { display: block; }
+    .users-table tr.editing .cell-readonly { display: none; }
+    .users-table tr.editing .cell-readonly.address-cell,
+    .users-table tr.editing .cell-readonly.notes-cell { display: none; }
     @media (max-width: 768px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; }
       .users-table { font-size: 12px; }
@@ -330,6 +442,7 @@
         <table class="users-table">
           <thead>
             <tr>
+              <th style="width:40px;text-align:center;">Edit</th>
               <th>Email</th>
               <th>Name</th>
               <th>Phone</th>
@@ -657,6 +770,11 @@ function onRoleChange(email) {
   }
 }
 
+function formatRolesDisplay(roles) {
+  if (!roles || roles.length === 0) return '<span class="cell-readonly empty">default</span>';
+  return roles.map(r => `<span class="role-badge" style="background:var(--green-light);color:var(--green-dark);padding:2px 6px;border-radius:4px;font-size:11px;margin-right:3px;">${r}</span>`).join(' ');
+}
+
 async function loadUsers() {
   document.getElementById('users-loading').style.display = 'block';
   document.getElementById('users-empty').style.display = 'none';
@@ -687,6 +805,7 @@ async function loadUsers() {
   
   for (const user of data.users) {
     const tr = document.createElement('tr');
+    tr.dataset.email = user.email;
     
     const roles = getRolesArray(user);
     const safeEmail = user.email.replace(/[@.]/g, '_');
@@ -711,9 +830,11 @@ async function loadUsers() {
     
     const isHardcodedAdmin = SYSTEM_ADMINS.includes(user.email);
     
-    let rolesHtml = '';
+    let rolesEditHtml = '';
+    let rolesReadHtml = '';
     if (isHardcodedAdmin) {
-      rolesHtml = '<span class="user-status"><span class="active">🔒 System Admin</span></span>';
+      rolesReadHtml = '<span class="user-status"><span class="active">🔒 System Admin</span></span>';
+      rolesEditHtml = rolesReadHtml;
     } else {
       const checkboxes = ALL_ROLES.map(r => {
         const checked = roles.includes(r) ? 'checked' : '';
@@ -722,24 +843,147 @@ async function loadUsers() {
           ${r}
         </label>`;
       }).join('');
-      rolesHtml = `<div class="role-checkboxes" id="role-cbs-${safeEmail}" data-email="${safeEmail}" data-field="roles">${checkboxes}</div>`;
+      rolesEditHtml = `<div class="role-checkboxes edit-mode-field" id="role-cbs-${safeEmail}" data-email="${safeEmail}" data-field="roles">${checkboxes}</div>`;
+      rolesReadHtml = formatRolesDisplay(roles);
     }
     
     tr.innerHTML = `
-      <td><strong>${user.email}</strong></td>
-      <td><input type="text" data-email="${safeEmail}" data-field="name" value="${escapeHtml(user.name || '')}" onchange="onFieldChange('${user.email}', 'name', this.value)"></td>
-      <td><input type="text" data-email="${safeEmail}" data-field="phone" value="${escapeHtml(user.phone || '')}" onchange="onFieldChange('${user.email}', 'phone', this.value)"></td>
-      <td><input type="text" data-email="${safeEmail}" data-field="pan" value="${escapeHtml(user.pan || '')}" style="text-transform:uppercase;" onchange="onFieldChange('${user.email}', 'pan', this.value.toUpperCase())"></td>
-      <td><textarea data-email="${safeEmail}" data-field="address" onchange="onFieldChange('${user.email}', 'address', this.value)" rows="1">${escapeHtml(user.address || '')}</textarea></td>
-      <td><input type="text" data-email="${safeEmail}" data-field="tamilName" value="${escapeHtml(user.tamilName || '')}" onchange="onFieldChange('${user.email}', 'tamilName', this.value)"></td>
-      <td><textarea data-email="${safeEmail}" data-field="notes" onchange="onFieldChange('${user.email}', 'notes', this.value)" rows="1">${escapeHtml(user.notes || '')}</textarea></td>
-      <td style="min-width:180px;">${rolesHtml}</td>
-      <td class="readonly">${firstLoginDisplay}</td>
-      <td class="readonly">${lastLoginDisplay}</td>
-      <td class="readonly">${addedAtDisplay}</td>
+      <td class="col-edit">
+        <button class="edit-row-btn" onclick="toggleEditRow('${user.email}', this)" title="Edit this row">✏️</button>
+      </td>
+      <td class="col-email"><strong>${escapeHtml(user.email)}</strong></td>
+      <td class="col-name">
+        <span class="cell-readonly ${user.name ? '' : 'empty'}">${escapeHtml(user.name || '—')}</span>
+        <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="name" value="${escapeHtml(user.name || '')}" onchange="onFieldChange('${user.email}', 'name', this.value)">
+      </td>
+      <td class="col-phone">
+        <span class="cell-readonly ${user.phone ? '' : 'empty'}">${escapeHtml(user.phone || '—')}</span>
+        <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="phone" value="${escapeHtml(user.phone || '')}" onchange="onFieldChange('${user.email}', 'phone', this.value)">
+      </td>
+      <td class="col-pan">
+        <span class="cell-readonly ${user.pan ? '' : 'empty'}">${escapeHtml(user.pan || '—')}</span>
+        <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="pan" value="${escapeHtml(user.pan || '')}" style="text-transform:uppercase;" onchange="onFieldChange('${user.email}', 'pan', this.value.toUpperCase())">
+      </td>
+      <td class="col-address">
+        <span class="cell-readonly address-cell ${user.address ? '' : 'empty'}" onclick="openZoomField('${user.email}', 'address')">${escapeHtml(user.address || '— (click to view/edit)')}</span>
+        <textarea class="edit-mode-field" data-email="${safeEmail}" data-field="address" onchange="onFieldChange('${user.email}', 'address', this.value)" rows="2">${escapeHtml(user.address || '')}</textarea>
+      </td>
+      <td class="col-tamil">
+        <span class="cell-readonly ${user.tamilName ? '' : 'empty'}">${escapeHtml(user.tamilName || '—')}</span>
+        <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="tamilName" value="${escapeHtml(user.tamilName || '')}" onchange="onFieldChange('${user.email}', 'tamilName', this.value)">
+      </td>
+      <td class="col-notes">
+        <span class="cell-readonly notes-cell ${user.notes ? '' : 'empty'}" onclick="openZoomField('${user.email}', 'notes')">${escapeHtml(user.notes || '— (click to view/edit)')}</span>
+        <textarea class="edit-mode-field" data-email="${safeEmail}" data-field="notes" onchange="onFieldChange('${user.email}', 'notes', this.value)" rows="2">${escapeHtml(user.notes || '')}</textarea>
+      </td>
+      <td class="col-roles">
+        <div class="roles-readonly">${rolesReadHtml}</div>
+        ${rolesEditHtml}
+      </td>
+      <td class="col-dates readonly">${firstLoginDisplay}</td>
+      <td class="col-dates readonly">${lastLoginDisplay}</td>
+      <td class="col-dates readonly">${addedAtDisplay}</td>
     `;
     tbody.appendChild(tr);
   }
+}
+
+// Toggle edit mode for a specific row
+function toggleEditRow(email, btn) {
+  const tr = btn.closest('tr');
+  if (!tr) return;
+  
+  const isEditing = tr.classList.toggle('editing');
+  btn.classList.toggle('editing', isEditing);
+  btn.title = isEditing ? 'Editing — click to view' : 'Edit this row';
+  btn.textContent = isEditing ? '✅' : '✏️';
+  
+  if (!isEditing) {
+    // When leaving edit mode, revert unsaved changes? No, just show readonly.
+    // Update readonly cells to reflect current data
+    updateReadonlyDisplay(email);
+  }
+}
+
+// Update readonly display from current data
+function updateReadonlyDisplay(email) {
+  const user = usersData.find(u => u.email === email);
+  if (!user) return;
+  const tr = document.querySelector(`tr[data-email="${email}"]`);
+  if (!tr) return;
+  
+  const fields = ['name', 'phone', 'pan', 'address', 'tamilName', 'notes'];
+  for (const field of fields) {
+    const val = (user[field] || '').toString();
+    const span = tr.querySelector(`.cell-readonly[onclick*="${field}"]`) || tr.querySelector(`.col-${field} .cell-readonly`);
+    if (span) {
+      if (field === 'address' || field === 'notes') {
+        span.textContent = val || '— (click to view/edit)';
+      } else {
+        span.textContent = val || '—';
+      }
+      span.classList.toggle('empty', !val);
+    }
+  }
+  
+  // Update roles display
+  const rolesDisplay = tr.querySelector('.roles-readonly');
+  if (rolesDisplay) {
+    rolesDisplay.innerHTML = formatRolesDisplay(user.roles || []);
+  }
+}
+
+// Zoomed field overlay for address/notes
+function openZoomField(email, field) {
+  const user = usersData.find(u => u.email === email);
+  if (!user) return;
+  
+  const overlay = document.getElementById('zoom-field-overlay');
+  const titleEl = document.getElementById('zoom-field-title');
+  const textarea = document.getElementById('zoom-field-textarea');
+  
+  titleEl.textContent = `✏️ Edit ${field.charAt(0).toUpperCase() + field.slice(1)} — ${email}`;
+  textarea.value = user[field] || '';
+  textarea.dataset.email = email;
+  textarea.dataset.field = field;
+  overlay.classList.add('open');
+  
+  // Focus the textarea
+  setTimeout(() => textarea.focus(), 100);
+}
+
+function closeZoomField() {
+  document.getElementById('zoom-field-overlay').classList.remove('open');
+}
+
+function saveZoomField() {
+  const textarea = document.getElementById('zoom-field-textarea');
+  const email = textarea.dataset.email;
+  const field = textarea.dataset.field;
+  const value = textarea.value;
+  
+  onFieldChange(email, field, value);
+  
+  // Update readonly display
+  updateReadonlyDisplay(email);
+  
+  // Also update the edit-mode input if available
+  const safeEmail = email.replace(/[@.]/g, '_');
+  const editInput = document.querySelector(`[data-email="${safeEmail}"][data-field="${field}"]`);
+  if (editInput) {
+    editInput.value = value;
+    const orig = originalUsersData[email];
+    if (orig) {
+      const originalValue = orig[field] || '';
+      if (value !== originalValue) {
+        editInput.classList.add('dirty');
+      } else {
+        editInput.classList.remove('dirty');
+      }
+    }
+  }
+  
+  closeZoomField();
 }
 
 function escapeHtml(str) {
@@ -1603,6 +1847,18 @@ async function logout() {
       <div style="flex:1;font-size:12px;color:var(--text-light);align-self:center;" id="tl-editor-status"></div>
       <button class="btn-primary btn-outline" onclick="closeTemplateEditor()" style="padding:10px 20px;">Cancel</button>
       <button class="btn-primary" id="tl-save-btn" onclick="saveTemplateEditor()" style="padding:10px 24px;">💾 Save Template</button>
+    </div>
+  </div>
+</div>
+
+<!-- Zoom Field Overlay -->
+<div id="zoom-field-overlay" class="zoom-overlay" onclick="if(event.target===this)closeZoomField()">
+  <div class="zoom-modal">
+    <h3 id="zoom-field-title">✏️ Edit Field</h3>
+    <textarea id="zoom-field-textarea" placeholder="Enter value..."></textarea>
+    <div class="zoom-actions">
+      <button class="btn-primary btn-outline" onclick="closeZoomField()">Cancel</button>
+      <button class="btn-primary" onclick="saveZoomField()">💾 Save</button>
     </div>
   </div>
 </div>
