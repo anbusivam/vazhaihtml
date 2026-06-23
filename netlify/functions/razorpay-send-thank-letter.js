@@ -86,6 +86,17 @@ exports.handler = async function (event, context) {
     const donorEmail = payment.email || payment.donorEmail || '';
     const donationAmount = '₹' + Number(payment.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
+    // ── Look up the user's saved profile for [user-name] and [user-tamilname] ──
+    let userName = '';
+    let userTamilName = '';
+    if (donorEmail) {
+      const userProfile = await store.get(`user:${donorEmail.toLowerCase().trim()}`, { type: 'json' });
+      if (userProfile) {
+        userName = userProfile.name || '';
+        userTamilName = userProfile.tamilName || '';
+      }
+    }
+
     // ── Format donation date from payment's createdAt timestamp ──
     let donationDate = '';
     if (payment.createdAt) {
@@ -134,12 +145,30 @@ exports.handler = async function (event, context) {
       return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ status: 'error', message: 'Failed to read thank letter template.' }) };
     }
 
+    // ── Validate [user-name] and [user-tamilname] placeholders ──
+    if (templateHtml.includes('[user-name]') && !userName) {
+      return {
+        statusCode: 400,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ status: 'error', message: 'Template uses [user-name] but the donor\'s profile does not have a name saved. Please update the user\'s profile first.' }),
+      };
+    }
+    if (templateHtml.includes('[user-tamilname]') && !userTamilName) {
+      return {
+        statusCode: 400,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ status: 'error', message: 'Template uses [user-tamilname] but the donor\'s profile does not have a Tamil name saved. Please update the user\'s profile first.' }),
+      };
+    }
+
     // ── Replace placeholders ──
     const emailHtml = templateHtml
       .replace(/\[donor-name\]/g, donorName)
       .replace(/\[donation-amount\]/g, donationAmount)
       .replace(/\[donation-date\]/g, donationDate)
-      .replace(/\[donor-mail-id\]/g, donorEmail);
+      .replace(/\[donor-mail-id\]/g, donorEmail)
+      .replace(/\[user-name\]/g, userName)
+      .replace(/\[user-tamilname\]/g, userTamilName);
 
     // ── Send via Resend ──
     const resendApiKey = process.env.RESEND_API_KEY;

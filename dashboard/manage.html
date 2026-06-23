@@ -572,10 +572,12 @@
     <h2>📝 Thank You Letter Template</h2>
     <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Edit the HTML template used when sending thank-you emails to donors. The template supports these placeholders that will be replaced dynamically:</p>
     <div style="background:#f7fafc;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;border:1px solid #e2e8f0;">
-      <code><strong>[donor-name]</strong></code> — Donor's name<br>
+      <code><strong>[donor-name]</strong></code> — Donor's name (from payment)<br>
       <code><strong>[donation-amount]</strong></code> — Donation amount (e.g. ₹1,000.00)<br>
       <code><strong>[donation-date]</strong></code> — Date of donation<br>
-      <code><strong>[donor-mail-id]</strong></code> — Donor's email address
+      <code><strong>[donor-mail-id]</strong></code> — Donor's email address<br>
+      <code><strong>[user-name]</strong></code> — User's saved name (from profile; <span style="color:#d32f2f;">error if missing</span>)<br>
+      <code><strong>[user-tamilname]</strong></code> — User's saved Tamil name (from profile; <span style="color:#d32f2f;">error if missing</span>)
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="btn-primary" id="tl-view-btn" onclick="loadThankLetterTemplate()">📄 View Current Template</button>
@@ -810,7 +812,12 @@ async function loadUsers() {
     const roles = getRolesArray(user);
     const safeEmail = user.email.replace(/[@.]/g, '_');
     
-    // Build the user data object
+    const isHardcodedAdmin = SYSTEM_ADMINS.includes(user.email);
+    
+    // For system admin users being viewed by a non-system-admin, mark as readonly
+    const currentUserIsSystemAdmin = SYSTEM_ADMINS.includes(currentUserEmail);
+    const canEditThisRow = !isHardcodedAdmin || currentUserIsSystemAdmin;
+    
     const currentData = {
       email: user.email,
       name: user.name || '',
@@ -827,8 +834,6 @@ async function loadUsers() {
     const firstLoginDisplay = user.firstLogin ? new Date(user.firstLogin).toLocaleDateString() : '—';
     const lastLoginDisplay = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : '—';
     const addedAtDisplay = user.addedAt ? new Date(user.addedAt).toLocaleDateString() : '—';
-    
-    const isHardcodedAdmin = SYSTEM_ADMINS.includes(user.email);
     
     let rolesEditHtml = '';
     let rolesReadHtml = '';
@@ -847,9 +852,13 @@ async function loadUsers() {
       rolesReadHtml = formatRolesDisplay(roles);
     }
     
+    const editBtnDisabled = canEditThisRow ? '' : ' disabled';
+    const editBtnTitle = canEditThisRow ? 'Edit this row' : 'Cannot edit system admin';
+    const editBtnHtml = canEditThisRow ? '✏️' : '🔒';
+    
     tr.innerHTML = `
       <td class="col-edit">
-        <button class="edit-row-btn" onclick="toggleEditRow('${user.email}', this)" title="Edit this row">✏️</button>
+        <button class="edit-row-btn" onclick="toggleEditRow('${user.email}', this)" title="${editBtnTitle}"${editBtnDisabled}>${editBtnHtml}</button>
       </td>
       <td class="col-email"><strong>${escapeHtml(user.email)}</strong></td>
       <td class="col-name">
@@ -892,6 +901,12 @@ async function loadUsers() {
 function toggleEditRow(email, btn) {
   const tr = btn.closest('tr');
   if (!tr) return;
+  
+  // Prevent editing system admin rows if current user is not a system admin
+  if (SYSTEM_ADMINS.includes(email) && !SYSTEM_ADMINS.includes(currentUserEmail)) {
+    showMsg('error', 'You cannot edit system admin profiles.');
+    return;
+  }
   
   const isEditing = tr.classList.toggle('editing');
   btn.classList.toggle('editing', isEditing);
@@ -1772,7 +1787,7 @@ async function resetToDefaultTemplate() {
 
     let defaultTemplate = await defaultRes.text();
 
-    // Validate that the default has all placeholders
+    // Validate that the default has the essential placeholders
     const required = ['[donor-name]', '[donation-amount]', '[donation-date]', '[donor-mail-id]'];
     const missing = required.filter(p => !defaultTemplate.includes(p));
     if (missing.length > 0) {
@@ -1837,8 +1852,10 @@ async function logout() {
       <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donor-name]</code>,
       <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donation-amount]</code>,
       <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donation-date]</code>,
-      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donor-mail-id]</code>.
-      <br><span style="color:#d32f2f;">⚠️ Do not remove these placeholders or the email will be incomplete.</span>
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donor-mail-id]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[user-name]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[user-tamilname]</code>.
+      <br><span style="color:#d32f2f;">⚠️ [user-name] and [user-tamilname] require the donor's profile to have those fields saved, otherwise an error will be shown.</span>
     </div>
     <div style="flex:1;overflow:auto;padding:16px 20px;">
       <textarea id="tl-editor-textarea" style="width:100%;min-height:400px;font-family:monospace;font-size:13px;padding:14px;border:2px solid var(--border);border-radius:8px;resize:vertical;outline:none;line-height:1.5;" spellcheck="false"></textarea>
