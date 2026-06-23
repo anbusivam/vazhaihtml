@@ -345,6 +345,7 @@
               <th>Status</th>
               <th>Method</th>
               <th>PAN</th>
+              <th>Thank Letter</th>
             </tr>
           </thead>
           <tbody id="ph-tbody"></tbody>
@@ -711,6 +712,18 @@ async function loadPaymentHistory(page) {
       const methodDisplay = p.method ? p.method.toUpperCase() : '—';
       const amountDisplay = '₹' + Number(p.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
+      // ── Thank Letter column ──
+      const thankLetterSent = p.thankLetterSent;
+      let thankLetterHtml = '';
+      if (thankLetterSent === 'Yes') {
+        thankLetterHtml = '<span style="font-size:11px;color:#2e7d32;font-weight:600;">✅ Thanked</span> <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 8px;margin-left:4px;" onclick="sendThankLetter(\'' + (p.paymentId || p.id) + '\', this, true)">🔄 Resend</button>';
+      } else if (p.status !== 'captured') {
+        thankLetterHtml = '<span style="font-size:11px;color:#999;">—</span>';
+      } else {
+        // Not yet sent and payment is captured: show the Send button
+        thankLetterHtml = `<button class="btn-primary btn-sm" style="font-size:10px;padding:4px 10px;" onclick="sendThankLetter('${p.paymentId || p.id}', this, false)">✉️ Send</button>`;
+      }
+
       tr.innerHTML = `
         <td style="white-space:nowrap;font-size:12px;">${dateStr}</td>
         <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${p.paymentId || p.id || ''}">${p.paymentId || p.id || '—'}</td>
@@ -720,6 +733,7 @@ async function loadPaymentHistory(page) {
         <td>${statusBadge}</td>
         <td style="font-size:12px;">${methodDisplay}</td>
         <td style="font-size:12px;">${p.donorPan || '—'}</td>
+        <td style="white-space:nowrap;text-align:center;">${thankLetterHtml}</td>
       `;
       tbody.appendChild(tr);
     }
@@ -1065,6 +1079,53 @@ function exportSyncCSV() {
   a.download = `sync-report_${lastSyncReport.from}_to_${lastSyncReport.to}.csv`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ========== Thank Letter Functions ==========
+
+async function sendThankLetter(paymentId, btnEl, force) {
+  // Disable button and show loading state
+  const originalText = btnEl.textContent;
+  btnEl.disabled = true;
+  btnEl.innerHTML = '<span class="spinner"></span>Sending...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/send-thank-letter', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ paymentId, force }),
+    });
+
+    const data = await res.json();
+
+    if (data.status === 'thanked') {
+      // Show success in the ph-msg area
+      phShowMsg('success', '✅ ' + data.message);
+      // Update the button cell to show "Thanked" badge + resend button
+      btnEl.outerHTML = '<span style="font-size:11px;color:#2e7d32;font-weight:600;">✅ Thanked</span> <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 8px;margin-left:4px;" onclick="sendThankLetter(\'' + paymentId + '\', this, true)">🔄 Resend</button>';
+    } else if (data.status === 'ignored') {
+      phShowMsg('success', '⏭️ ' + data.message);
+      btnEl.outerHTML = '<span style="font-size:11px;color:#999;">—</span>';
+    } else if (data.status === 'error') {
+      phShowMsg('error', '❌ ' + data.message);
+      btnEl.disabled = false;
+      btnEl.textContent = originalText;
+    } else {
+      phShowMsg('error', '❌ Unexpected response: ' + (data.message || 'Unknown error'));
+      btnEl.disabled = false;
+      btnEl.textContent = originalText;
+    }
+  } catch (err) {
+    phShowMsg('error', '❌ Network error: ' + err.message);
+    btnEl.disabled = false;
+    btnEl.textContent = originalText;
+  }
 }
 
 async function logout() {

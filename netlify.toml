@@ -305,3 +305,8 @@
   from = "/razorpay/admin-payments"
   to = "/.netlify/functions/razorpay-admin-payments"
   status = 200
+
+[[redirects]]
+  from = "/razorpay/send-thank-letter"
+  to = "/.netlify/functions/razorpay-send-thank-letter"
+  status = 200
