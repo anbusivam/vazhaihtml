@@ -109,8 +109,15 @@ exports.handler = async function (event, context) {
       }
 
       // Validate template contains required placeholders
-      const requiredPlaceholders = ['[donor-name]', '[donation-amount]', '[donation-date]', '[donor-mail-id]'];
-      const missing = requiredPlaceholders.filter(p => !template.includes(p));
+      // At least one name placeholder is required: [donor-name], [user-name], or [user-tamilname]
+      const hasNamePlaceholder = template.includes('[donor-name]') || 
+                                 template.includes('[user-name]') || 
+                                 template.includes('[user-tamilname]');
+      const otherRequired = ['[donation-amount]', '[donation-date]', '[donor-mail-id]'];
+      const missingOther = otherRequired.filter(p => !template.includes(p));
+      const missing = [];
+      if (!hasNamePlaceholder) missing.push('[donor-name] / [user-name] / [user-tamilname]');
+      missing.push(...missingOther);
       if (missing.length > 0) {
         return {
           statusCode: 400,

@@ -572,7 +572,7 @@
     <h2>📝 Thank You Letter Template</h2>
     <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Edit the HTML template used when sending thank-you emails to donors. The template supports these placeholders that will be replaced dynamically:</p>
     <div style="background:#f7fafc;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;border:1px solid #e2e8f0;">
-      <code><strong>[donor-name]</strong></code> — Donor's name (from payment)<br>
+      <code><strong>[donor-name]</strong></code> — Donor's name (from payment; can also use <code>[user-name]</code> or <code>[user-tamilname]</code> instead)<br>
       <code><strong>[donation-amount]</strong></code> — Donation amount (e.g. ₹1,000.00)<br>
       <code><strong>[donation-date]</strong></code> — Date of donation<br>
       <code><strong>[donor-mail-id]</strong></code> — Donor's email address<br>
@@ -1788,8 +1788,15 @@ async function resetToDefaultTemplate() {
     let defaultTemplate = await defaultRes.text();
 
     // Validate that the default has the essential placeholders
-    const required = ['[donor-name]', '[donation-amount]', '[donation-date]', '[donor-mail-id]'];
-    const missing = required.filter(p => !defaultTemplate.includes(p));
+    // At least one name placeholder is required: [donor-name], [user-name], or [user-tamilname]
+    const hasNamePlaceholder = defaultTemplate.includes('[donor-name]') || 
+                               defaultTemplate.includes('[user-name]') || 
+                               defaultTemplate.includes('[user-tamilname]');
+    const otherRequired = ['[donation-amount]', '[donation-date]', '[donor-mail-id]'];
+    const missingOther = otherRequired.filter(p => !defaultTemplate.includes(p));
+    const missing = [];
+    if (!hasNamePlaceholder) missing.push('[donor-name] / [user-name] / [user-tamilname]');
+    missing.push(...missingOther);
     if (missing.length > 0) {
       tlShowMsg('error', 'Default template is missing placeholders: ' + missing.join(', ') + '. Cannot reset.');
       resetBtn.disabled = false;
@@ -1855,6 +1862,7 @@ async function logout() {
       <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donor-mail-id]</code>,
       <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[user-name]</code>,
       <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[user-tamilname]</code>.
+      You may use any of the name placeholders — <code>[donor-name]</code>, <code>[user-name]</code>, or <code>[user-tamilname]</code> — alone or together. The system will use whatever is available.
       <br><span style="color:#d32f2f;">⚠️ [user-name] and [user-tamilname] require the donor's profile to have those fields saved, otherwise an error will be shown.</span>
     </div>
     <div style="flex:1;overflow:auto;padding:16px 20px;">
