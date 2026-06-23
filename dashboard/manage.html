@@ -58,7 +58,7 @@
       font-weight: 600;
     }
     .dashboard-container {
-      max-width: 960px;
+      max-width: 1200px;
       margin: 24px auto;
       padding: 0 20px;
     }
@@ -80,7 +80,8 @@
       flex-wrap: wrap;
       margin-bottom: 16px;
     }
-    .add-user-form input {
+    .add-user-form input,
+    .add-user-form select {
       flex: 1;
       min-width: 200px;
       padding: 10px 14px;
@@ -111,6 +112,7 @@
       background: #ccc;
       cursor: not-allowed;
     }
+    .btn-primary:disabled:hover { background: #ccc; }
     .btn-sm {
       padding: 6px 14px;
       font-size: 12px;
@@ -132,48 +134,69 @@
     .users-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 14px;
+      font-size: 13px;
     }
     .users-table th {
       text-align: left;
-      padding: 10px 12px;
+      padding: 8px 8px;
       border-bottom: 2px solid var(--border);
       color: var(--text-light);
       font-weight: 600;
-      font-size: 12px;
+      font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
     .users-table td {
-      padding: 10px 12px;
+      padding: 6px 8px;
       border-bottom: 1px solid #eee;
       vertical-align: middle;
     }
     .users-table tr:hover td {
       background: #fafafa;
     }
-    .role-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
+    .users-table input[type="text"],
+    .users-table input[type="tel"],
+    .users-table textarea {
+      width: 100%;
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
       font-size: 12px;
-      font-weight: 600;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      background: #f9f9f9;
     }
-    .role-badge.admin { background: #e3f2fd; color: #1565c0; }
-    .role-badge.blogging { background: #fff3e0; color: #e65100; }
-    .role-badge.none { background: #f5f5f5; color: #999; }
+    .users-table input[type="text"]:focus,
+    .users-table input[type="tel"]:focus,
+    .users-table textarea:focus {
+      border-color: var(--green);
+      background: white;
+    }
+    .users-table input[type="text"].dirty,
+    .users-table input[type="tel"].dirty,
+    .users-table textarea.dirty {
+      border-color: #f57c00;
+      background: #fff8e1;
+    }
+    .users-table textarea {
+      resize: vertical;
+      min-height: 28px;
+      max-height: 80px;
+    }
     .role-checkboxes {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 3px;
     }
     .role-checkboxes label {
       display: inline-flex;
       align-items: center;
-      gap: 3px;
-      font-size: 12px;
+      gap: 2px;
+      font-size: 11px;
       cursor: pointer;
-      padding: 2px 6px;
+      padding: 2px 5px;
       border-radius: 4px;
       border: 1px solid var(--border);
       background: #fafafa;
@@ -193,20 +216,6 @@
       border-color: var(--green-dark);
       font-weight: 600;
     }
-    .role-save-btn {
-      padding: 3px 10px;
-      font-size: 11px;
-      border-radius: 4px;
-      background: var(--green-dark);
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-      font-weight: 600;
-      margin-left: 4px;
-    }
-    .role-save-btn:hover { background: var(--green); }
-    .role-save-btn:disabled { background: #ccc; cursor: not-allowed; }
     .msg {
       padding: 10px 14px;
       border-radius: 8px;
@@ -248,16 +257,34 @@
     }
     .back-link:hover { text-decoration: underline; }
     .user-status {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-light);
     }
     .user-status .active { color: var(--green); font-weight: 600; }
     .user-status .pending { color: #e65100; font-weight: 600; }
-    @media (max-width: 640px) {
+    .table-wrap {
+      overflow-x: auto;
+    }
+    .bulk-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .bulk-actions .save-status {
+      font-size: 13px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    .users-table td.readonly {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    @media (max-width: 768px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; }
-      .users-table { font-size: 13px; }
-      .users-table th, .users-table td { padding: 8px 6px; }
-      .role-select { font-size: 12px; padding: 4px 6px; }
+      .users-table { font-size: 12px; }
+      .users-table th, .users-table td { padding: 4px 4px; }
       .add-user-form { flex-direction: column; }
       .add-user-form input { min-width: auto; }
     }
@@ -291,21 +318,34 @@
   <!-- Users List Card -->
   <div class="card">
     <h2>👥 Registered Users</h2>
-    <div id="users-loading" class="loading-state">Loading users...</div>
-    <div id="users-empty" class="empty-state" style="display:none;">No users found.</div>
+    <div class="bulk-actions">
+      <button class="btn-primary" id="fetch-users-btn" onclick="loadUsers()">📥 Fetch Users</button>
+      <button class="btn-primary btn-outline" id="save-all-btn" onclick="saveAllChanges()" disabled>💾 Save All Changes</button>
+      <span class="save-status" id="dirty-count"></span>
+    </div>
+    <div id="users-loading" class="loading-state" style="display:none;">Loading users...</div>
+    <div id="users-empty" class="empty-state" style="display:none;">No users found. Click "Fetch Users" to load.</div>
     <div id="users-table-wrap" style="display:none;">
-      <table class="users-table">
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Role</th>
-            <th>First Login</th>
-            <th>Last Login</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="users-tbody"></tbody>
-      </table>
+      <div class="table-wrap">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>PAN</th>
+              <th>Address</th>
+              <th>Tamil Name</th>
+              <th>Notes</th>
+              <th>Roles</th>
+              <th>First Login</th>
+              <th>Last Login</th>
+              <th>Added At</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -452,7 +492,11 @@ const ALL_ROLES = ['admin', 'volunteer', 'donor', 'blogger'];
 
 const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
 let currentUserEmail = null;
-let userRolesCache = {}; // email -> roles array (for tracking changes)
+
+// Track original user data and dirty state
+let usersData = []; // { email, name, phone, pan, address, tamilName, notes, roles, ... }
+let originalUsersData = {}; // keyed by email -> snapshot at load time
+let dirtyEmails = new Set();
 
 document.addEventListener('DOMContentLoaded', async function() {
   const res = await fetch('/auth/check');
@@ -482,7 +526,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('payment-history-card').style.display = 'none';
   }
 
-  loadUsers();
+  // Do NOT load users automatically — only when "Fetch Users" is clicked
 });
 
 function showMsg(type, text) {
@@ -524,14 +568,107 @@ function rolesToBadges(roles) {
   }).join(' ');
 }
 
+function markDirty(email) {
+  dirtyEmails.add(email);
+  updateSaveButton();
+}
+
+function markClean(email) {
+  dirtyEmails.delete(email);
+  updateSaveButton();
+}
+
+function updateSaveButton() {
+  const btn = document.getElementById('save-all-btn');
+  const status = document.getElementById('dirty-count');
+  if (dirtyEmails.size > 0) {
+    btn.disabled = false;
+    status.textContent = `${dirtyEmails.size} user(s) have unsaved changes`;
+  } else {
+    btn.disabled = true;
+    status.textContent = '';
+  }
+}
+
+// Track changes on any input field
+function onFieldChange(email, field, value) {
+  const user = usersData.find(u => u.email === email);
+  if (!user) return;
+  
+  const orig = originalUsersData[email];
+  if (!orig) return;
+  
+  // Update the working data
+  user[field] = value;
+  
+  // Compare with original to determine if dirty
+  const changed = JSON.stringify(user) !== JSON.stringify(orig);
+  if (changed) {
+    markDirty(email);
+  } else {
+    markClean(email);
+  }
+  
+  // Highlight the field if changed from original
+  const safeEmail = email.replace(/[@.]/g, '_');
+  const input = document.querySelector(`[data-email="${safeEmail}"][data-field="${field}"]`);
+  if (input) {
+    const originalValue = orig[field] || '';
+    const currentValue = (value || '').toString();
+    if (currentValue !== originalValue) {
+      input.classList.add('dirty');
+    } else {
+      input.classList.remove('dirty');
+    }
+  }
+}
+
+// Track role checkbox changes
+function onRoleChange(email) {
+  const safeEmail = email.replace(/[@.]/g, '_');
+  const checked = [];
+  document.querySelectorAll(`[data-email="${safeEmail}"][data-field="roles"] input[type="checkbox"]:checked`).forEach(cb => {
+    checked.push(cb.value);
+  });
+  
+  // Update working data
+  const user = usersData.find(u => u.email === email);
+  if (user) {
+    user.roles = checked;
+    
+    const orig = originalUsersData[email];
+    const origRoles = orig ? (orig.roles || []).sort().join(',') : '';
+    const newRoles = checked.sort().join(',');
+    
+    if (origRoles !== newRoles) {
+      markDirty(email);
+      // Highlight the role container
+      const container = document.getElementById(`role-cbs-${safeEmail}`);
+      if (container) container.style.borderColor = '#f57c00';
+    } else {
+      // Check if still dirty from other fields
+      const changed = JSON.stringify(user) !== JSON.stringify(orig);
+      if (!changed) {
+        markClean(email);
+      }
+      const container = document.getElementById(`role-cbs-${safeEmail}`);
+      if (container) container.style.borderColor = '';
+    }
+  }
+}
+
 async function loadUsers() {
   document.getElementById('users-loading').style.display = 'block';
   document.getElementById('users-empty').style.display = 'none';
   document.getElementById('users-table-wrap').style.display = 'none';
+  document.getElementById('fetch-users-btn').disabled = true;
+  document.getElementById('fetch-users-btn').innerHTML = '<span class="spinner"></span>Loading...';
   
   const data = await apiCall('GET');
   
   document.getElementById('users-loading').style.display = 'none';
+  document.getElementById('fetch-users-btn').disabled = false;
+  document.getElementById('fetch-users-btn').innerHTML = '📥 Fetch Users';
   
   if (!data.users || data.users.length === 0) {
     document.getElementById('users-empty').style.display = 'block';
@@ -542,90 +679,158 @@ async function loadUsers() {
   const tbody = document.getElementById('users-tbody');
   tbody.innerHTML = '';
   
+  // Reset tracking
+  usersData = [];
+  originalUsersData = {};
+  dirtyEmails.clear();
+  updateSaveButton();
+  
   for (const user of data.users) {
     const tr = document.createElement('tr');
     
     const roles = getRolesArray(user);
-    const hasAdminRole = roles.includes('admin');
-    const badgesHtml = rolesToBadges(roles);
+    const safeEmail = user.email.replace(/[@.]/g, '_');
+    
+    // Build the user data object
+    const currentData = {
+      email: user.email,
+      name: user.name || '',
+      phone: user.phone || '',
+      pan: user.pan || '',
+      address: user.address || '',
+      tamilName: user.tamilName || '',
+      notes: user.notes || '',
+      roles: [...roles],
+    };
+    usersData.push(currentData);
+    originalUsersData[user.email] = JSON.parse(JSON.stringify(currentData));
     
     const firstLoginDisplay = user.firstLogin ? new Date(user.firstLogin).toLocaleDateString() : '—';
     const lastLoginDisplay = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : '—';
+    const addedAtDisplay = user.addedAt ? new Date(user.addedAt).toLocaleDateString() : '—';
     
-    // Determine if user has ever logged in
-    const statusHtml = user.firstLogin 
-      ? '<span class="active">● Logged in</span>' 
-      : '<span class="pending">○ Not yet</span>';
-    
-    // Actions column: for hardcoded system admin accounts, show static text; for others, show editable checkboxes
     const isHardcodedAdmin = SYSTEM_ADMINS.includes(user.email);
     
-    let actionsHtml = '';
+    let rolesHtml = '';
     if (isHardcodedAdmin) {
-      actionsHtml = '<span class="user-status"><span class="active">System Admin</span></span>';
+      rolesHtml = '<span class="user-status"><span class="active">🔒 System Admin</span></span>';
     } else {
-      // Create checkboxes for each possible role
       const checkboxes = ALL_ROLES.map(r => {
         const checked = roles.includes(r) ? 'checked' : '';
         return `<label class="${checked ? 'active' : ''}">
-          <input type="checkbox" value="${r}" ${checked} onchange="onRoleCheckboxChange(this, '${user.email}')">
+          <input type="checkbox" value="${r}" ${checked} onchange="onRoleChange('${user.email}')">
           ${r}
         </label>`;
       }).join('');
-      
-      actionsHtml = `<div class="role-checkboxes" id="role-cbs-${user.email.replace(/[@.]/g, '_')}">
-        ${checkboxes}
-        <button class="role-save-btn" id="save-roles-${user.email.replace(/[@.]/g, '_')}" onclick="saveRoles('${user.email}')" disabled>Save</button>
-      </div>`;
+      rolesHtml = `<div class="role-checkboxes" id="role-cbs-${safeEmail}" data-email="${safeEmail}" data-field="roles">${checkboxes}</div>`;
     }
     
     tr.innerHTML = `
-      <td><strong>${user.email}</strong><br><span class="user-status">${statusHtml}</span></td>
-      <td>${badgesHtml}</td>
-      <td>${firstLoginDisplay}</td>
-      <td>${lastLoginDisplay}</td>
-      <td>${actionsHtml}</td>
+      <td><strong>${user.email}</strong></td>
+      <td><input type="text" data-email="${safeEmail}" data-field="name" value="${escapeHtml(user.name || '')}" onchange="onFieldChange('${user.email}', 'name', this.value)"></td>
+      <td><input type="text" data-email="${safeEmail}" data-field="phone" value="${escapeHtml(user.phone || '')}" onchange="onFieldChange('${user.email}', 'phone', this.value)"></td>
+      <td><input type="text" data-email="${safeEmail}" data-field="pan" value="${escapeHtml(user.pan || '')}" style="text-transform:uppercase;" onchange="onFieldChange('${user.email}', 'pan', this.value.toUpperCase())"></td>
+      <td><textarea data-email="${safeEmail}" data-field="address" onchange="onFieldChange('${user.email}', 'address', this.value)" rows="1">${escapeHtml(user.address || '')}</textarea></td>
+      <td><input type="text" data-email="${safeEmail}" data-field="tamilName" value="${escapeHtml(user.tamilName || '')}" onchange="onFieldChange('${user.email}', 'tamilName', this.value)"></td>
+      <td><textarea data-email="${safeEmail}" data-field="notes" onchange="onFieldChange('${user.email}', 'notes', this.value)" rows="1">${escapeHtml(user.notes || '')}</textarea></td>
+      <td style="min-width:180px;">${rolesHtml}</td>
+      <td class="readonly">${firstLoginDisplay}</td>
+      <td class="readonly">${lastLoginDisplay}</td>
+      <td class="readonly">${addedAtDisplay}</td>
     `;
     tbody.appendChild(tr);
-    
-    // Store current roles to detect changes
-    userRolesCache[user.email] = [...roles];
   }
 }
 
-function onRoleCheckboxChange(cb, email) {
-  const safeEmail = email.replace(/[@.]/g, '_');
-  const saveBtn = document.getElementById(`save-roles-${safeEmail}`);
-  if (saveBtn) {
-    saveBtn.disabled = false;
-  }
-}
-
-async function saveRoles(email) {
-  const safeEmail = email.replace(/[@.]/g, '_');
-  const saveBtn = document.getElementById(`save-roles-${safeEmail}`);
-  saveBtn.disabled = true;
-  saveBtn.textContent = 'Saving...';
-  
-  // Collect checked roles
-  const roles = [];
-  document.querySelectorAll(`#role-cbs-${safeEmail} input[type="checkbox"]:checked`).forEach(cb => {
-    roles.push(cb.value);
+function escapeHtml(str) {
+  if (!str) return '';
+  var amp = String.fromCharCode(38);
+  return str.replace(/[&<>"']/g, function(m) {
+    if (m === '&') return amp + 'amp;';
+    if (m === '<') return amp + 'lt;';
+    if (m === '>') return amp + 'gt;';
+    if (m === '"') return amp + 'quot;';
+    return amp + '#039;';
   });
+}
+
+async function saveAllChanges() {
+  if (dirtyEmails.size === 0) {
+    showMsg('success', 'No changes to save.');
+    return;
+  }
   
-  const data = await apiCall('POST', { action: 'set-roles', email, roles });
+  const saveBtn = document.getElementById('save-all-btn');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="spinner"></span>Saving...';
+  showMsg('', '');
   
-  saveBtn.textContent = 'Save';
+  // Build the payload of changed users
+  const changedUsers = [];
+  for (const email of dirtyEmails) {
+    const user = usersData.find(u => u.email === email);
+    if (!user) continue;
+    
+    const orig = originalUsersData[email];
+    if (!orig) continue;
+    
+    // Only include fields that actually changed
+    const update = { email: user.email };
+    let hasChanges = false;
+    
+    for (const field of ['name', 'phone', 'pan', 'address', 'tamilName', 'notes']) {
+      const origVal = (orig[field] || '').toString().trim();
+      const newVal = (user[field] || '').toString().trim();
+      if (origVal !== newVal) {
+        update[field] = newVal;
+        hasChanges = true;
+      }
+    }
+    
+    // Check roles
+    const origRoles = (orig.roles || []).sort().join(',');
+    const newRoles = (user.roles || []).sort().join(',');
+    if (origRoles !== newRoles) {
+      update.roles = user.roles;
+      hasChanges = true;
+    }
+    
+    if (hasChanges) {
+      changedUsers.push(update);
+    }
+  }
+  
+  if (changedUsers.length === 0) {
+    showMsg('success', 'No changes to save (fields reverted).');
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '💾 Save All Changes';
+    dirtyEmails.clear();
+    updateSaveButton();
+    return;
+  }
+  
+  const data = await apiCall('POST', { action: 'bulk-update', users: changedUsers });
+  
+  saveBtn.disabled = false;
+  saveBtn.innerHTML = '💾 Save All Changes';
   
   if (data.error) {
     showMsg('error', data.error);
-    loadUsers(); // reload to reset
+    return;
+  }
+  
+  if (data.results && data.results.errors && data.results.errors.length > 0) {
+    const errs = data.results.errors.map(e => `${e.email}: ${e.error}`).join('; ');
+    showMsg('error', `Saved ${data.results.updated.length} user(s), but ${data.results.errors.length} error(s): ${errs}`);
+    // Reload to reset state for successfully updated users
+    await loadUsers();
     return;
   }
   
   showMsg('success', data.message);
-  userRolesCache[email] = [...roles];
-  loadUsers();
+  
+  // Reload users to refresh the original data
+  await loadUsers();
 }
 
 async function addUser() {
@@ -654,7 +859,11 @@ async function addUser() {
   
   showMsg('success', data.message);
   emailInput.value = '';
-  loadUsers();
+  // Reload users if they've already been fetched
+  const tableWrap = document.getElementById('users-table-wrap');
+  if (tableWrap.style.display !== 'none') {
+    await loadUsers();
+  }
 }
 
 // ========== Payment History (All Users, Paginated) ==========
@@ -987,8 +1196,11 @@ async function syncAndUpdate() {
 
     syncShowMsg('success', '✅ Sync completed successfully!');
 
-    // Reload user list to reflect any updates
-    loadUsers();
+    // Reload user list to reflect any updates (if users are loaded)
+    const tableWrap = document.getElementById('users-table-wrap');
+    if (tableWrap.style.display !== 'none') {
+      await loadUsers();
+    }
 
   } catch (err) {
     document.getElementById('sync-loading').style.display = 'none';
@@ -1302,35 +1514,12 @@ async function resetToDefaultTemplate() {
   tlShowMsg('', '');
 
   try {
-    // Fetch the current default by passing an empty string (triggers server to re-seed from default)
-    const token = localStorage.getItem('vazhai_session');
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    // To reset, we send the current template back - but we need the default.
-    // Instead, we'll read the default from ThankLetterTemplate.html via a special approach:
-    // First, fetch the default by calling the API with a reset flag approach.
-    // The simplest: just load the current template and let the admin edit manually,
-    // OR we set an empty blob key and let the function re-seed on next GET.
-    // Better approach: call POST with a special marker to trigger reset.
-
-    // We'll use a direct approach: fetch the template, then POST to clear it.
-    // But there's no explicit "reset" in the API. Let me add a simple approach:
-    // The default template is the one from ThankLetterTemplate.html. We'll fetch it
-    // from the static file URL and then POST it back.
-
     tlShowMsg('', '');
     tlShowMsg('success', 'Fetching default template...');
 
     // Fetch the default template from the static file URL
     const defaultRes = await fetch('/ThankLetterTemplate.html');
     if (!defaultRes.ok) {
-      // If the static file isn't available (production), we need the server to provide a default.
-      // Reset by posting an empty instruction - the server might handle it.
-      // But the server doesn't have a reset endpoint. We'll handle it by opening the editor
-      // with an empty/instructive message.
       tlShowMsg('error', 'Default template file not found on server. Please edit the template manually in the editor.');
       resetBtn.disabled = false;
       resetBtn.innerHTML = '↩️ Reset to Default';
@@ -1350,6 +1539,10 @@ async function resetToDefaultTemplate() {
     }
 
     // POST the default template back
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const saveRes = await fetch('/razorpay/thankletter-template', {
       method: 'POST',
       headers,

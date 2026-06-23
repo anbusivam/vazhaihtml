@@ -143,7 +143,68 @@ exports.handler = async function (event, context) {
         };
       }
 
-      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid action. Use "set-role" or "add-user".' }) };
+      if (action === 'bulk-update') {
+        // users is an array of { email, name, phone, pan, address, tamilName, notes, roles }
+        const { users } = JSON.parse(event.body || '{}');
+        if (!Array.isArray(users) || users.length === 0) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Users array is required and must not be empty.' }) };
+        }
+
+        const results = { updated: [], errors: [] };
+
+        for (const u of users) {
+          const userEmail = u.email.toLowerCase().trim();
+          if (ADMIN_EMAILS.includes(userEmail)) {
+            results.errors.push({ email: userEmail, error: 'Cannot modify admin users.' });
+            continue;
+          }
+
+          const userData = await store.get(`user:${userEmail}`, { type: 'json' });
+          if (!userData) {
+            results.errors.push({ email: userEmail, error: 'User not found.' });
+            continue;
+          }
+
+          // Apply editable fields
+          if (u.name !== undefined) userData.name = u.name.trim();
+          if (u.phone !== undefined) userData.phone = u.phone.trim();
+          if (u.pan !== undefined) userData.pan = u.pan.trim().toUpperCase();
+          if (u.address !== undefined) userData.address = u.address.trim();
+          if (u.tamilName !== undefined) userData.tamilName = u.tamilName.trim();
+          if (u.notes !== undefined) userData.notes = u.notes.trim();
+
+          // Apply roles if provided (must be valid array)
+          if (u.roles !== undefined) {
+            if (!Array.isArray(u.roles)) {
+              results.errors.push({ email: userEmail, error: 'Roles must be an array.' });
+              continue;
+            }
+            for (const r of u.roles) {
+              if (!VALID_ROLES.includes(r)) {
+                results.errors.push({ email: userEmail, error: `Invalid role "${r}".` });
+                continue;
+              }
+            }
+            userData.roles = u.roles;
+          }
+
+          userData.lastUpdated = new Date().toISOString();
+          await store.setJSON(`user:${userEmail}`, userData);
+          results.updated.push(userEmail);
+        }
+
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            success: true,
+            message: `Updated ${results.updated.length} user(s)${results.errors.length > 0 ? `, ${results.errors.length} error(s).` : '.'}`,
+            results,
+          }),
+        };
+      }
+
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid action. Use "set-roles", "add-user", or "bulk-update".' }) };
     }
 
     return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
