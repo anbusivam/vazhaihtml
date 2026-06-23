@@ -147,6 +147,7 @@ exports.handler = async function (event, context) {
       },
       body: JSON.stringify({
         from: fromEmail,
+        reply_to: replyToEmail,
         to: donorEmail,
         cc: 'vazhai.connect@gmail.com',
         subject: 'Thank You for Your Donation — Vazhai',
