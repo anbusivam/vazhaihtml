@@ -313,10 +313,73 @@
       border-color: var(--green-dark);
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Payment table scroll hint (mobile) ── */
+    .table-scroll-wrap {
+      position: relative;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .table-scroll-wrap::after {
+      content: '';
+      position: sticky;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.85));
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .table-scroll-wrap:not(.scrolled-to-end)::after {
+      opacity: 1;
+    }
+    .table-scroll-wrap::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-scroll-wrap::-webkit-scrollbar-track {
+      background: #f0f0f0;
+      border-radius: 3px;
+    }
+    .table-scroll-wrap::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+    /* Always show scrollbar on mobile so users see it's scrollable */
+    .table-scroll-wrap {
+      -ms-overflow-style: auto;
+      scrollbar-width: thin;
+    }
+    @media (hover: none) and (pointer: coarse) {
+      .table-scroll-wrap::-webkit-scrollbar {
+        height: 6px;
+        display: block !important;
+      }
+    }
+
     @media (max-width: 640px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; }
       .blog-post-item { flex-wrap:wrap; }
       .blog-post-actions { width:100%; justify-content:flex-end; }
+      .users-table { min-width: 600px; }
+      .users-table thead th {
+        font-size: 11px;
+        padding: 8px 8px;
+        white-space: nowrap;
+      }
+      .users-table tbody td {
+        font-size: 12px;
+        padding: 8px 8px;
+        white-space: nowrap;
+      }
+      .col-date { min-width: 80px; }
+      .col-amount { min-width: 70px; }
+      .col-receipt { min-width: 70px; }
+    }
+    @media (max-width: 400px) {
+      .users-table { min-width: 520px; }
     }
   </style>
 </head>
@@ -424,17 +487,16 @@
       <div id="payment-error" style="display:none;padding:12px 16px;background:#fef2f2;border-radius:8px;margin-bottom:12px;font-size:13px;color:#d32f2f;"></div>
       <div id="payment-table-wrap" style="display:none;">
         <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">Total: <strong id="payment-count">0</strong> donation(s)</div>
-        <div style="overflow-x:auto;">
+        <div class="table-scroll-wrap" id="payment-scroll-wrap">
           <table class="users-table" style="min-width:700px;">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Payment ID</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Method</th>
-                <th>PAN</th>
-                <th>Receipt</th>
+                <th class="col-date">Date</th>
+                <th class="col-amount">Amount</th>
+                <th class="col-receipt">Receipt</th>
+                <th class="col-id">Payment ID</th>
+                <th class="col-status">Status</th>
+                <th class="col-method">Method</th>
               </tr>
             </thead>
             <tbody id="payment-tbody"></tbody>
@@ -966,8 +1028,9 @@ async function loadPaymentHistory() {
 
     for (const p of data.payments) {
       const tr = document.createElement('tr');
-      const dateStr = p.createdAtDate
-        ? new Date(p.createdAtDate).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      const d = p.createdAtDate ? new Date(p.createdAtDate) : null;
+      const dateStr = d
+        ? String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getFullYear()).slice(-2)
         : '—';
       const statusBadge = p.status === 'captured'
         ? '<span class="role-badge" style="background:#e8f5e9;color:#2e7d32;">✅ Captured</span>'
@@ -980,15 +1043,27 @@ async function loadPaymentHistory() {
         : `<span style="font-size:11px;color:#999;">—</span>`;
 
       tr.innerHTML = `
-        <td style="white-space:nowrap;font-size:12px;">${dateStr}</td>
-        <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${p.paymentId}">${p.paymentId}</td>
-        <td style="font-weight:600;">${amountDisplay}</td>
-        <td>${statusBadge}</td>
-        <td style="font-size:12px;">${methodDisplay}</td>
-        <td style="font-size:12px;">${p.donorPan || '—'}</td>
-        <td>${receiptCell}</td>
+        <td class="cell-date" data-label="Date">${dateStr}</td>
+        <td class="cell-amount" data-label="Amount">${amountDisplay}</td>
+        <td class="cell-receipt" data-label="Receipt">${receiptCell}</td>
+        <td class="cell-id" data-label="Payment ID">${p.paymentId}</td>
+        <td class="cell-status" data-label="Status">${statusBadge}</td>
+        <td class="cell-method" data-label="Method">${methodDisplay}</td>
       `;
       tbody.appendChild(tr);
+    }
+
+    // ── Scroll hint: detect when scrolled to end ──
+    const scrollWrap = document.getElementById('payment-scroll-wrap');
+    if (scrollWrap) {
+      const updateScrollEnd = () => {
+        const atEnd = scrollWrap.scrollLeft + scrollWrap.clientWidth >= scrollWrap.scrollWidth - 2;
+        scrollWrap.classList.toggle('scrolled-to-end', atEnd);
+      };
+      scrollWrap.addEventListener('scroll', updateScrollEnd);
+      // Check on load and on resize
+      setTimeout(updateScrollEnd, 50);
+      window.addEventListener('resize', updateScrollEnd);
     }
   } catch (err) {
     loading.style.display = 'none';
