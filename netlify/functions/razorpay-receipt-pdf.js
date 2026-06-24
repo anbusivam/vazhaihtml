@@ -190,7 +190,7 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
       // ── Receipt Number & Date line ──
       doc.moveTo(50, 152).lineTo(545, 152).strokeColor(borderGray).lineWidth(1).stroke();
 
-      const receiptId = payment.paymentId || '—';
+      const receiptId = (payment.receiptNo && payment.receiptNo.trim()) ? payment.receiptNo : (payment.paymentId || '—');
       const receiptDate = formatDate(payment.createdAtDate || payment.createdAt * 1000);
 
       doc.fontSize(10).font('Helvetica-Bold').fillColor(textColor);
