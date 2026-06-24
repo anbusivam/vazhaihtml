@@ -281,6 +281,112 @@
       font-size: 12px;
       color: var(--text-light);
     }
+    /* Manual receipt styles */
+    .manual-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: #fff3e0;
+      color: #e65100;
+      border: 1px solid #ffcc80;
+      letter-spacing: 0.3px;
+    }
+    .mr-edit-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 3px 6px;
+      font-size: 12px;
+      color: var(--text-light);
+      transition: all 0.15s;
+    }
+    .mr-edit-btn:hover {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--green-dark);
+    }
+    .mr-edit-btn.editing {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+      color: white;
+    }
+    .users-table tr.mr-editing .mr-readonly { display: none; }
+    .users-table tr.mr-editing .mr-edit-field { display: block; }
+    .mr-edit-field {
+      display: none;
+      width: 100%;
+      padding: 4px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      background: #f9f9f9;
+    }
+    .mr-edit-field:focus {
+      border-color: var(--green);
+      background: white;
+    }
+    .mr-edit-field.mr-select {
+      min-width: 140px;
+    }
+    .file-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .file-upload-area:hover {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .file-upload-area.dragover {
+      border-color: var(--green-dark);
+      background: #c8e6c9;
+    }
+    .file-upload-area input[type="file"] {
+      display: none;
+    }
+    .csv-preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 12px;
+    }
+    .csv-preview-table th {
+      background: #f7fafc;
+      padding: 6px 8px;
+      border-bottom: 2px solid var(--border);
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+    .csv-preview-table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .csv-errors {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #d32f2f;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .csv-errors .error-item {
+      padding: 2px 0;
+    }
     /* Row-level edit button */
     .edit-row-btn {
       background: none;
@@ -592,6 +698,72 @@
       </div>
       <div id="tl-preview-content" style="padding:16px;max-height:400px;overflow:auto;font-size:12px;background:white;white-space:pre-wrap;word-break:break-word;font-family:monospace;"></div>
     </div>
+  </div>
+
+  <!-- Manual Receipt Upload Card -->
+  <div class="card" id="manual-receipt-card">
+    <h2>🧾 Manual Receipt Upload</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Upload manual receipts for payments received via <strong>Account Transfer</strong> or <strong>Cash</strong>. You can upload single entries via the form or batch upload via CSV.</p>
+
+    <!-- Single Entry Form -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:16px;background:#f7fafc;border-radius:8px;border:1px solid #e2e8f0;">
+      <input type="text" id="mr-name" placeholder="Donor Name *" style="flex:1;min-width:160px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
+      <input type="email" id="mr-email" placeholder="Donor Email *" style="flex:1;min-width:160px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
+      <input type="number" id="mr-amount" placeholder="Amount (₹) *" style="flex:1;min-width:120px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
+      <select id="mr-method" style="flex:1;min-width:140px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;background:white;">
+        <option value="">Select Method *</option>
+        <option value="ACCOUNTTRANSFER">Account Transfer</option>
+        <option value="CASH">Cash</option>
+      </select>
+      <input type="date" id="mr-date" style="flex:1;min-width:140px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
+      <button class="btn-primary" onclick="uploadManualReceipt()">➕ Add Receipt</button>
+    </div>
+
+    <!-- CSV Upload Area -->
+    <details style="margin-bottom:16px;">
+      <summary style="cursor:pointer;font-weight:600;font-size:14px;color:var(--green-dark);padding:8px 0;">📁 Upload via CSV file</summary>
+      <div style="margin-top:12px;">
+        <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">
+          <strong>Your CSV should have these columns (header row required):</strong><br>
+          <code>DATE, RECEIPT NO, PAYMENT ID, NAME, EMAIL, AMOUNT, METHOD, PAN, notes</code>
+        </div>
+        <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;line-height:1.6;">
+          <strong>Column details:</strong><br>
+          • <strong>DATE</strong> — Payment date (YYYY-MM-DD format)<br>
+          • <strong>RECEIPT NO</strong> — Receipt number for your records (stored as receiptNo)<br>
+          • <strong>PAYMENT ID</strong> — Bank transaction ID (used as the payment ID). <em>Must be unique.</em><br>
+          • <strong>NAME</strong> — Donor's full name (required)<br>
+          • <strong>EMAIL</strong> — Donor's email address (required)<br>
+          • <strong>AMOUNT</strong> — Donation amount in ₹ (required, numbers only)<br>
+          • <strong>METHOD</strong> — <code>ACCOUNTTRANSFER</code> or <code>CASH</code> (required)<br>
+          • <strong>PAN</strong> — Donor's PAN card number (optional)<br>
+          • <strong>notes</strong> — Any notes/comments (optional)<br>
+          <br>
+          <strong>Example row:</strong><br>
+          <code>2026-06-24,2006/06/24/01,Q2345234234234234,John Doe,john@example.com,1000,ACCOUNTTRANSFER,ABCDE1234F,Monthly donation</code>
+        </div>
+        <div class="file-upload-area" id="csv-drop-area" onclick="document.getElementById('csv-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">📂 Drag & drop a CSV file here, or click to select</div>
+          <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSVFile(event)">
+          <div id="csv-file-name" style="font-size:13px;font-weight:600;color:var(--green-dark);display:none;"></div>
+        </div>
+        <div id="csv-preview-area" style="display:none;margin-top:12px;">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📊 Preview (<span id="csv-row-count">0</span> rows)</div>
+          <div style="max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
+            <table class="csv-preview-table" id="csv-preview-table">
+              <thead id="csv-preview-thead"></thead>
+              <tbody id="csv-preview-tbody"></tbody>
+            </table>
+          </div>
+          <div class="csv-errors" id="csv-validation-errors" style="display:none;"></div>
+          <div style="margin-top:12px;display:flex;gap:8px;">
+            <button class="btn-primary" onclick="uploadCSV()" id="csv-upload-btn">📤 Upload CSV</button>
+            <button class="btn-primary btn-outline" onclick="clearCSVPreview()">🗑 Clear</button>
+          </div>
+        </div>
+        <div id="csv-upload-result" class="msg" style="margin-top:8px;"></div>
+      </div>
+    </details>
   </div>
 
   <a href="javascript:void(0)" onclick="window.history.back()" class="back-link">← Back</a>
@@ -1147,95 +1319,7 @@ function updatePaginationUI(pagination) {
   nextBtn.disabled = !pagination.hasNext;
 }
 
-async function loadPaymentHistory(page) {
-  const limit = parseInt(document.getElementById('ph-page-size').value);
-
-  // Reset UI
-  phShowMsg('', '');
-  document.getElementById('ph-loading').style.display = 'block';
-  document.getElementById('ph-empty').style.display = 'none';
-  document.getElementById('ph-table-wrap').style.display = 'none';
-  document.getElementById('ph-refresh-btn').disabled = true;
-
-  try {
-    const token = localStorage.getItem('vazhai_session');
-    const headers = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch(`/razorpay/admin-payments?page=${page}&limit=${limit}`, { headers });
-    const data = await res.json();
-
-    document.getElementById('ph-loading').style.display = 'none';
-    document.getElementById('ph-refresh-btn').disabled = false;
-
-    if (data.error) {
-      phShowMsg('error', data.error);
-      return;
-    }
-
-    const payments = data.payments || [];
-    const pagination = data.pagination || { page: 1, totalPages: 1, totalCount: 0, hasNext: false, hasPrev: false };
-
-    if (payments.length === 0) {
-      document.getElementById('ph-empty').style.display = 'block';
-      updatePaginationUI(pagination);
-      currentPage = pagination.page;
-      return;
-    }
-
-    currentPage = pagination.page;
-    document.getElementById('ph-table-wrap').style.display = 'block';
-    updatePaginationUI(pagination);
-
-    const tbody = document.getElementById('ph-tbody');
-    tbody.innerHTML = '';
-
-    for (const p of payments) {
-      const tr = document.createElement('tr');
-
-      const ts = p.createdAt || p.createdAtDate ? new Date((p.createdAt || 0) * 1000).getTime() : Date.now();
-      const dateStr = new Date(ts).toLocaleString('en-IN', {
-        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-      });
-
-      const statusBadge = p.status === 'captured'
-        ? '<span class="role-badge" style="background:#e8f5e9;color:#2e7d32;">✅ Captured</span>'
-        : '<span class="role-badge" style="background:#fef2f2;color:#d32f2f;">❌ ' + (p.status || 'Unknown') + '</span>';
-
-      const methodDisplay = p.method ? p.method.toUpperCase() : '—';
-      const amountDisplay = '₹' + Number(p.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-
-      // ── Thank Letter column ──
-      const thankLetterSent = p.thankLetterSent;
-      let thankLetterHtml = '';
-      if (thankLetterSent === 'Yes') {
-        thankLetterHtml = '<span style="font-size:11px;color:#2e7d32;font-weight:600;">✅ Thanked</span> <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 8px;margin-left:4px;" onclick="sendThankLetter(\'' + (p.paymentId || p.id) + '\', this, true)">🔄 Resend</button>';
-      } else if (p.status !== 'captured') {
-        thankLetterHtml = '<span style="font-size:11px;color:#999;">—</span>';
-      } else {
-        // Not yet sent and payment is captured: show the Send button
-        thankLetterHtml = `<button class="btn-primary btn-sm" style="font-size:10px;padding:4px 10px;" onclick="sendThankLetter('${p.paymentId || p.id}', this, false)">✉️ Send</button>`;
-      }
-
-      tr.innerHTML = `
-        <td style="white-space:nowrap;font-size:12px;">${dateStr}</td>
-        <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${p.paymentId || p.id || ''}">${p.paymentId || p.id || '—'}</td>
-        <td><strong>${p.donorName || '—'}</strong></td>
-        <td>${p.email || p.donorEmail || '—'}</td>
-        <td style="font-weight:600;">${amountDisplay}</td>
-        <td>${statusBadge}</td>
-        <td style="font-size:12px;">${methodDisplay}</td>
-        <td style="font-size:12px;">${p.donorPan || '—'}</td>
-        <td style="white-space:nowrap;text-align:center;">${thankLetterHtml}</td>
-      `;
-      tbody.appendChild(tr);
-    }
-  } catch (err) {
-    document.getElementById('ph-loading').style.display = 'none';
-    document.getElementById('ph-refresh-btn').disabled = false;
-    phShowMsg('error', 'Network error: ' + err.message);
-  }
-}
+// (loadPaymentHistory is now defined later with enhanced manual receipt support)
 
 // ========== Razorpay Payment Functions ==========
 
@@ -1831,6 +1915,434 @@ async function resetToDefaultTemplate() {
   } finally {
     resetBtn.disabled = false;
     resetBtn.innerHTML = '↩️ Reset to Default';
+  }
+}
+
+function mrShowMsg(type, text) {
+  const el = document.getElementById('csv-upload-result');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+async function uploadManualReceipt() {
+  const name = document.getElementById('mr-name').value.trim();
+  const email = document.getElementById('mr-email').value.trim();
+  const amount = parseFloat(document.getElementById('mr-amount').value);
+  const method = document.getElementById('mr-method').value;
+  const date = document.getElementById('mr-date').value;
+
+  if (!name) { alert('Donor name is required'); return; }
+  if (!email || !email.includes('@')) { alert('Valid donor email is required'); return; }
+  if (!amount || amount <= 0) { alert('Valid positive amount is required'); return; }
+  if (!method) { alert('Payment method is required'); return; }
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Uploading...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/manual-receipt', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ donorName: name, donorEmail: email, amount, method, paymentDate: date || undefined }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      mrShowMsg('error', data.error);
+    } else {
+      mrShowMsg('success', data.message);
+      document.getElementById('mr-name').value = '';
+      document.getElementById('mr-email').value = '';
+      document.getElementById('mr-amount').value = '';
+      document.getElementById('mr-method').value = '';
+      document.getElementById('mr-date').value = '';
+    }
+  } catch (err) {
+    mrShowMsg('error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '➕ Add Receipt';
+  }
+}
+
+// ── CSV file handling ──
+
+let currentCSVRows = [];
+let currentCSVHeaders = [];
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('csv-drop-area').classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('csv-drop-area').classList.remove('dragover');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('csv-drop-area').classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length > 0 && files[0].name.endsWith('.csv')) {
+    readCSVFile(files[0]);
+  } else {
+    mrShowMsg('error', 'Please drop a .csv file');
+  }
+}
+
+function handleCSVFile(event) {
+  const file = event.target.files[0];
+  if (file) readCSVFile(file);
+}
+
+function readCSVFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    processCSVText(text);
+    document.getElementById('csv-file-name').textContent = '📄 ' + file.name;
+    document.getElementById('csv-file-name').style.display = 'block';
+  };
+  reader.readAsText(file);
+}
+
+function processCSVText(text) {
+  const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+  if (lines.length < 2) {
+    mrShowMsg('error', 'CSV file must have a header row and at least one data row.');
+    return;
+  }
+
+  const headers = lines[0].split(',').map(h => h.trim());
+  currentCSVHeaders = headers;
+
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    for (let j = 0; j < lines[i].length; j++) {
+      const ch = lines[i][j];
+      if (ch === '"') { inQuotes = !inQuotes; }
+      else if (ch === ',' && !inQuotes) { values.push(current.trim()); current = ''; }
+      else { current += ch; }
+    }
+    values.push(current.trim());
+    if (values.length === headers.length) {
+      const row = {};
+      for (let j = 0; j < headers.length; j++) {
+        row[headers[j]] = values[j];
+      }
+      rows.push(row);
+    }
+  }
+
+  currentCSVRows = rows;
+
+  // Show preview
+  const previewArea = document.getElementById('csv-preview-area');
+  previewArea.style.display = 'block';
+  document.getElementById('csv-row-count').textContent = rows.length;
+
+  // Build preview table
+  const thead = document.getElementById('csv-preview-thead');
+  const tbody = document.getElementById('csv-preview-tbody');
+  thead.innerHTML = '<tr><th>#</th>' + headers.map(h => '<th>' + escapeHtml(h) + '</th>').join('') + '</tr>';
+  tbody.innerHTML = '';
+  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (i + 1) + '</td>' + headers.map(h => '<td>' + escapeHtml(rows[i][h] || '') + '</td>').join('');
+    tbody.appendChild(tr);
+  }
+
+  // Validate
+  validateCSV(rows);
+}
+
+function validateCSV(rows) {
+  const errors = [];
+  const lowerHeaders = currentCSVHeaders.map(h => h.toLowerCase());
+  
+  // Accept either the user's actual CSV names or the standard field names
+  const hasName = lowerHeaders.some(h => h === 'name' || h === 'donorname');
+  const hasEmail = lowerHeaders.some(h => h === 'email' || h === 'donoremail');
+  const hasAmount = lowerHeaders.some(h => h === 'amount');
+  const hasMethod = lowerHeaders.some(h => h === 'method');
+
+  if (!hasName) errors.push('Missing required column: NAME (or donorName)');
+  if (!hasEmail) errors.push('Missing required column: EMAIL (or donorEmail)');
+  if (!hasAmount) errors.push('Missing required column: AMOUNT');
+  if (!hasMethod) errors.push('Missing required column: METHOD');
+
+  const errorsEl = document.getElementById('csv-validation-errors');
+  if (errors.length > 0) {
+    errorsEl.style.display = 'block';
+    errorsEl.innerHTML = '<div style="font-weight:600;margin-bottom:4px;">⚠️ Validation Errors:</div>' +
+      errors.map(e => '<div class="error-item">• ' + escapeHtml(e) + '</div>').join('');
+  } else {
+    errorsEl.style.display = 'none';
+  }
+}
+
+function clearCSVPreview() {
+  document.getElementById('csv-preview-area').style.display = 'none';
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('csv-file-name').style.display = 'none';
+  document.getElementById('csv-file-name').textContent = '';
+  currentCSVRows = [];
+  currentCSVHeaders = [];
+  mrShowMsg('', '');
+}
+
+async function uploadCSV() {
+  if (currentCSVRows.length === 0) {
+    mrShowMsg('error', 'No CSV data to upload.');
+    return;
+  }
+
+  const btn = document.getElementById('csv-upload-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Uploading...';
+  mrShowMsg('', '');
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/manual-receipt', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ entries: currentCSVRows }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      mrShowMsg('error', data.error);
+    } else {
+      const errors = data.result && data.result.errors ? data.result.errors.length : 0;
+      let msg = data.message;
+      if (errors > 0) {
+        msg += '<details style="margin-top:8px;"><summary>View errors</summary>' +
+          data.result.errors.map(e => '<div class="error-item">• ' + escapeHtml(JSON.stringify(e.error)) + '</div>').join('') +
+          '</details>';
+      }
+      mrShowMsg('success', data.message);
+      clearCSVPreview();
+    }
+  } catch (err) {
+    mrShowMsg('error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📤 Upload CSV';
+  }
+}
+
+// ── Enhanced Payment History with manual badge and inline editing ──
+
+async function loadPaymentHistory(page) {
+  const limit = parseInt(document.getElementById('ph-page-size').value);
+
+  // Reset UI
+  phShowMsg('', '');
+  document.getElementById('ph-loading').style.display = 'block';
+  document.getElementById('ph-empty').style.display = 'none';
+  document.getElementById('ph-table-wrap').style.display = 'none';
+  document.getElementById('ph-refresh-btn').disabled = true;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`/razorpay/admin-payments?page=${page}&limit=${limit}`, { headers });
+    const data = await res.json();
+
+    document.getElementById('ph-loading').style.display = 'none';
+    document.getElementById('ph-refresh-btn').disabled = false;
+
+    if (data.error) {
+      phShowMsg('error', data.error);
+      return;
+    }
+
+    const payments = data.payments || [];
+    const pagination = data.pagination || { page: 1, totalPages: 1, totalCount: 0, hasNext: false, hasPrev: false };
+
+    if (payments.length === 0) {
+      document.getElementById('ph-empty').style.display = 'block';
+      updatePaginationUI(pagination);
+      currentPage = pagination.page;
+      return;
+    }
+
+    currentPage = pagination.page;
+    document.getElementById('ph-table-wrap').style.display = 'block';
+    updatePaginationUI(pagination);
+
+    const tbody = document.getElementById('ph-tbody');
+    tbody.innerHTML = '';
+
+    for (const p of payments) {
+      const tr = document.createElement('tr');
+      const paymentId = p.paymentId || p.id || '';
+      const ts = p.createdAt || p.createdAtDate ? new Date((p.createdAt || 0) * 1000).getTime() : Date.now();
+      const dateStr = new Date(ts).toLocaleString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      });
+
+      const isManual = p.isManualReceipt === true;
+      const manualBadge = isManual ? '<span class="manual-badge">MANUAL</span> ' : '';
+
+      const statusBadge = p.status === 'captured'
+        ? '<span class="role-badge" style="background:#e8f5e9;color:#2e7d32;">✅ Captured</span>'
+        : '<span class="role-badge" style="background:#fef2f2;color:#d32f2f;">❌ ' + (p.status || 'Unknown') + '</span>';
+
+      const methodDisplay = isManual
+        ? '<span class="mr-readonly">' + (p.method || '—').toUpperCase() + '</span>'
+            + '<select class="mr-edit-field mr-select" data-payment-id="' + paymentId + '" data-field="method">'
+            + '<option value="ACCOUNTTRANSFER"' + (p.method === 'ACCOUNTTRANSFER' ? ' selected' : '') + '>ACCOUNT TRANSFER</option>'
+            + '<option value="CASH"' + (p.method === 'CASH' ? ' selected' : '') + '>CASH</option>'
+            + '</select>'
+        : (p.method || '—').toUpperCase();
+
+      const amountDisplay = '₹' + Number(p.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+      // ── Thank Letter column ──
+      const thankLetterSent = p.thankLetterSent;
+      let thankLetterHtml = '';
+      if (isManual) {
+        thankLetterHtml = '<span style="font-size:11px;color:#999;">—</span>';
+      } else if (thankLetterSent === 'Yes') {
+        thankLetterHtml = '<span style="font-size:11px;color:#2e7d32;font-weight:600;">✅ Thanked</span> <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 8px;margin-left:4px;" onclick="sendThankLetter(\'' + paymentId + '\', this, true)">🔄 Resend</button>';
+      } else if (p.status !== 'captured') {
+        thankLetterHtml = '<span style="font-size:11px;color:#999;">—</span>';
+      } else {
+        thankLetterHtml = `<button class="btn-primary btn-sm" style="font-size:10px;padding:4px 10px;" onclick="sendThankLetter('${paymentId}', this, false)">✉️ Send</button>`;
+      }
+
+      // Build edit button and row for manual receipts
+      const editCellHtml = isManual
+        ? '<button class="mr-edit-btn" onclick="toggleManualEditRow(\'' + paymentId + '\', this)" title="Edit this manual receipt">✏️</button>'
+        : '';
+
+      tr.innerHTML = `
+        <td style="white-space:nowrap;font-size:12px;">${dateStr}</td>
+        <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${paymentId}">${manualBadge}${paymentId || '—'}</td>
+        <td class="col-manual-name">
+          <span class="mr-readonly"><strong>${p.donorName || '—'}</strong></span>
+          <input type="text" class="mr-edit-field" data-payment-id="${paymentId}" data-field="donorName" value="${escapeHtml(p.donorName || '')}" placeholder="Name">
+        </td>
+        <td class="col-manual-email">
+          <span class="mr-readonly">${p.email || p.donorEmail || '—'}</span>
+          <input type="email" class="mr-edit-field" data-payment-id="${paymentId}" data-field="donorEmail" value="${escapeHtml(p.donorEmail || p.email || '')}" placeholder="Email">
+        </td>
+        <td style="font-weight:600;">
+          <span class="mr-readonly">${amountDisplay}</span>
+          <input type="number" class="mr-edit-field" data-payment-id="${paymentId}" data-field="amount" value="${p.amount || ''}" placeholder="Amount" step="0.01" style="width:100px;">
+        </td>
+        <td>${statusBadge}</td>
+        <td style="font-size:12px;">${methodDisplay}</td>
+        <td style="font-size:12px;">
+          <span class="mr-readonly">${p.donorPan || '—'}</span>
+          <input type="text" class="mr-edit-field" data-payment-id="${paymentId}" data-field="donorPan" value="${escapeHtml(p.donorPan || '')}" placeholder="PAN" style="text-transform:uppercase;width:100px;">
+        </td>
+        <td style="white-space:nowrap;text-align:center;">${editCellHtml} ${thankLetterHtml}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  } catch (err) {
+    document.getElementById('ph-loading').style.display = 'none';
+    document.getElementById('ph-refresh-btn').disabled = false;
+    phShowMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+// ── Toggle inline edit for manual receipt rows ──
+
+function toggleManualEditRow(paymentId, btn) {
+  const tr = btn.closest('tr');
+  if (!tr) return;
+
+  const isEditing = tr.classList.toggle('mr-editing');
+  btn.classList.toggle('editing', isEditing);
+  btn.title = isEditing ? 'Save edit' : 'Edit this receipt';
+  btn.textContent = isEditing ? '✅' : '✏️';
+
+  if (!isEditing) {
+    // Save the changes
+    saveManualEdit(paymentId, tr, btn);
+  }
+}
+
+async function saveManualEdit(paymentId, tr, btn) {
+  // Gather field values
+  const fields = {};
+  tr.querySelectorAll('.mr-edit-field[data-payment-id="' + paymentId + '"]').forEach(input => {
+    const field = input.dataset.field;
+    let value = input.value.trim();
+    if (field === 'amount') {
+      value = parseFloat(value);
+      if (isNaN(value) || value <= 0) return;
+    }
+    fields[field] = value;
+  });
+
+  if (Object.keys(fields).length === 0) {
+    phShowMsg('error', 'No valid fields to update.');
+    return;
+  }
+
+  fields.paymentId = paymentId;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/manual-receipt', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(fields),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      phShowMsg('error', data.error);
+      btn.disabled = false;
+      btn.textContent = '✏️';
+      tr.classList.remove('mr-editing');
+    } else {
+      phShowMsg('success', '✅ Manual receipt updated successfully.');
+      btn.disabled = false;
+      btn.textContent = '✏️';
+      btn.classList.remove('editing');
+      btn.title = 'Edit this receipt';
+      // Reload the payment history to reflect changes
+      setTimeout(() => loadPaymentHistory(currentPage), 500);
+    }
+  } catch (err) {
+    phShowMsg('error', 'Network error: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '✏️';
+    tr.classList.remove('mr-editing');
   }
 }
 

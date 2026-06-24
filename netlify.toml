@@ -320,3 +320,8 @@
   from = "/razorpay/receipt-pdf"
   to = "/.netlify/functions/razorpay-receipt-pdf"
   status = 200
+
+[[redirects]]
+  from = "/razorpay/manual-receipt"
+  to = "/.netlify/functions/razorpay-manual-receipt"
+  status = 200
