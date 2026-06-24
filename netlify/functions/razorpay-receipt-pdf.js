@@ -2,6 +2,7 @@
 // Authenticated user: Generates and downloads a PDF receipt for a payment
 const PDFDocument = require('pdfkit');
 const path = require('path');
+const https = require('https');
 const { getStore } = require('./auth-store');
 
 const CORS_HEADERS = {
@@ -82,10 +83,44 @@ function hasUnicode(str) {
 }
 
 /**
+ * Fetch logo image: try local filesystem first, then HTTPS from the website.
+ * Returns a Buffer if successful, or null if both attempts fail.
+ */
+async function fetchLogoBuffer() {
+  const fs = require('fs');
+  const localPath = path.resolve(__dirname, '../../images/vazahi-logo.jpg');
+
+  // Try local filesystem first (works in local dev and some Netlify deployments)
+  try {
+    const data = fs.readFileSync(localPath);
+    if (data && data.length > 100) return data;
+  } catch (_) {
+    // Fall through to HTTPS attempt
+  }
+
+  // Fallback: fetch from website URL (reliable on Netlify where static assets are served)
+  try {
+    return await new Promise((resolve, reject) => {
+      const url = 'https://vazhai.in/images/vazahi-logo.jpg';
+      https.get(url, (res) => {
+        if (res.statusCode !== 200) {
+          return reject(new Error(`HTTP ${res.statusCode}`));
+        }
+        const chunks = [];
+        res.on('data', (chunk) => chunks.push(chunk));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      }).on('error', reject);
+    });
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
  * Generate the PDF receipt as a Buffer.
  * Uses a clean NGO-style receipt template with Vazhai branding.
  */
-function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment }) {
+function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment, logoBuffer }) {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({
@@ -123,11 +158,20 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
       doc.rect(0, doc.page.height - 8, doc.page.width, 8).fill(greenDark);
 
       // ── Logo & Organization Name ──
-      const logoPath = __dirname + '/../../images/vazahi-logo.jpg';
-      try {
-        doc.image(logoPath, 50, 28, { width: 60 });
-      } catch (_) {
-        // Logo file not found, just skip it
+      // Try to load logo from pre-fetched buffer, then fall back to local file path
+      if (logoBuffer) {
+        try {
+          doc.image(logoBuffer, 50, 28, { width: 60 });
+        } catch (_) {
+          // Skip logo if buffer is invalid
+        }
+      } else {
+        const logoPath = __dirname + '/../../images/vazahi-logo.jpg';
+        try {
+          doc.image(logoPath, 50, 28, { width: 60 });
+        } catch (_) {
+          // Logo file not found, just skip it
+        }
       }
 
       doc.fontSize(22).font('Helvetica-Bold').fillColor(greenDark)
@@ -352,6 +396,9 @@ exports.handler = async function (event, context) {
       };
     }
 
+    // Pre-fetch logo buffer (filesystem or HTTPS fallback)
+    const logoBuffer = await fetchLogoBuffer();
+
     // Generate PDF
     const pdfBuffer = await generateReceiptPDF({
       userName,
@@ -359,6 +406,7 @@ exports.handler = async function (event, context) {
       userAddress,
       userPan,
       payment,
+      logoBuffer,
     });
 
     return {
