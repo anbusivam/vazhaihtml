@@ -158,3 +158,5 @@ run-vazhai
 # Local auth store (survives server restarts in dev)
 .local-auth-store.json
 log.txt
+*.numbers
+*.csv

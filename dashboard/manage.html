@@ -613,6 +613,7 @@
               <th>Amount (₹)</th>
               <th>Method</th>
               <th>PAN</th>
+              <th>Address</th>
               <th>Notes</th>
               <th>Status</th>
               <th>Thank Letter</th>
@@ -632,7 +633,7 @@
         <div style="margin-top:12px;padding:12px;background:#f7fafc;border-radius:8px;border:1px solid #e2e8f0;">
           <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">
             <strong>Your CSV should have these columns (header row required):</strong><br>
-            <code>DATE, RECEIPT NO, PAYMENT ID, NAME, EMAIL, AMOUNT, METHOD, PAN, notes</code>
+            <code>DATE, RECEIPT NO, PAYMENT ID, NAME, EMAIL, AMOUNT, METHOD, PAN, ADDRESS, notes</code>
           </div>
           <div style="font-size:12px;color:var(--text-light);line-height:1.6;">
             <strong>Column details:</strong><br>
@@ -644,10 +645,11 @@
             • <strong>AMOUNT</strong> — Donation amount in ₹ (required, numbers only)<br>
             • <strong>METHOD</strong> — <code>ACCOUNTTRANSFER</code> or <code>CASH</code> (required)<br>
             • <strong>PAN</strong> — Donor's PAN card number (optional)<br>
+            • <strong>ADDRESS</strong> — Donor's address (optional)<br>
             • <strong>notes</strong> — Any notes/comments (optional)<br>
             <br>
             <strong>Example row:</strong><br>
-            <code>2026-06-24,2006/06/24/01,Q2345234234234234,John Doe,john@example.com,1000,ACCOUNTTRANSFER,ABCDE1234F,Monthly donation</code>
+            <code>2026-06-24,2006/06/24/01,Q2345234234234234,John Doe,john@example.com,1000,ACCOUNTTRANSFER,ABCDE1234F,"123 Main St, City, State",Monthly donation</code>
           </div>
         </div>
       </details>
@@ -2272,6 +2274,16 @@ async function loadPaymentHistory(page) {
         panCellHtml = '<span class="ph-readonly">' + escapeHtml(p.donorPan || '—') + '</span>';
       }
 
+      // Address (editable for manual only)
+      const addressVal = p.donorAddress || p.address || '';
+      let addressCellHtml;
+      if (canEditAll) {
+        addressCellHtml = '<span class="ph-readonly" style="max-width:180px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(addressVal) + '">' + (addressVal ? escapeHtml(addressVal) : '<span style="color:#bbb;font-style:italic;">—</span>') + '</span>'
+          + '<textarea class="ph-edit-field" data-field="donorAddress" placeholder="Address" rows="2" style="width:180px;">' + escapeHtml(addressVal) + '</textarea>';
+      } else {
+        addressCellHtml = '<span class="ph-readonly" style="max-width:180px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(addressVal) + '">' + (addressVal ? escapeHtml(addressVal) : '<span style="color:#bbb;font-style:italic;">—</span>') + '</span>';
+      }
+
       // Notes — editable for ALL
       let notesCellHtml = '<span class="ph-readonly" style="max-width:180px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(notes) + '">' + (notes ? escapeHtml(notes) : '<span style="color:#bbb;font-style:italic;">—</span>') + '</span>'
         + '<textarea class="ph-edit-field" data-field="notes" placeholder="Notes" rows="2" style="width:180px;">' + escapeHtml(notes) + '</textarea>';
@@ -2286,6 +2298,7 @@ async function loadPaymentHistory(page) {
         <td style="font-weight:600;">${amountCellHtml}</td>
         <td style="font-size:12px;">${methodCellHtml}</td>
         <td style="font-size:12px;">${panCellHtml}</td>
+        <td style="font-size:12px;max-width:200px;">${addressCellHtml}</td>
         <td style="font-size:12px;">${notesCellHtml}</td>
         <td>${statusBadge}</td>
         <td style="white-space:nowrap;text-align:center;">${thankLetterHtml}</td>
