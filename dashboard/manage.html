@@ -622,6 +622,58 @@
         </table>
       </div>
     </div>
+
+    <!-- CSV Upload for direct bank payments -->
+    <div id="csv-upload-section" style="margin-top:20px;padding-top:20px;border-top:2px dashed var(--border);">
+      <h3 style="font-size:16px;color:var(--green-dark);margin:0 0 8px;">📁 Upload Direct Bank Payments via CSV</h3>
+      <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Batch-upload manual payment records (Account Transfer / Cash) using a CSV file. These will appear in the payment history above.</p>
+      <details>
+        <summary style="cursor:pointer;font-weight:600;font-size:14px;color:var(--green-dark);padding:4px 0;">📋 CSV Format Instructions</summary>
+        <div style="margin-top:12px;padding:12px;background:#f7fafc;border-radius:8px;border:1px solid #e2e8f0;">
+          <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">
+            <strong>Your CSV should have these columns (header row required):</strong><br>
+            <code>DATE, RECEIPT NO, PAYMENT ID, NAME, EMAIL, AMOUNT, METHOD, PAN, notes</code>
+          </div>
+          <div style="font-size:12px;color:var(--text-light);line-height:1.6;">
+            <strong>Column details:</strong><br>
+            • <strong>DATE</strong> — Payment date (YYYY-MM-DD format)<br>
+            • <strong>RECEIPT NO</strong> — Receipt number for your records (stored as receiptNo)<br>
+            • <strong>PAYMENT ID</strong> — Bank transaction ID (used as the payment ID). <em>Must be unique.</em><br>
+            • <strong>NAME</strong> — Donor's full name (required)<br>
+            • <strong>EMAIL</strong> — Donor's email address (required)<br>
+            • <strong>AMOUNT</strong> — Donation amount in ₹ (required, numbers only)<br>
+            • <strong>METHOD</strong> — <code>ACCOUNTTRANSFER</code> or <code>CASH</code> (required)<br>
+            • <strong>PAN</strong> — Donor's PAN card number (optional)<br>
+            • <strong>notes</strong> — Any notes/comments (optional)<br>
+            <br>
+            <strong>Example row:</strong><br>
+            <code>2026-06-24,2006/06/24/01,Q2345234234234234,John Doe,john@example.com,1000,ACCOUNTTRANSFER,ABCDE1234F,Monthly donation</code>
+          </div>
+        </div>
+      </details>
+      <div style="margin-top:12px;">
+        <div class="file-upload-area" id="csv-drop-area" onclick="document.getElementById('csv-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">📂 Drag & drop a CSV file here, or click to select</div>
+          <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSVFile(event)">
+          <div id="csv-file-name" style="font-size:13px;font-weight:600;color:var(--green-dark);display:none;"></div>
+        </div>
+        <div id="csv-preview-area" style="display:none;margin-top:12px;">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📊 Preview (<span id="csv-row-count">0</span> rows)</div>
+          <div style="max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
+            <table class="csv-preview-table" id="csv-preview-table">
+              <thead id="csv-preview-thead"></thead>
+              <tbody id="csv-preview-tbody"></tbody>
+            </table>
+          </div>
+          <div class="csv-errors" id="csv-validation-errors" style="display:none;"></div>
+          <div style="margin-top:12px;display:flex;gap:8px;">
+            <button class="btn-primary" onclick="uploadCSV()" id="csv-upload-btn">📤 Upload CSV</button>
+            <button class="btn-primary btn-outline" onclick="clearCSVPreview()">🗑 Clear</button>
+          </div>
+        </div>
+        <div id="csv-upload-result" class="msg" style="margin-top:8px;"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Razorpay Payments Card -->
@@ -711,71 +763,6 @@
     </div>
   </div>
 
-  <!-- Manual Receipt Upload Card -->
-  <div class="card" id="manual-receipt-card">
-    <h2>🧾 Manual Receipt Upload</h2>
-    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Upload manual receipts for payments received via <strong>Account Transfer</strong> or <strong>Cash</strong>. You can upload single entries via the form or batch upload via CSV.</p>
-
-    <!-- Single Entry Form -->
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:16px;background:#f7fafc;border-radius:8px;border:1px solid #e2e8f0;">
-      <input type="text" id="mr-name" placeholder="Donor Name *" style="flex:1;min-width:160px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
-      <input type="email" id="mr-email" placeholder="Donor Email *" style="flex:1;min-width:160px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
-      <input type="number" id="mr-amount" placeholder="Amount (₹) *" style="flex:1;min-width:120px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
-      <select id="mr-method" style="flex:1;min-width:140px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;background:white;">
-        <option value="">Select Method *</option>
-        <option value="ACCOUNTTRANSFER">Account Transfer</option>
-        <option value="CASH">Cash</option>
-      </select>
-      <input type="date" id="mr-date" style="flex:1;min-width:140px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
-      <button class="btn-primary" onclick="uploadManualReceipt()">➕ Add Receipt</button>
-    </div>
-
-    <!-- CSV Upload Area -->
-    <details style="margin-bottom:16px;">
-      <summary style="cursor:pointer;font-weight:600;font-size:14px;color:var(--green-dark);padding:8px 0;">📁 Upload via CSV file</summary>
-      <div style="margin-top:12px;">
-        <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">
-          <strong>Your CSV should have these columns (header row required):</strong><br>
-          <code>DATE, RECEIPT NO, PAYMENT ID, NAME, EMAIL, AMOUNT, METHOD, PAN, notes</code>
-        </div>
-        <div style="font-size:12px;color:var(--text-light);margin-bottom:12px;line-height:1.6;">
-          <strong>Column details:</strong><br>
-          • <strong>DATE</strong> — Payment date (YYYY-MM-DD format)<br>
-          • <strong>RECEIPT NO</strong> — Receipt number for your records (stored as receiptNo)<br>
-          • <strong>PAYMENT ID</strong> — Bank transaction ID (used as the payment ID). <em>Must be unique.</em><br>
-          • <strong>NAME</strong> — Donor's full name (required)<br>
-          • <strong>EMAIL</strong> — Donor's email address (required)<br>
-          • <strong>AMOUNT</strong> — Donation amount in ₹ (required, numbers only)<br>
-          • <strong>METHOD</strong> — <code>ACCOUNTTRANSFER</code> or <code>CASH</code> (required)<br>
-          • <strong>PAN</strong> — Donor's PAN card number (optional)<br>
-          • <strong>notes</strong> — Any notes/comments (optional)<br>
-          <br>
-          <strong>Example row:</strong><br>
-          <code>2026-06-24,2006/06/24/01,Q2345234234234234,John Doe,john@example.com,1000,ACCOUNTTRANSFER,ABCDE1234F,Monthly donation</code>
-        </div>
-        <div class="file-upload-area" id="csv-drop-area" onclick="document.getElementById('csv-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-          <div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">📂 Drag & drop a CSV file here, or click to select</div>
-          <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSVFile(event)">
-          <div id="csv-file-name" style="font-size:13px;font-weight:600;color:var(--green-dark);display:none;"></div>
-        </div>
-        <div id="csv-preview-area" style="display:none;margin-top:12px;">
-          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📊 Preview (<span id="csv-row-count">0</span> rows)</div>
-          <div style="max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
-            <table class="csv-preview-table" id="csv-preview-table">
-              <thead id="csv-preview-thead"></thead>
-              <tbody id="csv-preview-tbody"></tbody>
-            </table>
-          </div>
-          <div class="csv-errors" id="csv-validation-errors" style="display:none;"></div>
-          <div style="margin-top:12px;display:flex;gap:8px;">
-            <button class="btn-primary" onclick="uploadCSV()" id="csv-upload-btn">📤 Upload CSV</button>
-            <button class="btn-primary btn-outline" onclick="clearCSVPreview()">🗑 Clear</button>
-          </div>
-        </div>
-        <div id="csv-upload-result" class="msg" style="margin-top:8px;"></div>
-      </div>
-    </details>
-  </div>
 
   <a href="javascript:void(0)" onclick="window.history.back()" class="back-link">← Back</a>
 </div>
@@ -1935,53 +1922,6 @@ function mrShowMsg(type, text) {
   el.textContent = text;
   if (text) el.style.display = 'block';
   else el.style.display = 'none';
-}
-
-async function uploadManualReceipt() {
-  const name = document.getElementById('mr-name').value.trim();
-  const email = document.getElementById('mr-email').value.trim();
-  const amount = parseFloat(document.getElementById('mr-amount').value);
-  const method = document.getElementById('mr-method').value;
-  const date = document.getElementById('mr-date').value;
-
-  if (!name) { alert('Donor name is required'); return; }
-  if (!email || !email.includes('@')) { alert('Valid donor email is required'); return; }
-  if (!amount || amount <= 0) { alert('Valid positive amount is required'); return; }
-  if (!method) { alert('Payment method is required'); return; }
-
-  const btn = event.target;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Uploading...';
-
-  try {
-    const token = localStorage.getItem('vazhai_session');
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch('/razorpay/manual-receipt', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ donorName: name, donorEmail: email, amount, method, paymentDate: date || undefined }),
-    });
-
-    const data = await res.json();
-
-    if (data.error) {
-      mrShowMsg('error', data.error);
-    } else {
-      mrShowMsg('success', data.message);
-      document.getElementById('mr-name').value = '';
-      document.getElementById('mr-email').value = '';
-      document.getElementById('mr-amount').value = '';
-      document.getElementById('mr-method').value = '';
-      document.getElementById('mr-date').value = '';
-    }
-  } catch (err) {
-    mrShowMsg('error', 'Network error: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '➕ Add Receipt';
-  }
 }
 
 // ── CSV file handling ──
