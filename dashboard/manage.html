@@ -499,6 +499,14 @@
     .users-table tr.editing .cell-readonly { display: none; }
     .users-table tr.editing .cell-readonly.address-cell,
     .users-table tr.editing .cell-readonly.notes-cell { display: none; }
+    /* Payment history edit row styles */
+    .ph-readonly { display: block; }
+    .ph-edit-field { display: none; width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:4px; font-size:12px; font-family:inherit; outline:none; background:#f9f9f9; }
+    .ph-edit-field:focus { border-color:var(--green); background:white; }
+    .ph-edit-field.ph-select { min-width:140px; }
+    tr.ph-editing .ph-readonly { display: none !important; }
+    tr.ph-editing .ph-edit-field { display: block; }
+    .ph-edit-btn.editing { background:var(--green-dark); border-color:var(--green-dark); color:white; }
     @media (max-width: 768px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; }
       .users-table { font-size: 12px; }
@@ -596,14 +604,17 @@
         <table class="users-table" style="min-width:800px;">
           <thead>
             <tr>
+              <th style="width:44px;text-align:center;">Edit</th>
               <th>Date</th>
+              <th>Receipt No</th>
               <th>Payment ID</th>
               <th>Name</th>
               <th>Email</th>
               <th>Amount (₹)</th>
-              <th>Status</th>
               <th>Method</th>
               <th>PAN</th>
+              <th>Notes</th>
+              <th>Status</th>
               <th>Thank Letter</th>
             </tr>
           </thead>
@@ -2151,7 +2162,7 @@ async function uploadCSV() {
   }
 }
 
-// ── Enhanced Payment History with manual badge and inline editing ──
+// ── Enhanced Payment History with all fields, manual badge and inline editing ──
 
 async function loadPaymentHistory(page) {
   const limit = parseInt(document.getElementById('ph-page-size').value);
@@ -2211,15 +2222,13 @@ async function loadPaymentHistory(page) {
         ? '<span class="role-badge" style="background:#e8f5e9;color:#2e7d32;">✅ Captured</span>'
         : '<span class="role-badge" style="background:#fef2f2;color:#d32f2f;">❌ ' + (p.status || 'Unknown') + '</span>';
 
-      const methodDisplay = isManual
-        ? '<span class="mr-readonly">' + (p.method || '—').toUpperCase() + '</span>'
-            + '<select class="mr-edit-field mr-select" data-payment-id="' + paymentId + '" data-field="method">'
-            + '<option value="ACCOUNTTRANSFER"' + (p.method === 'ACCOUNTTRANSFER' ? ' selected' : '') + '>ACCOUNT TRANSFER</option>'
-            + '<option value="CASH"' + (p.method === 'CASH' ? ' selected' : '') + '>CASH</option>'
-            + '</select>'
-        : (p.method || '—').toUpperCase();
-
       const amountDisplay = '₹' + Number(p.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+      // Receipt No — default to payment ID for Razorpay, use stored receiptNo for manual
+      const receiptNo = p.receiptNo || (isManual ? '' : paymentId);
+
+      // Notes
+      const notes = p.manualNotes || p.donorComment || p.notes || '';
 
       // ── Thank Letter column ──
       const thankLetterSent = p.thankLetterSent;
@@ -2234,33 +2243,109 @@ async function loadPaymentHistory(page) {
         thankLetterHtml = `<button class="btn-primary btn-sm" style="font-size:10px;padding:4px 10px;" onclick="sendThankLetter('${paymentId}', this, false)">✉️ Send</button>`;
       }
 
-      // Build edit button and row for manual receipts
-      const editCellHtml = isManual
-        ? '<button class="mr-edit-btn" onclick="toggleManualEditRow(\'' + paymentId + '\', this)" title="Edit this manual receipt">✏️</button>'
-        : '';
+      // Edit button for ALL rows (first column)
+      const editBtnHtml = `<button class="ph-edit-btn" onclick="togglePHEditRow('${paymentId}', this)" title="Edit this row" style="background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;padding:4px 6px;font-size:13px;color:var(--text-light);transition:all 0.15s;">✏️</button>`;
+
+      // Build the row with all columns
+      tr.dataset.paymentId = paymentId;
+      tr.dataset.isManual = isManual ? 'true' : 'false';
+      tr.dataset.originalReceiptNo = escapeHtml(receiptNo);
+      tr.dataset.originalNotes = escapeHtml(notes);
+      tr.dataset.originalPaymentId = escapeHtml(paymentId);
+      tr.dataset.originalDate = escapeHtml(dateStr);
+
+      // Method display / edit (only editable for manual)
+      let methodCellHtml;
+      if (isManual) {
+        methodCellHtml = '<span class="ph-readonly">' + (p.method || '—').toUpperCase() + '</span>'
+          + '<select class="ph-edit-field ph-select" data-field="method">'
+          + '<option value="ACCOUNTTRANSFER"' + (p.method === 'ACCOUNTTRANSFER' ? ' selected' : '') + '>ACCOUNT TRANSFER</option>'
+          + '<option value="CASH"' + (p.method === 'CASH' ? ' selected' : '') + '>CASH</option>'
+          + '</select>';
+      } else {
+        methodCellHtml = '<span class="ph-readonly">' + (p.method || '—').toUpperCase() + '</span>';
+      }
+
+      // For manual: all fields editable. For Razorpay: only receiptNo and notes editable.
+      const canEditAll = isManual;
+
+      // Date
+      const dateOnly = p.paymentDate || (p.createdAtDate ? p.createdAtDate.split('T')[0] : (p.createdAt ? new Date(p.createdAt * 1000).toISOString().split('T')[0] : ''));
+      let dateCellHtml;
+      if (canEditAll) {
+        dateCellHtml = '<span class="ph-readonly">' + dateStr + '</span>'
+          + '<input type="date" class="ph-edit-field" data-field="paymentDate" value="' + dateOnly + '" style="width:140px;">';
+      } else {
+        dateCellHtml = '<span class="ph-readonly">' + dateStr + '</span>';
+      }
+
+      // Payment ID
+      let payIdCellHtml;
+      if (canEditAll) {
+        payIdCellHtml = '<span class="ph-readonly">' + manualBadge + escapeHtml(paymentId) + '</span>'
+          + '<input type="text" class="ph-edit-field" data-field="paymentId" value="' + escapeHtml(paymentId) + '" placeholder="Payment ID" style="width:160px;">';
+      } else {
+        payIdCellHtml = '<span class="ph-readonly">' + manualBadge + escapeHtml(paymentId) + '</span>';
+      }
+
+      // Receipt No — editable for ALL
+      let receiptNoCellHtml = '<span class="ph-readonly">' + escapeHtml(receiptNo) + '</span>'
+        + '<input type="text" class="ph-edit-field" data-field="receiptNo" value="' + escapeHtml(receiptNo) + '" placeholder="Receipt No" style="width:140px;">';
+
+      // Name (editable for manual only)
+      let nameCellHtml;
+      if (canEditAll) {
+        nameCellHtml = '<span class="ph-readonly"><strong>' + escapeHtml(p.donorName || '—') + '</strong></span>'
+          + '<input type="text" class="ph-edit-field" data-field="donorName" value="' + escapeHtml(p.donorName || '') + '" placeholder="Name">';
+      } else {
+        nameCellHtml = '<span class="ph-readonly"><strong>' + escapeHtml(p.donorName || '—') + '</strong></span>';
+      }
+
+      // Email (editable for manual only)
+      let emailCellHtml;
+      const emailVal = p.email || p.donorEmail || '';
+      if (canEditAll) {
+        emailCellHtml = '<span class="ph-readonly">' + escapeHtml(emailVal || '—') + '</span>'
+          + '<input type="email" class="ph-edit-field" data-field="donorEmail" value="' + escapeHtml(emailVal) + '" placeholder="Email">';
+      } else {
+        emailCellHtml = '<span class="ph-readonly">' + escapeHtml(emailVal || '—') + '</span>';
+      }
+
+      // Amount (editable for manual only)
+      let amountCellHtml;
+      if (canEditAll) {
+        amountCellHtml = '<span class="ph-readonly" style="font-weight:600;">' + amountDisplay + '</span>'
+          + '<input type="number" class="ph-edit-field" data-field="amount" value="' + (p.amount || '') + '" placeholder="Amount" step="0.01" style="width:100px;">';
+      } else {
+        amountCellHtml = '<span class="ph-readonly" style="font-weight:600;">' + amountDisplay + '</span>';
+      }
+
+      // PAN (editable for manual only)
+      let panCellHtml;
+      if (canEditAll) {
+        panCellHtml = '<span class="ph-readonly">' + escapeHtml(p.donorPan || '—') + '</span>'
+          + '<input type="text" class="ph-edit-field" data-field="donorPan" value="' + escapeHtml(p.donorPan || '') + '" placeholder="PAN" style="text-transform:uppercase;width:110px;">';
+      } else {
+        panCellHtml = '<span class="ph-readonly">' + escapeHtml(p.donorPan || '—') + '</span>';
+      }
+
+      // Notes — editable for ALL
+      let notesCellHtml = '<span class="ph-readonly" style="max-width:180px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(notes) + '">' + (notes ? escapeHtml(notes) : '<span style="color:#bbb;font-style:italic;">—</span>') + '</span>'
+        + '<textarea class="ph-edit-field" data-field="notes" placeholder="Notes" rows="2" style="width:180px;">' + escapeHtml(notes) + '</textarea>';
 
       tr.innerHTML = `
-        <td style="white-space:nowrap;font-size:12px;">${dateStr}</td>
-        <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${paymentId}">${manualBadge}${paymentId || '—'}</td>
-        <td class="col-manual-name">
-          <span class="mr-readonly"><strong>${p.donorName || '—'}</strong></span>
-          <input type="text" class="mr-edit-field" data-payment-id="${paymentId}" data-field="donorName" value="${escapeHtml(p.donorName || '')}" placeholder="Name">
-        </td>
-        <td class="col-manual-email">
-          <span class="mr-readonly">${p.email || p.donorEmail || '—'}</span>
-          <input type="email" class="mr-edit-field" data-payment-id="${paymentId}" data-field="donorEmail" value="${escapeHtml(p.donorEmail || p.email || '')}" placeholder="Email">
-        </td>
-        <td style="font-weight:600;">
-          <span class="mr-readonly">${amountDisplay}</span>
-          <input type="number" class="mr-edit-field" data-payment-id="${paymentId}" data-field="amount" value="${p.amount || ''}" placeholder="Amount" step="0.01" style="width:100px;">
-        </td>
+        <td style="text-align:center;white-space:nowrap;">${editBtnHtml}</td>
+        <td style="white-space:nowrap;font-size:12px;">${dateCellHtml}</td>
+        <td style="font-size:12px;">${receiptNoCellHtml}</td>
+        <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${paymentId}">${payIdCellHtml}</td>
+        <td>${nameCellHtml}</td>
+        <td>${emailCellHtml}</td>
+        <td style="font-weight:600;">${amountCellHtml}</td>
+        <td style="font-size:12px;">${methodCellHtml}</td>
+        <td style="font-size:12px;">${panCellHtml}</td>
+        <td style="font-size:12px;">${notesCellHtml}</td>
         <td>${statusBadge}</td>
-        <td style="font-size:12px;">${methodDisplay}</td>
-        <td style="font-size:12px;">
-          <span class="mr-readonly">${p.donorPan || '—'}</span>
-          <input type="text" class="mr-edit-field" data-payment-id="${paymentId}" data-field="donorPan" value="${escapeHtml(p.donorPan || '')}" placeholder="PAN" style="text-transform:uppercase;width:100px;">
-        </td>
-        <td style="white-space:nowrap;text-align:center;">${editCellHtml} ${thankLetterHtml}</td>
+        <td style="white-space:nowrap;text-align:center;">${thankLetterHtml}</td>
       `;
       tbody.appendChild(tr);
     }
@@ -2271,41 +2356,46 @@ async function loadPaymentHistory(page) {
   }
 }
 
-// ── Toggle inline edit for manual receipt rows ──
+// ── Toggle inline edit for payment history rows ──
 
-function toggleManualEditRow(paymentId, btn) {
+function togglePHEditRow(paymentId, btn) {
   const tr = btn.closest('tr');
   if (!tr) return;
 
-  const isEditing = tr.classList.toggle('mr-editing');
+  const isEditing = tr.classList.toggle('ph-editing');
   btn.classList.toggle('editing', isEditing);
-  btn.title = isEditing ? 'Save edit' : 'Edit this receipt';
-  btn.textContent = isEditing ? '✅' : '✏️';
+  btn.title = isEditing ? '💾 Save changes' : 'Edit this row';
+  btn.textContent = isEditing ? '💾' : '✏️';
 
   if (!isEditing) {
-    // Save the changes
-    saveManualEdit(paymentId, tr, btn);
+    // Save the changes when toggling off
+    savePHEdit(paymentId, tr, btn);
   }
 }
 
-async function saveManualEdit(paymentId, tr, btn) {
+async function savePHEdit(paymentId, tr, btn) {
+  const isManual = tr.dataset.isManual === 'true';
+
   // Gather field values
   const fields = {};
-  tr.querySelectorAll('.mr-edit-field[data-payment-id="' + paymentId + '"]').forEach(input => {
+  tr.querySelectorAll('.ph-edit-field').forEach(input => {
     const field = input.dataset.field;
     let value = input.value.trim();
     if (field === 'amount') {
       value = parseFloat(value);
       if (isNaN(value) || value <= 0) return;
     }
+    // For paymentId field on manual rows, store the new value as newPaymentId
+    if (field === 'paymentId' && isManual) {
+      if (value && value !== paymentId) {
+        fields.newPaymentId = value;
+      }
+      return; // Don't add paymentId as a regular field to update
+    }
     fields[field] = value;
   });
 
-  if (Object.keys(fields).length === 0) {
-    phShowMsg('error', 'No valid fields to update.');
-    return;
-  }
-
+  // Ensure paymentId is always set
   fields.paymentId = paymentId;
 
   btn.disabled = true;
@@ -2328,13 +2418,13 @@ async function saveManualEdit(paymentId, tr, btn) {
       phShowMsg('error', data.error);
       btn.disabled = false;
       btn.textContent = '✏️';
-      tr.classList.remove('mr-editing');
+      tr.classList.remove('ph-editing');
     } else {
-      phShowMsg('success', '✅ Manual receipt updated successfully.');
+      phShowMsg('success', '✅ Payment updated successfully.');
       btn.disabled = false;
       btn.textContent = '✏️';
       btn.classList.remove('editing');
-      btn.title = 'Edit this receipt';
+      btn.title = 'Edit this row';
       // Reload the payment history to reflect changes
       setTimeout(() => loadPaymentHistory(currentPage), 500);
     }
@@ -2342,7 +2432,7 @@ async function saveManualEdit(paymentId, tr, btn) {
     phShowMsg('error', 'Network error: ' + err.message);
     btn.disabled = false;
     btn.textContent = '✏️';
-    tr.classList.remove('mr-editing');
+    tr.classList.remove('ph-editing');
   }
 }
 

@@ -264,10 +264,10 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // ─── PUT: Edit an existing manual receipt ───
+    // ─── PUT: Edit an existing payment ───
     if (event.httpMethod === 'PUT') {
       const body = JSON.parse(event.body || '{}');
-      const { paymentId, donorName, donorEmail, amount, method, donorPan, donorPhone, donorAddress, notes, receiptNo } = body;
+      const { paymentId, donorName, donorEmail, amount, method, donorPan, donorPhone, donorAddress, notes, receiptNo, paymentDate } = body;
 
       if (!paymentId) {
         return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'paymentId is required' }) };
@@ -278,15 +278,26 @@ exports.handler = async function (event, context) {
         return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Payment record not found' }) };
       }
 
-      // Only allow editing manual receipts
-      if (!existing.isManualReceipt) {
-        return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Only manual receipt entries can be edited' }) };
+      const isManual = existing.isManualReceipt === true;
+
+      // For manual receipts: allow editing all fields
+      // For Razorpay payments: only allow editing receiptNo and notes
+      if (!isManual) {
+        // Only receiptNo and notes can be edited for Razorpay payments
+        const allowedFields = ['receiptNo', 'notes'];
+        const attemptedFields = Object.keys(body).filter(k => k !== 'paymentId');
+        const disallowed = attemptedFields.filter(f => !allowedFields.includes(f));
+        if (disallowed.length > 0) {
+          return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: `Only receiptNo and notes can be edited for Razorpay payments. Cannot edit: ${disallowed.join(', ')}` }) };
+        }
       }
 
       // Update fields (only if provided)
       if (donorName !== undefined) existing.donorName = donorName.trim();
-      if (donorEmail !== undefined) existing.donorEmail = donorEmail.trim().toLowerCase();
-      if (donorEmail !== undefined) existing.email = donorEmail.trim().toLowerCase();
+      if (donorEmail !== undefined) {
+        existing.donorEmail = donorEmail.trim().toLowerCase();
+        existing.email = donorEmail.trim().toLowerCase();
+      }
       if (amount !== undefined) {
         const amt = parseFloat(amount);
         if (isNaN(amt) || amt <= 0) {
@@ -304,6 +315,14 @@ exports.handler = async function (event, context) {
       if (donorPan !== undefined) existing.donorPan = donorPan.trim().toUpperCase();
       if (donorPhone !== undefined) existing.donorPhone = donorPhone.trim();
       if (donorAddress !== undefined) existing.donorAddress = donorAddress.trim();
+      if (paymentDate !== undefined) {
+        const parsedTs = Math.floor(new Date(paymentDate + 'T00:00:00+05:30').getTime() / 1000);
+        if (!isNaN(parsedTs)) {
+          existing.paymentDate = paymentDate;
+          existing.createdAt = parsedTs;
+          existing.createdAtDate = new Date(parsedTs * 1000).toISOString();
+        }
+      }
       if (notes !== undefined) {
         existing.manualNotes = notes.trim();
         existing.donorComment = notes.trim();
@@ -312,14 +331,37 @@ exports.handler = async function (event, context) {
       existing.lastEditedAt = new Date().toISOString();
       existing.lastEditedBy = session.email;
 
-      await store.setJSON(`payment:${paymentId}`, existing);
+      // Handle payment ID change for manual receipts
+      const newPaymentId = body.newPaymentId;
+      if (isManual && newPaymentId && newPaymentId !== paymentId) {
+        // Check if new payment ID already exists
+        const existingNew = await store.get(`payment:${newPaymentId}`, { type: 'json' });
+        if (existingNew) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `Payment ID "${newPaymentId}" already exists. Cannot rename.` }) };
+        }
+        // Update the payment record with new ID
+        existing.paymentId = newPaymentId;
+        existing.bankTransactionId = newPaymentId;
+        await store.setJSON(`payment:${newPaymentId}`, existing);
+        // Delete old key
+        await store.delete(`payment:${paymentId}`);
+        // Update the payments list
+        const paymentsList = await store.get('payments:list', { type: 'json' }) || [];
+        const idx = paymentsList.indexOf(paymentId);
+        if (idx !== -1) {
+          paymentsList[idx] = newPaymentId;
+          await store.setJSON('payments:list', paymentsList);
+        }
+      } else {
+        await store.setJSON(`payment:${paymentId}`, existing);
+      }
 
       return {
         statusCode: 200,
         headers: CORS_HEADERS,
         body: JSON.stringify({
           success: true,
-          message: '✅ Manual receipt updated successfully.',
+          message: '✅ Payment updated successfully.',
           payment: existing,
         }),
       };
