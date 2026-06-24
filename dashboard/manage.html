@@ -2233,9 +2233,7 @@ async function loadPaymentHistory(page) {
       // ── Thank Letter column ──
       const thankLetterSent = p.thankLetterSent;
       let thankLetterHtml = '';
-      if (isManual) {
-        thankLetterHtml = '<span style="font-size:11px;color:#999;">—</span>';
-      } else if (thankLetterSent === 'Yes') {
+      if (thankLetterSent === 'Yes') {
         thankLetterHtml = '<span style="font-size:11px;color:#2e7d32;font-weight:600;">✅ Thanked</span> <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 8px;margin-left:4px;" onclick="sendThankLetter(\'' + paymentId + '\', this, true)">🔄 Resend</button>';
       } else if (p.status !== 'captured') {
         thankLetterHtml = '<span style="font-size:11px;color:#999;">—</span>';
