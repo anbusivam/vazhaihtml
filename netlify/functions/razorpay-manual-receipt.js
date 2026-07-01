@@ -52,6 +52,27 @@ function getRowField(row, ...alternatives) {
 }
 
 /**
+ * Build the receipts:map index from existing payment records.
+ * Scans all payment IDs in payments:list, fetches each record,
+ * and populates a receiptNo → paymentId map.
+ * Used as a lazy one-time migration when the map is empty.
+ */
+async function buildReceiptsMap(store, paymentsList) {
+  const map = {};
+  for (const paymentId of paymentsList) {
+    try {
+      const payment = await store.get(`payment:${paymentId}`, { type: 'json' });
+      if (payment && payment.receiptNo && payment.receiptNo.trim()) {
+        map[payment.receiptNo.trim()] = paymentId;
+      }
+    } catch (_) {
+      // Skip corrupt records
+    }
+  }
+  return map;
+}
+
+/**
  * Parse CSV text into an array of objects.
  * First row is treated as header — normalized to lowercase, stripped of non-alphanumeric.
  */
@@ -128,8 +149,14 @@ exports.handler = async function (event, context) {
         return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Provide "csv" (string), "entries" (array), or individual fields (donorName, donorEmail, etc.)' }) };
       }
 
-      // Get existing payments list
+      // Get existing payments list and receipts map
       const paymentsList = await store.get('payments:list', { type: 'json' }) || [];
+      let receiptsMap = await store.get('receipts:map', { type: 'json' }) || {};
+      // Lazy migration: if the map is empty but there are existing payments, build it
+      if (Object.keys(receiptsMap).length === 0 && paymentsList.length > 0) {
+        receiptsMap = await buildReceiptsMap(store, paymentsList);
+        await store.setJSON('receipts:map', receiptsMap);
+      }
       const results = { inserted: 0, errors: [] };
 
       for (const row of rows) {
@@ -163,6 +190,12 @@ exports.handler = async function (event, context) {
           }
 
           // Validate method
+          // ── Check for duplicate receiptNo ──
+          if (receiptNo && receiptsMap[receiptNo]) {
+            results.errors.push({ row: row, error: `Duplicate receipt number "${receiptNo}" — already used by payment "${receiptsMap[receiptNo]}". Skipping.` });
+            continue;
+          }
+
           if (!VALID_METHODS.includes(method)) {
             // Try to map common variations
             const methodMap = {
@@ -311,14 +344,20 @@ exports.handler = async function (event, context) {
             paymentsList.push(paymentId);
           }
 
+          // Update receipts map (only if receiptNo is provided and not empty)
+          if (receiptNo) {
+            receiptsMap[receiptNo] = paymentId;
+          }
+
           results.inserted++;
         } catch (err) {
           results.errors.push({ row: row, error: err.message });
         }
       }
 
-      // Save updated payments list
+      // Save updated payments list and receipts map
       await store.setJSON('payments:list', paymentsList);
+      await store.setJSON('receipts:map', receiptsMap);
 
       return {
         statusCode: 200,
@@ -394,12 +433,25 @@ exports.handler = async function (event, context) {
         existing.manualNotes = notes.trim();
         existing.donorComment = notes.trim();
       }
-      if (receiptNo !== undefined) existing.receiptNo = receiptNo.trim();
+      // ── Handle receiptNo change: check for conflicts ──
+      const oldReceiptNo = existing.receiptNo || '';
+      const newReceiptNo = receiptNo !== undefined ? receiptNo.trim() : oldReceiptNo;
+      // Load receipts map (single read, used for both conflict check and update)
+      const receiptsMap = await store.get('receipts:map', { type: 'json' }) || {};
+      let receiptsMapUpdated = false;
+      if (newReceiptNo !== oldReceiptNo) {
+        // Check if new receiptNo is already used by a DIFFERENT payment
+        if (newReceiptNo && receiptsMap[newReceiptNo] && receiptsMap[newReceiptNo] !== paymentId) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `Duplicate receipt number "${newReceiptNo}" — already used by payment "${receiptsMap[newReceiptNo]}". Cannot update.` }) };
+        }
+      }
+      if (receiptNo !== undefined) existing.receiptNo = newReceiptNo;
       existing.lastEditedAt = new Date().toISOString();
       existing.lastEditedBy = session.email;
 
       // Handle payment ID change for manual receipts
       const newPaymentId = body.newPaymentId;
+
       if (isManual && newPaymentId && newPaymentId !== paymentId) {
         // Check if new payment ID already exists
         const existingNew = await store.get(`payment:${newPaymentId}`, { type: 'json' });
@@ -419,8 +471,31 @@ exports.handler = async function (event, context) {
           paymentsList[idx] = newPaymentId;
           await store.setJSON('payments:list', paymentsList);
         }
+        // Update receipts map: the receipt now points to the new paymentId
+        if (newReceiptNo && receiptsMap[newReceiptNo]) {
+          receiptsMap[newReceiptNo] = newPaymentId;
+          receiptsMapUpdated = true;
+        }
       } else {
         await store.setJSON(`payment:${paymentId}`, existing);
+      }
+
+      // ── Update receipts map if receiptNo changed ──
+      if (newReceiptNo !== oldReceiptNo) {
+        // Remove old receiptNo from map (if it existed)
+        if (oldReceiptNo && receiptsMap[oldReceiptNo] === paymentId) {
+          delete receiptsMap[oldReceiptNo];
+          receiptsMapUpdated = true;
+        }
+        // Add new receiptNo to map (if not empty)
+        if (newReceiptNo) {
+          receiptsMap[newReceiptNo] = newPaymentId && newPaymentId !== paymentId ? newPaymentId : paymentId;
+          receiptsMapUpdated = true;
+        }
+      }
+
+      if (receiptsMapUpdated) {
+        await store.setJSON('receipts:map', receiptsMap);
       }
 
       return {
