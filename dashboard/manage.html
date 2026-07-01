@@ -653,6 +653,9 @@
           </div>
         </div>
       </details>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-primary btn-outline" onclick="downloadCSVTemplate()" style="font-size:12px;">📄 Download CSV Template</button>
+      </div>
       <div style="margin-top:12px;">
         <div class="file-upload-area" id="csv-drop-area" onclick="document.getElementById('csv-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
           <div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">📂 Drag & drop a CSV file here, or click to select</div>
@@ -1930,6 +1933,41 @@ function mrShowMsg(type, text) {
 
 let currentCSVRows = [];
 let currentCSVHeaders = [];
+
+// ── Download CSV Template ──
+
+function downloadCSVTemplate() {
+  // Headers matching the required CSV format
+  const headers = ['DATE', 'RECEIPT NO', 'PAYMENT ID', 'NAME', 'EMAIL', 'AMOUNT', 'METHOD', 'PAN', 'ADDRESS', 'notes'];
+  // Example data row
+  const exampleRow = [
+    '2026-06-24',
+    '2006/06/24/01',
+    'Q2345234234234234',
+    'John Doe',
+    'john@example.com',
+    '1000',
+    'ACCOUNTTRANSFER',
+    'ABCDE1234F',
+    '"123 Main St, City, State"',
+    'Monthly donation',
+  ];
+
+  const csvContent = [
+    headers.join(','),
+    exampleRow.join(','),
+  ].join('\n') + '\n'; // Trailing newline for convenience
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'direct-bank-payments-template.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 function handleDragOver(e) {
   e.preventDefault();

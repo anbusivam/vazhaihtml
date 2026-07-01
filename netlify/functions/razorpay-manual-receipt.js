@@ -184,6 +184,73 @@ exports.handler = async function (event, context) {
             }
           }
 
+          // ── Sync user record from payment donor data (always: runs before duplicate payment check) ──
+          // This mirrors razorpay-sync.js logic — user update happens for every valid row,
+          // even if the payment record already exists.
+          try {
+            const usersList = await store.get('users:list', { type: 'json' }) || [];
+            const email = donorEmail.toLowerCase().trim();
+            const userExists = usersList.includes(email);
+
+            if (userExists) {
+              // Fetch current user record and update empty fields
+              const userData = await store.get(`user:${email}`, { type: 'json' });
+              if (userData) {
+                let needsUpdate = false;
+
+                if (donorName && (!userData.name || userData.name.trim() === '')) {
+                  userData.name = donorName;
+                  needsUpdate = true;
+                }
+                if (donorPhone && (!userData.phone || userData.phone.trim() === '')) {
+                  userData.phone = donorPhone;
+                  needsUpdate = true;
+                }
+                if (donorPan && (!userData.pan || userData.pan.trim() === '')) {
+                  userData.pan = donorPan;
+                  needsUpdate = true;
+                }
+                if (donorAddress && (!userData.address || userData.address.trim() === '')) {
+                  userData.address = donorAddress;
+                  needsUpdate = true;
+                }
+
+                if (needsUpdate) {
+                  userData.lastUpdated = new Date().toISOString();
+                  userData.lastUpdatedBy = session.email;
+                  await store.setJSON(`user:${email}`, userData);
+                }
+              }
+            } else {
+              // Create new user from payment donor data
+              const newUser = {
+                email: email,
+                name: donorName || '',
+                phone: donorPhone || '',
+                pan: donorPan || '',
+                address: donorAddress || '',
+                roles: [],
+                role: null,
+                source: 'manual-receipt',
+                createdBy: session.email,
+                createdAt: new Date().toISOString(),
+                lastUpdated: new Date().toISOString(),
+                lastUpdatedBy: session.email,
+              };
+
+              await store.setJSON(`user:${email}`, newUser);
+
+              // Add to users list
+              if (!usersList.includes(email)) {
+                usersList.push(email);
+                await store.setJSON('users:list', usersList);
+              }
+            }
+          } catch (userErr) {
+            console.error('[razorpay-manual-receipt] User sync error for', donorEmail, ':', userErr.message);
+            // Non-fatal: log but don't fail the payment insertion
+          }
+
           // ── Determine payment ID: use customPaymentId if provided, else generate ──
           let paymentId;
           if (customPaymentId) {
