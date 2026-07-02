@@ -325,3 +325,8 @@
   from = "/razorpay/manual-receipt"
   to = "/.netlify/functions/razorpay-manual-receipt"
   status = 200
+
+[[redirects]]
+  from = "/razorpay/blob-backup"
+  to = "/.netlify/functions/blob-backup"
+  status = 200
