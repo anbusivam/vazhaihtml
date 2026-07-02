@@ -9,6 +9,7 @@
 // WARNING: Restoring will OVERWRITE existing blob data. Use with extreme caution.
 
 const { getStore, ADMIN_EMAILS } = require('./auth-store');
+const { getBlogStore } = require('./blog-store');
 
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
@@ -32,75 +33,6 @@ async function getSession(store, event) {
   return session;
 }
 
-/**
- * Try to obtain a blog store (same strategy as blog-store.js)
- */
-async function getBlogStore(event) {
-  const { getStore: getBlogStore } = require('@netlify/blobs');
-
-  // connectLambda
-  if (event && event.blobs) {
-    try {
-      const { connectLambda } = require('@netlify/blobs');
-      connectLambda(event);
-      const store = getBlogStore({ name: 'blog' });
-      await store.get('__probe__');
-      return store;
-    } catch (_) {}
-  }
-
-  // clientContext.blobs
-  if (event && event.clientContext && event.clientContext.blobs) {
-    try {
-      const { setEnvironmentContext } = require('@netlify/blobs');
-      const raw = Buffer.from(event.clientContext.blobs, 'base64').toString('utf-8');
-      const blobInfo = JSON.parse(raw);
-      setEnvironmentContext({
-        siteID: event.headers['x-nf-site-id'] || process.env.SITE_ID,
-        token: blobInfo.token,
-        edgeURL: blobInfo.url,
-        deployID: event.headers['x-nf-deploy-id'],
-      });
-      const store = getBlogStore({ name: 'blog' });
-      await store.get('__probe__');
-      return store;
-    } catch (_) {}
-  }
-
-  // auto
-  try {
-    const store = getBlogStore({ name: 'blog' });
-    await store.get('__probe__');
-    return store;
-  } catch (_) {}
-
-  // state.json
-  const fs = require('fs');
-  const path = require('path');
-  const token = process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_ACCESS_TOKEN;
-  try {
-    const statePath = path.resolve(__dirname, '../../.netlify/state.json');
-    if (fs.existsSync(statePath) && token) {
-      const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
-      if (state.siteId) {
-        const store = getBlogStore({ name: 'blog', siteID: state.siteId, token });
-        await store.get('__probe__');
-        return store;
-      }
-    }
-  } catch (_) {}
-
-  // SITE_ID
-  if (process.env.SITE_ID) {
-    try {
-      const store = getBlogStore({ name: 'blog', siteID: process.env.SITE_ID });
-      await store.get('__probe__');
-      return store;
-    } catch (_) {}
-  }
-
-  return null;
-}
 
 /**
  * Export ALL blob data from both auth and blog stores.
@@ -175,15 +107,16 @@ async function exportAllData(event) {
   if (blogStore) {
     const blogData = {};
 
-    // blog:list — list of all blog post slugs
-    const blogList = await blogStore.get('blog:list', { type: 'json' }) || [];
-    blogData['blog:list'] = blogList;
+    // blog:index — the main index containing all blog post metadata
+    const blogIndex = await blogStore.get('blog:index', { type: 'json' }) || { posts: [] };
+    blogData['blog:index'] = blogIndex;
 
-    // each blog:{slug}
+    // each blog:post:{slug} — full blog post content
     const blogs = {};
-    for (const slug of blogList) {
+    for (const entry of blogIndex.posts) {
+      const slug = entry.slug;
       try {
-        const blogPost = await blogStore.get(`blog:${slug}`, { type: 'json' });
+        const blogPost = await blogStore.get(`blog:post:${slug}`, { type: 'json' });
         if (blogPost) {
           blogs[slug] = blogPost;
         }
@@ -191,21 +124,36 @@ async function exportAllData(event) {
     }
     blogData.blogs = blogs;
 
-    // blog:comments — comments list (if stored)
-    const commentsList = await blogStore.get('blog:comments', { type: 'json' }) || [];
-    blogData['blog:comments'] = commentsList;
-
-    // each comment:{commentId}
-    const comments = {};
-    for (const commentId of commentsList) {
+    // blog:comments:{slug} — comment index per slug
+    const commentsBySlug = {};
+    for (const entry of blogIndex.posts) {
+      const slug = entry.slug;
       try {
-        const commentData = await blogStore.get(`comment:${commentId}`, { type: 'json' });
-        if (commentData) {
-          comments[commentId] = commentData;
+        const commentIds = await blogStore.get(`blog:comments:${slug}`, { type: 'json' });
+        if (Array.isArray(commentIds) && commentIds.length > 0) {
+          commentsBySlug[slug] = commentIds;
         }
       } catch (_) {}
     }
+    blogData['comments:by-slug'] = commentsBySlug;
+
+    // each blog:comment:{slug}:{commentId} — individual comments
+    const comments = {};
+    for (const [slug, commentIds] of Object.entries(commentsBySlug)) {
+      for (const commentId of commentIds) {
+        try {
+          const commentData = await blogStore.get(`blog:comment:${slug}:${commentId}`, { type: 'json' });
+          if (commentData) {
+            comments[`${slug}:${commentId}`] = commentData;
+          }
+        } catch (_) {}
+      }
+    }
     blogData.comments = comments;
+
+    // blog:pending-comments — global pending comments list
+    const pendingComments = await blogStore.get('blog:pending-comments', { type: 'json' }) || [];
+    blogData['pending-comments'] = pendingComments;
 
     dump.stores.blog = blogData;
   }
@@ -257,7 +205,7 @@ exports.handler = async function (event, context) {
             receipts: Object.keys(dump.stores.auth['receipts:map'] || {}).length,
             hasThankletterTemplate: !!dump.stores.auth['thankletter_template'],
             blogs: dump.stores.blog ? Object.keys(dump.stores.blog.blogs || {}).length : 0,
-            comments: dump.stores.blog ? (dump.stores.blog['blog:comments'] || []).length : 0,
+            comments: dump.stores.blog ? Object.keys(dump.stores.blog.comments || {}).length : 0,
           },
           exportedAt: dump.exportedAt,
         }),
@@ -362,44 +310,59 @@ exports.handler = async function (event, context) {
       if (blogStore && dump.stores.blog) {
         const blogData = dump.stores.blog;
 
-        // blog:list
-        if (blogData['blog:list']) {
-          await blogStore.setJSON('blog:list', blogData['blog:list']);
-          results.restored['blog:list'] = blogData['blog:list'].length;
+        // blog:index
+        if (blogData['blog:index']) {
+          await blogStore.setJSON('blog:index', blogData['blog:index']);
+          results.restored['blog:index'] = blogData['blog:index'].posts ? blogData['blog:index'].posts.length : 0;
         }
 
-        // each blog:{slug}
+        // each blog:post:{slug}
         if (blogData.blogs) {
           let blogCount = 0;
           for (const [slug, blogPost] of Object.entries(blogData.blogs)) {
             try {
-              await blogStore.setJSON(`blog:${slug}`, blogPost);
+              await blogStore.setJSON(`blog:post:${slug}`, blogPost);
               blogCount++;
             } catch (err) {
-              results.errors.push(`Failed to restore blog ${slug}: ${err.message}`);
+              results.errors.push(`Failed to restore blog post ${slug}: ${err.message}`);
             }
           }
           results.restored.blogs = blogCount;
         }
 
-        // blog:comments
-        if (blogData['blog:comments']) {
-          await blogStore.setJSON('blog:comments', blogData['blog:comments']);
-          results.restored['blog:comments'] = blogData['blog:comments'].length;
+        // blog:comments:{slug} — comment index per slug
+        if (blogData['comments:by-slug']) {
+          let commentIndexCount = 0;
+          for (const [slug, commentIds] of Object.entries(blogData['comments:by-slug'])) {
+            try {
+              await blogStore.setJSON(`blog:comments:${slug}`, commentIds);
+              commentIndexCount++;
+            } catch (err) {
+              results.errors.push(`Failed to restore comment index for ${slug}: ${err.message}`);
+            }
+          }
+          results.restored['comments:by-slug'] = commentIndexCount;
         }
 
-        // each comment:{commentId}
+        // each blog:comment:{slug}:{commentId}
         if (blogData.comments) {
           let commentCount = 0;
-          for (const [commentId, commentData] of Object.entries(blogData.comments)) {
+          for (const [key, commentData] of Object.entries(blogData.comments)) {
             try {
-              await blogStore.setJSON(`comment:${commentId}`, commentData);
+              // key format is "slug:commentId"
+              await blogStore.setJSON(`blog:comment:${key}`, commentData);
               commentCount++;
             } catch (err) {
-              results.errors.push(`Failed to restore comment ${commentId}: ${err.message}`);
+              results.errors.push(`Failed to restore comment ${key}: ${err.message}`);
             }
           }
           results.restored.comments = commentCount;
+        }
+
+        // blog:pending-comments
+        if (blogData['pending-comments']) {
+          await blogStore.setJSON('blog:pending-comments', blogData['pending-comments']);
+          results.restored['pending-comments'] = blogData['pending-comments'].length;
         }
       }
 
