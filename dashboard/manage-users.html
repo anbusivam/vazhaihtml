@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Manage Users — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-header .user-info .email {
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .add-user-form {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .add-user-form input,
+    .add-user-form select {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .add-user-form input:focus {
+      border-color: var(--green);
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-primary:disabled:hover { background: #ccc; }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+    }
+    .btn-outline:hover {
+      background: var(--green-light);
+    }
+    .btn-danger {
+      background: #d32f2f;
+      border-color: #d32f2f;
+    }
+    .btn-danger:hover { background: #b71c1c; }
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .users-table th {
+      text-align: left;
+      padding: 8px 8px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .users-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    .users-table tr:hover td {
+      background: #fafafa;
+    }
+    .users-table input[type="text"],
+    .users-table input[type="tel"],
+    .users-table textarea {
+      width: 100%;
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      background: #f9f9f9;
+    }
+    .users-table input[type="text"]:focus,
+    .users-table input[type="tel"]:focus,
+    .users-table textarea:focus {
+      border-color: var(--green);
+      background: white;
+    }
+    .users-table input[type="text"].dirty,
+    .users-table input[type="tel"].dirty,
+    .users-table textarea.dirty {
+      border-color: #f57c00;
+      background: #fff8e1;
+    }
+    .users-table textarea {
+      resize: vertical;
+      min-height: 28px;
+      max-height: 80px;
+    }
+    .role-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+    }
+    .role-checkboxes label {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #fafafa;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .role-checkboxes label:hover {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .role-checkboxes input[type="checkbox"] {
+      margin: 0;
+      accent-color: var(--green-dark);
+    }
+    .role-checkboxes label.active {
+      background: var(--green-light);
+      border-color: var(--green-dark);
+      font-weight: 600;
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .home-link {
+      display: inline-block;
+      margin-top: 16px;
+      margin-left: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .home-link:hover { text-decoration: underline; }
+    .user-status {
+      font-size: 11px;
+      color: var(--text-light);
+    }
+    .user-status .active { color: var(--green); font-weight: 600; }
+    .user-status .pending { color: #e65100; font-weight: 600; }
+    .table-wrap {
+      overflow-x: auto;
+    }
+    .bulk-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .bulk-actions .save-status {
+      font-size: 13px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+    .users-table td.readonly {
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .edit-row-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 4px 6px;
+      font-size: 13px;
+      color: var(--text-light);
+      transition: all 0.15s;
+    }
+    .edit-row-btn:hover {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--green-dark);
+    }
+    .edit-row-btn.editing {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+      color: white;
+    }
+    .cell-readonly {
+      display: block;
+      font-size: 12px;
+      color: var(--text);
+      padding: 4px 2px;
+      min-height: 22px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 48px;
+      overflow-y: auto;
+    }
+    .cell-readonly.empty {
+      color: #bbb;
+      font-style: italic;
+    }
+    .cell-readonly.address-cell,
+    .cell-readonly.notes-cell {
+      cursor: pointer;
+    }
+    .cell-readonly.address-cell:hover,
+    .cell-readonly.notes-cell:hover {
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+    .zoom-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .zoom-overlay.open {
+      display: flex;
+    }
+    .zoom-modal {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+      max-width: 600px;
+      width: 100%;
+      padding: 24px;
+      position: relative;
+    }
+    .zoom-modal h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      color: var(--green-dark);
+    }
+    .zoom-modal textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+    }
+    .zoom-modal textarea:focus {
+      border-color: var(--green);
+    }
+    .zoom-modal .zoom-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+    .users-table .col-edit { width: 44px; text-align: center; }
+    .users-table .col-email { min-width: 200px; }
+    .users-table .col-name { min-width: 140px; }
+    .users-table .col-phone { min-width: 130px; }
+    .users-table .col-pan { min-width: 110px; }
+    .users-table .col-address { min-width: 200px; max-width: 260px; }
+    .users-table .col-tamil { min-width: 130px; }
+    .users-table .col-notes { min-width: 180px; max-width: 240px; }
+    .users-table .col-roles { min-width: 180px; }
+    .users-table .col-dates { min-width: 100px; }
+    .users-table .edit-mode-field { display: none; }
+    .users-table tr.editing .edit-mode-field { display: block; }
+    .users-table tr.editing .cell-readonly { display: none; }
+    .users-table tr.editing .cell-readonly.address-cell,
+    .users-table tr.editing .cell-readonly.notes-cell { display: none; }
+    @media (max-width: 768px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+      .users-table { font-size: 12px; }
+      .users-table th, .users-table td { padding: 4px 4px; }
+      .add-user-form { flex-direction: column; }
+      .add-user-form input { min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>👥 Manage Users</h1>
+  <div class="user-info">
+    <span>Signed in as <span class="email" id="admin-email"></span></span>
+    <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Messages -->
+  <div id="msg-area" class="msg"></div>
+
+  <!-- Add User Card -->
+  <div class="card" id="add-user-card">
+    <h2>➕ Add New User</h2>
+    <div class="add-user-form">
+      <input type="email" id="new-user-email" placeholder="user@example.com" autocomplete="off">
+      <button class="btn-primary" onclick="addUser()">Add User</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-light);margin:4px 0 0;">Add a user to the system so they can log in. They'll receive OTP access once added.</p>
+  </div>
+
+  <!-- Users List Card -->
+  <div class="card">
+    <h2>👥 Registered Users</h2>
+    <div class="bulk-actions">
+      <button class="btn-primary" id="fetch-users-btn" onclick="loadUsers()">📥 Fetch Users</button>
+      <button class="btn-primary btn-outline" id="save-all-btn" onclick="saveAllChanges()" disabled>💾 Save All Changes</button>
+      <span class="save-status" id="dirty-count"></span>
+    </div>
+    <div id="users-loading" class="loading-state" style="display:none;">Loading users...</div>
+    <div id="users-empty" class="empty-state" style="display:none;">No users found. Click "Fetch Users" to load.</div>
+    <div id="users-table-wrap" style="display:none;">
+      <div class="table-wrap">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th style="width:40px;text-align:center;">Edit</th>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>PAN</th>
+              <th>Address</th>
+              <th>Tamil Name</th>
+              <th>Notes</th>
+              <th>Roles</th>
+              <th>First Login</th>
+              <th>Last Login</th>
+              <th>Added At</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+    <a href="/dashboard/manage" class="back-link">← Back to Admin Dashboard</a>
+    <a href="/dashboard/user" class="home-link">🏠 My Dashboard</a>
+  </div>
+</div>
+
+<!-- Zoom Field Overlay -->
+<div id="zoom-field-overlay" class="zoom-overlay" onclick="if(event.target===this)closeZoomField()">
+  <div class="zoom-modal">
+    <h3 id="zoom-field-title">✏️ Edit Field</h3>
+    <textarea id="zoom-field-textarea" placeholder="Enter value..."></textarea>
+    <div class="zoom-actions">
+      <button class="btn-primary btn-outline" onclick="closeZoomField()">Cancel</button>
+      <button class="btn-primary" onclick="saveZoomField()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentUserEmail = null;
+
+const ALL_ROLES = ['admin', 'volunteer', 'donor', 'blogger'];
+
+const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
+
+// Track original user data and dirty state
+let usersData = [];
+let originalUsersData = {};
+let dirtyEmails = new Set();
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+  
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  const isAdmin = data.roles ? data.roles.includes('admin') : (data.role === 'admin');
+  if (!isAdmin) {
+    showMsg('error', 'Admin access required. You do not have admin privileges.');
+    setTimeout(() => { window.location.href = '/'; }, 2000);
+    return;
+  }
+  
+  currentUserEmail = data.email;
+  document.getElementById('admin-email').textContent = data.email;
+});
+
+function showMsg(type, text) {
+  const el = document.getElementById('msg-area');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+async function apiCall(method, body) {
+  const token = localStorage.getItem('vazhai_session');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  
+  const res = await fetch('/auth/admin', {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return await res.json();
+}
+
+function getRolesArray(user) {
+  if (Array.isArray(user.roles)) return user.roles;
+  if (user.role) return [user.role];
+  return [];
+}
+
+function rolesToBadges(roles) {
+  if (!roles || roles.length === 0) {
+    return '<span class="role-badge none">—</span>';
+  }
+  return roles.map(r => {
+    const cls = r === 'admin' ? 'admin' : (r === 'blogging' ? 'blogging' : 'none');
+    return `<span class="role-badge ${cls}">${r}</span>`;
+  }).join(' ');
+}
+
+function markDirty(email) {
+  dirtyEmails.add(email);
+  updateSaveButton();
+}
+
+function markClean(email) {
+  dirtyEmails.delete(email);
+  updateSaveButton();
+}
+
+function updateSaveButton() {
+  const btn = document.getElementById('save-all-btn');
+  const status = document.getElementById('dirty-count');
+  if (dirtyEmails.size > 0) {
+    btn.disabled = false;
+    status.textContent = `${dirtyEmails.size} user(s) have unsaved changes`;
+  } else {
+    btn.disabled = true;
+    status.textContent = '';
+  }
+}
+
+function onFieldChange(email, field, value) {
+  const user = usersData.find(u => u.email === email);
+  if (!user) return;
+  
+  const orig = originalUsersData[email];
+  if (!orig) return;
+  
+  user[field] = value;
+  
+  const changed = JSON.stringify(user) !== JSON.stringify(orig);
+  if (changed) {
+    markDirty(email);
+  } else {
+    markClean(email);
+  }
+  
+  const safeEmail = email.replace(/[@.]/g, '_');
+  const input = document.querySelector(`[data-email="${safeEmail}"][data-field="${field}"]`);
+  if (input) {
+    const originalValue = orig[field] || '';
+    const currentValue = (value || '').toString();
+    if (currentValue !== originalValue) {
+      input.classList.add('dirty');
+    } else {
+      input.classList.remove('dirty');
+    }
+  }
+}
+
+function onRoleChange(email) {
+  const safeEmail = email.replace(/[@.]/g, '_');
+  const checked = [];
+  document.querySelectorAll(`[data-email="${safeEmail}"][data-field="roles"] input[type="checkbox"]:checked`).forEach(cb => {
+    checked.push(cb.value);
+  });
+  
+  const user = usersData.find(u => u.email === email);
+  if (user) {
+    user.roles = checked;
+    
+    const orig = originalUsersData[email];
+    const origRoles = orig ? (orig.roles || []).sort().join(',') : '';
+    const newRoles = checked.sort().join(',');
+    
+    if (origRoles !== newRoles) {
+      markDirty(email);
+      const container = document.getElementById(`role-cbs-${safeEmail}`);
+      if (container) container.style.borderColor = '#f57c00';
+    } else {
+      const changed = JSON.stringify(user) !== JSON.stringify(orig);
+      if (!changed) {
+        markClean(email);
+      }
+      const container = document.getElementById(`role-cbs-${safeEmail}`);
+      if (container) container.style.borderColor = '';
+    }
+  }
+}
+
+function formatRolesDisplay(roles) {
+  if (!roles || roles.length === 0) return '<span class="cell-readonly empty">default</span>';
+  return roles.map(r => `<span class="role-badge" style="background:var(--green-light);color:var(--green-dark);padding:2px 6px;border-radius:4px;font-size:11px;margin-right:3px;">${r}</span>`).join(' ');
+}
+
+async function loadUsers() {
+  document.getElementById('users-loading').style.display = 'block';
+  document.getElementById('users-empty').style.display = 'none';
+  document.getElementById('users-table-wrap').style.display = 'none';
+  document.getElementById('fetch-users-btn').disabled = true;
+  document.getElementById('fetch-users-btn').innerHTML = '<span class="spinner"></span>Loading...';
+  
+  const data = await apiCall('GET');
+  
+  document.getElementById('users-loading').style.display = 'none';
+  document.getElementById('fetch-users-btn').disabled = false;
+  document.getElementById('fetch-users-btn').innerHTML = '📥 Fetch Users';
+  
+  if (!data.users || data.users.length === 0) {
+    document.getElementById('users-empty').style.display = 'block';
+    return;
+  }
+  
+  document.getElementById('users-table-wrap').style.display = 'block';
+  const tbody = document.getElementById('users-tbody');
+  tbody.innerHTML = '';
+  
+  usersData = [];
+  originalUsersData = {};
+  dirtyEmails.clear();
+  updateSaveButton();
+  
+  for (const user of data.users) {
+    const tr = document.createElement('tr');
+    tr.dataset.email = user.email;
+    
+    const roles = getRolesArray(user);
+    const safeEmail = user.email.replace(/[@.]/g, '_');
+    
+    const isHardcodedAdmin = SYSTEM_ADMINS.includes(user.email);
+    const currentUserIsSystemAdmin = SYSTEM_ADMINS.includes(currentUserEmail);
+    const canEditThisRow = !isHardcodedAdmin || currentUserIsSystemAdmin;
+    
+    const currentData = {
+      email: user.email,
+      name: user.name || '',
+      phone: user.phone || '',
+      pan: user.pan || '',
+      address: user.address || '',
+      tamilName: user.tamilName || '',
+      notes: user.notes || '',
+      roles: [...roles],
+    };
+    usersData.push(currentData);
+    originalUsersData[user.email] = JSON.parse(JSON.stringify(currentData));
+    
+    const firstLoginDisplay = user.firstLogin ? new Date(user.firstLogin).toLocaleDateString() : '—';
+    const lastLoginDisplay = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : '—';
+    const addedAtDisplay = user.addedAt ? new Date(user.addedAt).toLocaleDateString() : '—';
+    
+    let rolesEditHtml = '';
+    let rolesReadHtml = '';
+    if (isHardcodedAdmin) {
+      rolesReadHtml = '<span class="user-status"><span class="active">🔒 System Admin</span></span>';
+      rolesEditHtml = rolesReadHtml;
+    } else {
+      const checkboxes = ALL_ROLES.map(r => {
+        const checked = roles.includes(r) ? 'checked' : '';
+        return `<label class="${checked ? 'active' : ''}">
+          <input type="checkbox" value="${r}" ${checked} onchange="onRoleChange('${user.email}')">
+          ${r}
+        </label>`;
+      }).join('');
+      rolesEditHtml = `<div class="role-checkboxes edit-mode-field" id="role-cbs-${safeEmail}" data-email="${safeEmail}" data-field="roles">${checkboxes}</div>`;
+      rolesReadHtml = formatRolesDisplay(roles);
+    }
+    
+    const editBtnDisabled = canEditThisRow ? '' : ' disabled';
+    const editBtnTitle = canEditThisRow ? 'Edit this row' : 'Cannot edit system admin';
+    const editBtnHtml = canEditThisRow ? '✏️' : '🔒';
+    
+    tr.innerHTML = `
+      <td class="col-edit">
+        <button class="edit-row-btn" onclick="toggleEditRow('${user.email}', this)" title="${editBtnTitle}"${editBtnDisabled}>${editBtnHtml}</button>
+      </td>
+      <td class="col-email"><strong>${escapeHtml(user.email)}</strong></td>
+      <td class="col-name">
+        <span class="cell-readonly ${user.name ? '' : 'empty'}">${escapeHtml(user.name || '—')}</span>
+        <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="name" value="${escapeHtml(user.name || '')}" onchange="onFieldChange('${user.email}', 'name', this.value)">
+      </td>
+      <td class="col-phone">
+        <span class="cell-readonly ${user.phone ? '' : 'empty'}">${escapeHtml(user.phone || '—')}</span>
+        <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="phone" value="${escapeHtml(user.phone || '')}" onchange="onFieldChange('${user.email}', 'phone', this.value)">
+      </td>
+      <td class="col-pan">
+        <span class="cell-readonly ${user.pan ? '' : 'empty'}">${escapeHtml(user.pan || '—')}</span>
+        <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="pan" value="${escapeHtml(user.pan || '')}" style="text-transform:uppercase;" onchange="onFieldChange('${user.email}', 'pan', this.value.toUpperCase())">
+      </td>
+      <td class="col-address">
+        <span class="cell-readonly address-cell ${user.address ? '' : 'empty'}" onclick="openZoomField('${user.email}', 'address')">${escapeHtml(user.address || '— (click to view/edit)')}</span>
+        <textarea class="edit-mode-field" data-email="${safeEmail}" data-field="address" onchange="onFieldChange('${user.email}', 'address', this.value)" rows="2">${escapeHtml(user.address || '')}</textarea>
+      </td>
+      <td class="col-tamil">
+        <span class="cell-readonly ${user.tamilName ? '' : 'empty'}">${escapeHtml(user.tamilName || '—')}</span>
+        <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="tamilName" value="${escapeHtml(user.tamilName || '')}" onchange="onFieldChange('${user.email}', 'tamilName', this.value)">
+      </td>
+      <td class="col-notes">
+        <span class="cell-readonly notes-cell ${user.notes ? '' : 'empty'}" onclick="openZoomField('${user.email}', 'notes')">${escapeHtml(user.notes || '— (click to view/edit)')}</span>
+        <textarea class="edit-mode-field" data-email="${safeEmail}" data-field="notes" onchange="onFieldChange('${user.email}', 'notes', this.value)" rows="2">${escapeHtml(user.notes || '')}</textarea>
+      </td>
+      <td class="col-roles">
+        <div class="roles-readonly">${rolesReadHtml}</div>
+        ${rolesEditHtml}
+      </td>
+      <td class="col-dates readonly">${firstLoginDisplay}</td>
+      <td class="col-dates readonly">${lastLoginDisplay}</td>
+      <td class="col-dates readonly">${addedAtDisplay}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function toggleEditRow(email, btn) {
+  const tr = btn.closest('tr');
+  if (!tr) return;
+  
+  if (SYSTEM_ADMINS.includes(email) && !SYSTEM_ADMINS.includes(currentUserEmail)) {
+    showMsg('error', 'You cannot edit system admin profiles.');
+    return;
+  }
+  
+  const isEditing = tr.classList.toggle('editing');
+  btn.classList.toggle('editing', isEditing);
+  btn.title = isEditing ? 'Editing — click to view' : 'Edit this row';
+  btn.textContent = isEditing ? '✅' : '✏️';
+  
+  if (!isEditing) {
+    updateReadonlyDisplay(email);
+  }
+}
+
+function updateReadonlyDisplay(email) {
+  const user = usersData.find(u => u.email === email);
+  if (!user) return;
+  const tr = document.querySelector(`tr[data-email="${email}"]`);
+  if (!tr) return;
+  
+  const fields = ['name', 'phone', 'pan', 'address', 'tamilName', 'notes'];
+  for (const field of fields) {
+    const val = (user[field] || '').toString();
+    const span = tr.querySelector(`.cell-readonly[onclick*="${field}"]`) || tr.querySelector(`.col-${field} .cell-readonly`);
+    if (span) {
+      if (field === 'address' || field === 'notes') {
+        span.textContent = val || '— (click to view/edit)';
+      } else {
+        span.textContent = val || '—';
+      }
+      span.classList.toggle('empty', !val);
+    }
+  }
+  
+  const rolesDisplay = tr.querySelector('.roles-readonly');
+  if (rolesDisplay) {
+    rolesDisplay.innerHTML = formatRolesDisplay(user.roles || []);
+  }
+}
+
+function openZoomField(email, field) {
+  const user = usersData.find(u => u.email === email);
+  if (!user) return;
+  
+  const overlay = document.getElementById('zoom-field-overlay');
+  const titleEl = document.getElementById('zoom-field-title');
+  const textarea = document.getElementById('zoom-field-textarea');
+  
+  titleEl.textContent = `✏️ Edit ${field.charAt(0).toUpperCase() + field.slice(1)} — ${email}`;
+  textarea.value = user[field] || '';
+  textarea.dataset.email = email;
+  textarea.dataset.field = field;
+  overlay.classList.add('open');
+  
+  setTimeout(() => textarea.focus(), 100);
+}
+
+function closeZoomField() {
+  document.getElementById('zoom-field-overlay').classList.remove('open');
+}
+
+function saveZoomField() {
+  const textarea = document.getElementById('zoom-field-textarea');
+  const email = textarea.dataset.email;
+  const field = textarea.dataset.field;
+  const value = textarea.value;
+  
+  onFieldChange(email, field, value);
+  updateReadonlyDisplay(email);
+  
+  const safeEmail = email.replace(/[@.]/g, '_');
+  const editInput = document.querySelector(`[data-email="${safeEmail}"][data-field="${field}"]`);
+  if (editInput) {
+    editInput.value = value;
+    const orig = originalUsersData[email];
+    if (orig) {
+      const originalValue = orig[field] || '';
+      if (value !== originalValue) {
+        editInput.classList.add('dirty');
+      } else {
+        editInput.classList.remove('dirty');
+      }
+    }
+  }
+  
+  closeZoomField();
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  var amp = String.fromCharCode(38);
+  return str.replace(/[&<>"']/g, function(m) {
+    if (m === '&') return amp + 'amp;';
+    if (m === '<') return amp + 'lt;';
+    if (m === '>') return amp + 'gt;';
+    if (m === '"') return amp + 'quot;';
+    return amp + '#039;';
+  });
+}
+
+async function saveAllChanges() {
+  if (dirtyEmails.size === 0) {
+    showMsg('success', 'No changes to save.');
+    return;
+  }
+  
+  const saveBtn = document.getElementById('save-all-btn');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="spinner"></span>Saving...';
+  showMsg('', '');
+  
+  const changedUsers = [];
+  for (const email of dirtyEmails) {
+    const user = usersData.find(u => u.email === email);
+    if (!user) continue;
+    
+    const orig = originalUsersData[email];
+    if (!orig) continue;
+    
+    const update = { email: user.email };
+    let hasChanges = false;
+    
+    for (const field of ['name', 'phone', 'pan', 'address', 'tamilName', 'notes']) {
+      const origVal = (orig[field] || '').toString().trim();
+      const newVal = (user[field] || '').toString().trim();
+      if (origVal !== newVal) {
+        update[field] = newVal;
+        hasChanges = true;
+      }
+    }
+    
+    const origRoles = (orig.roles || []).sort().join(',');
+    const newRoles = (user.roles || []).sort().join(',');
+    if (origRoles !== newRoles) {
+      update.roles = user.roles;
+      hasChanges = true;
+    }
+    
+    if (hasChanges) {
+      changedUsers.push(update);
+    }
+  }
+  
+  if (changedUsers.length === 0) {
+    showMsg('success', 'No changes to save (fields reverted).');
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '💾 Save All Changes';
+    dirtyEmails.clear();
+    updateSaveButton();
+    return;
+  }
+  
+  const data = await apiCall('POST', { action: 'bulk-update', users: changedUsers });
+  
+  saveBtn.disabled = false;
+  saveBtn.innerHTML = '💾 Save All Changes';
+  
+  if (data.error) {
+    showMsg('error', data.error);
+    return;
+  }
+  
+  if (data.results && data.results.errors && data.results.errors.length > 0) {
+    const errs = data.results.errors.map(e => `${e.email}: ${e.error}`).join('; ');
+    showMsg('error', `Saved ${data.results.updated.length} user(s), but ${data.results.errors.length} error(s): ${errs}`);
+    await loadUsers();
+    return;
+  }
+  
+  showMsg('success', data.message);
+  await loadUsers();
+}
+
+async function addUser() {
+  const emailInput = document.getElementById('new-user-email');
+  const email = emailInput.value.trim();
+  
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showMsg('error', 'Please enter a valid email address.');
+    return;
+  }
+  
+  showMsg('', '');
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Adding...';
+  
+  const data = await apiCall('POST', { action: 'add-user', email });
+  
+  btn.disabled = false;
+  btn.textContent = 'Add User';
+  
+  if (data.error) {
+    showMsg('error', data.error);
+    return;
+  }
+  
+  showMsg('success', data.message);
+  emailInput.value = '';
+  
+  const tableWrap = document.getElementById('users-table-wrap');
+  if (tableWrap.style.display !== 'none') {
+    await loadUsers();
+  }
+}
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch('/auth/logout', { method: 'POST', headers });
+  } catch (_) {}
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>

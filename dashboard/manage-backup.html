@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Backup & Restore — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-header .user-info .email {
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .dashboard-container {
+      max-width: 800px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-primary:disabled:hover { background: #ccc; }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+    }
+    .btn-outline:hover {
+      background: var(--green-light);
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .home-link {
+      display: inline-block;
+      margin-top: 16px;
+      margin-left: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .home-link:hover { text-decoration: underline; }
+    .warning-box {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #e65100;
+    }
+    .stats-box {
+      background: var(--green-light);
+      border: 1px solid #a5d6a7;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 13px;
+    }
+    @media (max-width: 768px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>💾 Backup & Restore</h1>
+  <div class="user-info">
+    <span>Signed in as <span class="email" id="admin-email"></span></span>
+    <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Messages -->
+  <div id="msg-area" class="msg"></div>
+
+  <!-- Backup & Restore Card -->
+  <div class="card" id="backup-card">
+    <h2>💾 Backup & Restore</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Export all blob data (users, payments, receipts, blog posts, comments, thank letter template) as a JSON file, or restore from a previously exported backup file.</p>
+    <div class="warning-box">
+      <strong>⚠️ Important:</strong> Before restoring, the system will automatically download a backup of your current data. This is a safety measure to prevent accidental data loss. After restore, users will need to re-login.
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn-primary" id="backup-export-btn" onclick="exportBackup()">⬇️ Export Backup</button>
+      <button class="btn-primary btn-outline" id="backup-restore-btn" onclick="document.getElementById('backup-file-input').click()">📤 Restore from File</button>
+      <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="handleBackupFile(event)">
+    </div>
+    <div id="backup-msg" class="msg"></div>
+    <div id="backup-progress" class="loading-state" style="display:none;">Processing backup...</div>
+    <div id="backup-stats" style="display:none;" class="stats-box"></div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+    <a href="/dashboard/manage" class="back-link">← Back to Admin Dashboard</a>
+    <a href="/dashboard/user" class="home-link">🏠 My Dashboard</a>
+  </div>
+</div>
+
+<script>
+let currentUserEmail = '';
+
+const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+  
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  const isAdmin = data.roles ? data.roles.includes('admin') : (data.role === 'admin');
+  if (!isAdmin) {
+    showMsg('error', 'Admin access required. You do not have admin privileges.');
+    setTimeout(() => { window.location.href = '/'; }, 2000);
+    return;
+  }
+  
+  // Backup & Restore is restricted to system admins only
+  if (!SYSTEM_ADMINS.includes(data.email)) {
+    showMsg('error', 'Only system administrators can access Backup & Restore.');
+    setTimeout(() => { window.location.href = '/dashboard/manage'; }, 2000);
+    return;
+  }
+  
+  currentUserEmail = data.email;
+  document.getElementById('admin-email').textContent = data.email;
+});
+
+function showMsg(type, text) {
+  const el = document.getElementById('msg-area');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+function showBackupMsg(type, text) {
+  const el = document.getElementById('backup-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+async function exportBackup() {
+  const exportBtn = document.getElementById('backup-export-btn');
+  const progressEl = document.getElementById('backup-progress');
+  const statsEl = document.getElementById('backup-stats');
+
+  exportBtn.disabled = true;
+  exportBtn.innerHTML = '<span class="spinner"></span>Exporting...';
+  progressEl.style.display = 'block';
+  progressEl.textContent = 'Fetching backup data from server...';
+  showBackupMsg('', '');
+  statsEl.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/blob-backup', { headers });
+    const data = await res.json();
+
+    if (data.error) {
+      showBackupMsg('error', data.error);
+      return;
+    }
+
+    progressEl.textContent = 'Processing backup file for download...';
+
+    const jsonStr = JSON.stringify(data.data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    a.download = `vazhai-blob-backup-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    const stats = data.stats;
+    let statsHtml = '<strong>✅ Backup exported successfully!</strong><br><br>';
+    statsHtml += `👤 Users: ${stats.users}<br>`;
+    statsHtml += `💳 Payments: ${stats.payments}<br>`;
+    statsHtml += `📋 Receipts: ${stats.receipts}<br>`;
+    if (stats.hasThankletterTemplate) statsHtml += `📝 Thank letter template: Yes<br>`;
+    statsHtml += `📝 Blogs: ${stats.blogs}<br>`;
+    statsHtml += `💬 Comments: ${stats.comments}<br>`;
+    statsHtml += `<br><small>Exported at: ${new Date(data.exportedAt).toLocaleString()}</small>`;
+    statsEl.innerHTML = statsHtml;
+    statsEl.style.display = 'block';
+
+    showBackupMsg('success', `✅ Backup exported! File downloaded as "vazhai-blob-backup-${dateStr}.json"`);
+  } catch (err) {
+    showBackupMsg('error', 'Network error: ' + err.message);
+  } finally {
+    exportBtn.disabled = false;
+    exportBtn.textContent = '⬇️ Export Backup';
+    progressEl.style.display = 'none';
+  }
+}
+
+function handleBackupFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  event.target.value = '';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    let dump;
+    try {
+      dump = JSON.parse(text);
+    } catch (err) {
+      showBackupMsg('error', 'Invalid JSON file: ' + err.message);
+      return;
+    }
+
+    if (!dump || !dump.stores || !dump.stores.auth) {
+      showBackupMsg('error', 'Invalid backup file format. Expected a JSON object with "stores.auth" property. Make sure you are using a backup file exported from this system.');
+      return;
+    }
+
+    const version = dump.version || 0;
+    if (version !== 1) {
+      showBackupMsg('error', `Unrecognized backup format version (${version}). Expected version 1.`);
+      return;
+    }
+
+    const authData = dump.stores.auth;
+    const userCount = authData.users ? Object.keys(authData.users).length : 0;
+    const paymentCount = authData.payments ? Object.keys(authData.payments).length : 0;
+    const exportTime = dump.exportedAt ? new Date(dump.exportedAt).toLocaleString() : 'unknown';
+
+    let confirmMsg = `⚠️ RESTORE DATA?\n\n`;
+    confirmMsg += `Backup file: ${file.name}\n`;
+    confirmMsg += `Exported at: ${exportTime}\n\n`;
+    confirmMsg += `This backup contains:\n`;
+    confirmMsg += `• ${userCount} user(s)\n`;
+    confirmMsg += `• ${paymentCount} payment(s)\n`;
+    confirmMsg += `• ${Object.keys(authData['receipts:map'] || {}).length} receipt mapping(s)\n`;
+    if (authData['thankletter_template']) confirmMsg += `• Thank letter template\n`;
+    if (dump.stores.blog) {
+      const blogCount = dump.stores.blog.blogs ? Object.keys(dump.stores.blog.blogs).length : 0;
+      const commentCount = dump.stores.blog['blog:comments'] ? dump.stores.blog['blog:comments'].length : 0;
+      if (blogCount > 0) confirmMsg += `• ${blogCount} blog post(s)\n`;
+      if (commentCount > 0) confirmMsg += `• ${commentCount} comment(s)\n`;
+    }
+    confirmMsg += `\n⚠️ WARNING: This will OVERWRITE all existing data in the system!\n`;
+    confirmMsg += `\nBEFORE restoring, the system will automatically download a safety backup of your CURRENT data.\n`;
+    confirmMsg += `This is REQUIRED and cannot be skipped.\n\n`;
+    confirmMsg += `Proceed with restore?`;
+
+    if (!confirm(confirmMsg)) {
+      showBackupMsg('', '');
+      return;
+    }
+
+    performRestore(dump, file.name);
+  };
+  reader.readAsText(file);
+}
+
+async function performRestore(dump, fileName) {
+  const restoreBtn = document.getElementById('backup-restore-btn');
+  const progressEl = document.getElementById('backup-progress');
+  const statsEl = document.getElementById('backup-stats');
+
+  restoreBtn.disabled = true;
+  progressEl.style.display = 'block';
+  progressEl.textContent = 'Step 1/3: Creating safety backup of current data...';
+  showBackupMsg('', '');
+  statsEl.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    progressEl.textContent = 'Step 1/3: Fetching current data for safety backup...';
+    const backupRes = await fetch('/razorpay/blob-backup', { headers });
+    const backupData = await backupRes.json();
+
+    if (backupData.error) {
+      showBackupMsg('error', 'Failed to create safety backup: ' + backupData.error + '. Restore aborted.');
+      restoreBtn.disabled = false;
+      progressEl.style.display = 'none';
+      return;
+    }
+
+    progressEl.textContent = 'Step 2/3: Downloading safety backup...';
+    const safetyJsonStr = JSON.stringify(backupData.data, null, 2);
+    const safetyBlob = new Blob([safetyJsonStr], { type: 'application/json;charset=utf-8;' });
+    const safetyUrl = URL.createObjectURL(safetyBlob);
+    const safetyA = document.createElement('a');
+    safetyA.href = safetyUrl;
+    const dateStr = new Date().toISOString().split('T')[0];
+    const timeStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    safetyA.download = `vazhai-auto-backup-before-restore-${dateStr}-${timeStr}.json`;
+    document.body.appendChild(safetyA);
+    safetyA.click();
+    document.body.removeChild(safetyA);
+    URL.revokeObjectURL(safetyUrl);
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    progressEl.textContent = 'Step 3/3: Sending restore data to server...';
+
+    const restoreRes = await fetch('/razorpay/blob-backup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ data: dump }),
+    });
+
+    const restoreResult = await restoreRes.json();
+
+    if (restoreResult.error) {
+      showBackupMsg('error', 'Restore failed: ' + restoreResult.error);
+      restoreBtn.disabled = false;
+      progressEl.style.display = 'none';
+      return;
+    }
+
+    const r = restoreResult.results;
+    let statsHtml = '<strong>✅ Data restored successfully!</strong><br>';
+    statsHtml += '<small style="color:var(--text-light);">A safety backup of your previous data was downloaded automatically.</small><br><br>';
+    statsHtml += '<strong>Restored items:</strong><br>';
+    if (r.restored['users:list']) statsHtml += `👤 Users list: ${r.restored['users:list']} entries<br>`;
+    if (r.restored.users) statsHtml += `👤 User profiles: ${r.restored.users}<br>`;
+    if (r.restored['payments:list']) statsHtml += `💳 Payments list: ${r.restored['payments:list']} entries<br>`;
+    if (r.restored.payments) statsHtml += `💳 Payment records: ${r.restored.payments}<br>`;
+    if (r.restored['receipts:map']) statsHtml += `📋 Receipt mappings: ${r.restored['receipts:map']}<br>`;
+    if (r.restored['thankletter_template']) statsHtml += `📝 Thank letter template: restored<br>`;
+    if (r.restored.blogs) statsHtml += `📝 Blog posts: ${r.restored.blogs}<br>`;
+    if (r.restored.comments) statsHtml += `💬 Comments: ${r.restored.comments}<br>`;
+    if (r.errors && r.errors.length > 0) {
+      statsHtml += `<br><span style="color:#d32f2f;">⚠️ ${r.errors.length} error(s) during restore:</span><br>`;
+      statsHtml += r.errors.slice(0, 5).map(e => `<small style="color:#d32f2f;">• ${escapeHtml(e)}</small><br>`).join('');
+      if (r.errors.length > 5) statsHtml += `<small style="color:#d32f2f;">• ... and ${r.errors.length - 5} more</small><br>`;
+    }
+    statsHtml += `<br><small>Restored from: ${escapeHtml(fileName)}</small>`;
+    statsEl.innerHTML = statsHtml;
+    statsEl.style.display = 'block';
+
+    showBackupMsg('success', '✅ Restore completed! A safety backup of your previous data was downloaded. Users may need to re-login.');
+  } catch (err) {
+    showBackupMsg('error', 'Restore failed: ' + err.message);
+  } finally {
+    restoreBtn.disabled = false;
+    progressEl.style.display = 'none';
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&#039;');
+}
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch('/auth/logout', { method: 'POST', headers });
+  } catch (_) {}
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>

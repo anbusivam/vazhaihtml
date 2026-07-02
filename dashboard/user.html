@@ -548,10 +548,21 @@
     </div>
   </div>
 
-  <!-- ======== Admin Dashboard Link (admins only) ======== -->
+  <!-- ======== Admin Management Links (admins only) ======== -->
   <div class="card" id="admin-link-card" style="display:none;">
-    <div style="padding:16px 20px;">
-      <a href="/dashboard/manage" class="admin-link">⚙️ Go to Admin Dashboard →</a>
+    <div class="section-header" onclick="toggleSection('admin-links')">
+      <h2>⚙️ Admin Management</h2>
+      <span class="section-toggle" id="toggle-admin-links">▼</span>
+    </div>
+    <div class="section-body" id="body-admin-links">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="/dashboard/manage" class="admin-link" style="margin-bottom:8px;">⚙️ Go to Admin Dashboard →</a>
+        <a href="/dashboard/manage-users" class="admin-link" style="background:var(--green-light);color:var(--green-dark);">👥 Manage Users</a>
+        <a href="/dashboard/manage-payments" class="admin-link" style="background:var(--green-light);color:var(--green-dark);">📋 Payment History</a>
+        <a href="/dashboard/manage-razorpay" class="admin-link" id="user-link-razorpay" style="display:none;background:var(--green-light);color:var(--green-dark);">💳 Razorpay Payments & Sync</a>
+        <a href="/dashboard/manage-thankletter" class="admin-link" style="background:var(--green-light);color:var(--green-dark);">📝 Thank You Letter Template</a>
+        <a href="/dashboard/manage-backup" class="admin-link" id="user-link-backup" style="display:none;background:var(--green-light);color:var(--green-dark);">💾 Backup & Restore</a>
+      </div>
     </div>
   </div>
 
@@ -634,6 +645,13 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Admin section
   if (userRoles.includes('admin')) {
     document.getElementById('admin-link-card').style.display = 'block';
+    
+    // Show Razorpay and Backup links only for hardcoded system admins
+    const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
+    if (SYSTEM_ADMINS.includes(data.email)) {
+      document.getElementById('user-link-razorpay').style.display = 'block';
+      document.getElementById('user-link-backup').style.display = 'block';
+    }
   }
 
   // Parse ?redirect= parameter

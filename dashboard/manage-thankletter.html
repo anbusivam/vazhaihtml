@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Thank You Letter Template — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-header .user-info .email {
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .dashboard-container {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-primary:disabled:hover { background: #ccc; }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+    }
+    .btn-outline:hover {
+      background: var(--green-light);
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .home-link {
+      display: inline-block;
+      margin-top: 16px;
+      margin-left: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .home-link:hover { text-decoration: underline; }
+    .placeholders-info {
+      background: #f7fafc;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      border: 1px solid #e2e8f0;
+    }
+    @media (max-width: 768px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>📝 Thank You Letter Template</h1>
+  <div class="user-info">
+    <span>Signed in as <span class="email" id="admin-email"></span></span>
+    <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Messages -->
+  <div id="msg-area" class="msg"></div>
+
+  <!-- Thank Letter Template Card -->
+  <div class="card" id="thankletter-card">
+    <h2>📝 Thank You Letter Template</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Edit the HTML template used when sending thank-you emails to donors. The template supports these placeholders that will be replaced dynamically:</p>
+    <div class="placeholders-info">
+      <code><strong>[donor-name]</strong></code> — Donor's name (from payment; can also use <code>[user-name]</code> or <code>[user-tamilname]</code> instead)<br>
+      <code><strong>[donation-amount]</strong></code> — Donation amount (e.g. ₹1,000.00)<br>
+      <code><strong>[donation-date]</strong></code> — Date of donation<br>
+      <code><strong>[donor-mail-id]</strong></code> — Donor's email address<br>
+      <code><strong>[user-name]</strong></code> — User's saved name (from profile; <span style="color:#d32f2f;">error if missing</span>)<br>
+      <code><strong>[user-tamilname]</strong></code> — User's saved Tamil name (from profile; <span style="color:#d32f2f;">error if missing</span>)
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-primary" id="tl-view-btn" onclick="loadThankLetterTemplate()">📄 View Current Template</button>
+      <button class="btn-primary btn-outline" id="tl-edit-btn" onclick="openTemplateEditor()" disabled>✏️ Edit Template</button>
+      <button class="btn-primary btn-sm btn-outline" id="tl-reset-btn" onclick="resetToDefaultTemplate()" style="font-size:11px;">↩️ Reset to Default</button>
+    </div>
+    <div id="tl-msg" class="msg" style="margin-top:12px;"></div>
+    <div id="tl-preview" style="display:none;margin-top:16px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="background:#f7fafc;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text-light);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span>📋 Current Template Preview</span>
+        <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 10px;" onclick="document.getElementById('tl-preview').style.display='none'">✕ Close</button>
+      </div>
+      <div id="tl-preview-content" style="padding:16px;max-height:400px;overflow:auto;font-size:12px;background:white;white-space:pre-wrap;word-break:break-word;font-family:monospace;"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+    <a href="/dashboard/manage" class="back-link">← Back to Admin Dashboard</a>
+    <a href="/dashboard/user" class="home-link">🏠 My Dashboard</a>
+  </div>
+</div>
+
+<!-- Template Editor Modal -->
+<div id="tl-modal-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeTemplateEditor()">
+  <div style="background:white;border-radius:12px;max-width:800px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 30px rgba(0,0,0,0.15);" onclick="event.stopPropagation()">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;font-size:18px;color:var(--green-dark);">✏️ Edit Thank You Letter Template</h3>
+      <button onclick="closeTemplateEditor()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-light);padding:0 4px;">&times;</button>
+    </div>
+    <div style="padding:16px 20px;background:#f7fafc;border-bottom:1px solid var(--border);font-size:13px;color:var(--text-light);line-height:1.6;">
+      Edit the HTML template below. The following placeholders will be replaced dynamically when sending emails:
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donor-name]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donation-amount]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donation-date]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[donor-mail-id]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[user-name]</code>,
+      <code style="background:#edf2f7;padding:1px 6px;border-radius:4px;font-weight:600;">[user-tamilname]</code>.
+      You may use any of the name placeholders — <code>[donor-name]</code>, <code>[user-name]</code>, or <code>[user-tamilname]</code> — alone or together. The system will use whatever is available.
+      <br><span style="color:#d32f2f;">⚠️ [user-name] and [user-tamilname] require the donor's profile to have those fields saved, otherwise an error will be shown.</span>
+    </div>
+    <div style="flex:1;overflow:auto;padding:16px 20px;">
+      <textarea id="tl-editor-textarea" style="width:100%;min-height:400px;font-family:monospace;font-size:13px;padding:14px;border:2px solid var(--border);border-radius:8px;resize:vertical;outline:none;line-height:1.5;" spellcheck="false"></textarea>
+    </div>
+    <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+      <div style="flex:1;font-size:12px;color:var(--text-light);align-self:center;" id="tl-editor-status"></div>
+      <button class="btn-primary btn-outline" onclick="closeTemplateEditor()" style="padding:10px 20px;">Cancel</button>
+      <button class="btn-primary" id="tl-save-btn" onclick="saveTemplateEditor()" style="padding:10px 24px;">💾 Save Template</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentTemplate = null;
+let currentUserEmail = '';
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+  
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  const isAdmin = data.roles ? data.roles.includes('admin') : (data.role === 'admin');
+  if (!isAdmin) {
+    showMsg('error', 'Admin access required. You do not have admin privileges.');
+    setTimeout(() => { window.location.href = '/'; }, 2000);
+    return;
+  }
+  
+  currentUserEmail = data.email;
+  document.getElementById('admin-email').textContent = data.email;
+});
+
+function showMsg(type, text) {
+  const el = document.getElementById('msg-area');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+function tlShowMsg(type, text) {
+  const el = document.getElementById('tl-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  el.style.display = text ? 'block' : 'none';
+}
+
+async function fetchTemplate() {
+  const token = localStorage.getItem('vazhai_session');
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch('/razorpay/thankletter-template', { headers });
+  const data = await res.json();
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  currentTemplate = data.template;
+  return data.template;
+}
+
+async function loadThankLetterTemplate() {
+  const viewBtn = document.getElementById('tl-view-btn');
+  const editBtn = document.getElementById('tl-edit-btn');
+  const previewEl = document.getElementById('tl-preview');
+  const previewContent = document.getElementById('tl-preview-content');
+
+  viewBtn.disabled = true;
+  viewBtn.innerHTML = '<span class="spinner"></span>Loading...';
+  tlShowMsg('', '');
+
+  try {
+    const template = await fetchTemplate();
+    editBtn.disabled = false;
+    previewContent.textContent = template.length > 2000
+      ? template.substring(0, 2000) + '\n\n... (template truncated for preview, click Edit to see full content)'
+      : template;
+    previewEl.style.display = 'block';
+    tlShowMsg('success', '✅ Template loaded successfully. It has ' + template.length + ' characters.');
+  } catch (err) {
+    tlShowMsg('error', 'Failed to load template: ' + err.message);
+  } finally {
+    viewBtn.disabled = false;
+    viewBtn.textContent = '📄 View Current Template';
+  }
+}
+
+async function openTemplateEditor() {
+  const textarea = document.getElementById('tl-editor-textarea');
+  const saveBtn = document.getElementById('tl-save-btn');
+  const statusEl = document.getElementById('tl-editor-status');
+
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="spinner"></span>Loading...';
+  statusEl.textContent = 'Loading template...';
+
+  try {
+    const template = await fetchTemplate();
+    textarea.value = template;
+    document.getElementById('tl-modal-overlay').style.display = 'flex';
+    statusEl.textContent = 'Template loaded (' + template.length + ' chars). Edit and click Save.';
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+    tlShowMsg('error', 'Failed to load template for editing: ' + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '💾 Save Template';
+  }
+}
+
+function closeTemplateEditor() {
+  document.getElementById('tl-modal-overlay').style.display = 'none';
+  document.getElementById('tl-editor-status').textContent = '';
+}
+
+async function saveTemplateEditor() {
+  const textarea = document.getElementById('tl-editor-textarea');
+  const saveBtn = document.getElementById('tl-save-btn');
+  const statusEl = document.getElementById('tl-editor-status');
+  const template = textarea.value;
+
+  if (!template || template.trim().length === 0) {
+    statusEl.textContent = '⚠️ Template cannot be empty.';
+    return;
+  }
+
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="spinner"></span>Saving...';
+  statusEl.textContent = 'Saving template...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/thankletter-template', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ template }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      statusEl.textContent = '❌ ' + data.error;
+      tlShowMsg('error', 'Failed to save template: ' + data.error);
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '💾 Save Template';
+      return;
+    }
+
+    currentTemplate = template;
+    statusEl.textContent = '✅ Template saved successfully!';
+    tlShowMsg('success', '✅ Thank letter template updated successfully.');
+
+    setTimeout(() => {
+      closeTemplateEditor();
+      document.getElementById('tl-edit-btn').disabled = false;
+    }, 1200);
+  } catch (err) {
+    statusEl.textContent = '❌ Network error: ' + err.message;
+    tlShowMsg('error', 'Network error while saving template: ' + err.message);
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '💾 Save Template';
+  }
+}
+
+async function resetToDefaultTemplate() {
+  if (!confirm('Are you sure you want to reset the thank-you letter template to the default version? This cannot be undone.')) {
+    return;
+  }
+
+  const resetBtn = document.getElementById('tl-reset-btn');
+  resetBtn.disabled = true;
+  resetBtn.innerHTML = '<span class="spinner"></span>Resetting...';
+  tlShowMsg('', '');
+
+  try {
+    tlShowMsg('', '');
+    tlShowMsg('success', 'Fetching default template...');
+
+    const defaultRes = await fetch('/ThankLetterTemplate.html');
+    if (!defaultRes.ok) {
+      tlShowMsg('error', 'Default template file not found on server. Please edit the template manually in the editor.');
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = '↩️ Reset to Default';
+      return;
+    }
+
+    let defaultTemplate = await defaultRes.text();
+
+    const hasNamePlaceholder = defaultTemplate.includes('[donor-name]') || 
+                               defaultTemplate.includes('[user-name]') || 
+                               defaultTemplate.includes('[user-tamilname]');
+    const otherRequired = ['[donation-amount]', '[donation-date]', '[donor-mail-id]'];
+    const missingOther = otherRequired.filter(p => !defaultTemplate.includes(p));
+    const missing = [];
+    if (!hasNamePlaceholder) missing.push('[donor-name] / [user-name] / [user-tamilname]');
+    missing.push(...missingOther);
+    if (missing.length > 0) {
+      tlShowMsg('error', 'Default template is missing placeholders: ' + missing.join(', ') + '. Cannot reset.');
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = '↩️ Reset to Default';
+      return;
+    }
+
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const saveRes = await fetch('/razorpay/thankletter-template', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ template: defaultTemplate }),
+    });
+
+    const saveData = await saveRes.json();
+
+    if (saveData.error) {
+      tlShowMsg('error', 'Failed to reset template: ' + saveData.error);
+      resetBtn.disabled = false;
+      resetBtn.innerHTML = '↩️ Reset to Default';
+      return;
+    }
+
+    currentTemplate = defaultTemplate;
+    tlShowMsg('success', '✅ Template has been reset to the default version (' + defaultTemplate.length + ' chars).');
+  } catch (err) {
+    tlShowMsg('error', 'Error resetting template: ' + err.message);
+  } finally {
+    resetBtn.disabled = false;
+    resetBtn.innerHTML = '↩️ Reset to Default';
+  }
+}
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch('/auth/logout', { method: 'POST', headers });
+  } catch (_) {}
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>

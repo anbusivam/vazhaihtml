@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Payment History — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-header .user-info .email {
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-primary:disabled:hover { background: #ccc; }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+    }
+    .btn-outline:hover {
+      background: var(--green-light);
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .home-link {
+      display: inline-block;
+      margin-top: 16px;
+      margin-left: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .home-link:hover { text-decoration: underline; }
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .users-table th {
+      text-align: left;
+      padding: 8px 8px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .users-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    .users-table tr:hover td {
+      background: #fafafa;
+    }
+    .manual-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: #fff3e0;
+      color: #e65100;
+      border: 1px solid #ffcc80;
+      letter-spacing: 0.3px;
+    }
+    .ph-edit-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 4px 6px;
+      font-size: 13px;
+      color: var(--text-light);
+      transition: all 0.15s;
+    }
+    .ph-edit-btn:hover {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--green-dark);
+    }
+    .ph-edit-btn.editing {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+      color: white;
+    }
+    .ph-readonly { display: block; }
+    .ph-edit-field { display: none; width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:4px; font-size:12px; font-family:inherit; outline:none; background:#f9f9f9; }
+    .ph-edit-field:focus { border-color:var(--green); background:white; }
+    .ph-edit-field.ph-select { min-width:140px; }
+    tr.ph-editing .ph-readonly { display: none !important; }
+    tr.ph-editing .ph-edit-field { display: block; }
+    .ph-edit-btn.editing { background:var(--green-dark); border-color:var(--green-dark); color:white; }
+    .file-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .file-upload-area:hover {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .file-upload-area.dragover {
+      border-color: var(--green-dark);
+      background: #c8e6c9;
+    }
+    .file-upload-area input[type="file"] {
+      display: none;
+    }
+    .csv-preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 12px;
+    }
+    .csv-preview-table th {
+      background: #f7fafc;
+      padding: 6px 8px;
+      border-bottom: 2px solid var(--border);
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+    .csv-preview-table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .csv-errors {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #d32f2f;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .csv-errors .error-item {
+      padding: 2px 0;
+    }
+    @media (max-width: 768px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>📋 Payment History</h1>
+  <div class="user-info">
+    <span>Signed in as <span class="email" id="admin-email"></span></span>
+    <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Messages -->
+  <div id="msg-area" class="msg"></div>
+
+  <!-- Payment History Card -->
+  <div class="card" id="payment-history-card">
+    <h2>📋 Payment History (All Users)</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">View all payment records stored in the system, paginated for performance.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <select id="ph-page-size" style="padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;background:white;">
+        <option value="25">25 per page</option>
+        <option value="50">50 per page</option>
+        <option value="100">100 per page</option>
+      </select>
+      <button class="btn-primary" id="ph-refresh-btn" onclick="loadPaymentHistory(1)">🔄 Load Payments</button>
+    </div>
+    <div id="ph-msg" class="msg"></div>
+    <div id="ph-loading" class="loading-state" style="display:none;">Loading payment history...</div>
+    <div id="ph-empty" class="empty-state" style="display:none;">No payment records found. Use the Sync tool to pull payments from Razorpay first.</div>
+    <div id="ph-table-wrap" style="display:none;">
+      <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <span>Showing page <strong id="ph-current-page">0</strong> of <strong id="ph-total-pages">0</strong> · Total records: <strong id="ph-total-count">0</strong></span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn-primary btn-sm btn-outline" id="ph-prev-btn" onclick="loadPaymentHistory(currentPage - 1)" disabled>← Prev</button>
+          <span style="font-size:13px;" id="ph-page-indicator">Page 1</span>
+          <button class="btn-primary btn-sm btn-outline" id="ph-next-btn" onclick="loadPaymentHistory(currentPage + 1)" disabled>Next →</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="users-table" style="min-width:800px;">
+          <thead>
+            <tr>
+              <th style="width:44px;text-align:center;">Edit</th>
+              <th>Date</th>
+              <th>Receipt No</th>
+              <th>Payment ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Amount (₹)</th>
+              <th>Method</th>
+              <th>PAN</th>
+              <th>Address</th>
+              <th>Notes</th>
+              <th>Status</th>
+              <th>Thank Letter</th>
+            </tr>
+          </thead>
+          <tbody id="ph-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CSV Upload for direct bank payments -->
+    <div id="csv-upload-section" style="margin-top:20px;padding-top:20px;border-top:2px dashed var(--border);">
+      <h3 style="font-size:16px;color:var(--green-dark);margin:0 0 8px;">📁 Upload Direct Bank Payments via CSV</h3>
+      <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Batch-upload manual payment records (Account Transfer / Cash) using a CSV file. These will appear in the payment history above.</p>
+      <details>
+        <summary style="cursor:pointer;font-weight:600;font-size:14px;color:var(--green-dark);padding:4px 0;">📋 CSV Format Instructions</summary>
+        <div style="margin-top:12px;padding:12px;background:#f7fafc;border-radius:8px;border:1px solid #e2e8f0;">
+          <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">
+            <strong>Your CSV should have these columns (header row required):</strong><br>
+            <code>DATE, RECEIPT NO, PAYMENT ID, NAME, EMAIL, AMOUNT, METHOD, PAN, ADDRESS, notes</code>
+          </div>
+          <div style="font-size:12px;color:var(--text-light);line-height:1.6;">
+            <strong>Column details:</strong><br>
+            • <strong>DATE</strong> — Payment date (YYYY-MM-DD format)<br>
+            • <strong>RECEIPT NO</strong> — Receipt number for your records (stored as receiptNo)<br>
+            • <strong>PAYMENT ID</strong> — Bank transaction ID (used as the payment ID). <em>Must be unique.</em><br>
+            • <strong>NAME</strong> — Donor's full name (required)<br>
+            • <strong>EMAIL</strong> — Donor's email address (required)<br>
+            • <strong>AMOUNT</strong> — Donation amount in ₹ (required, numbers only)<br>
+            • <strong>METHOD</strong> — <code>ACCOUNTTRANSFER</code> or <code>CASH</code> (required)<br>
+            • <strong>PAN</strong> — Donor's PAN card number (optional)<br>
+            • <strong>ADDRESS</strong> — Donor's address (optional)<br>
+            • <strong>notes</strong> — Any notes/comments (optional)<br>
+            <br>
+            <strong>Example row:</strong><br>
+            <code>2026-06-24,2006/06/24/01,Q2345234234234234,John Doe,john@example.com,1000,ACCOUNTTRANSFER,ABCDE1234F,"123 Main St, City, State",Monthly donation</code>
+          </div>
+        </div>
+      </details>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-primary btn-outline" onclick="downloadCSVTemplate()" style="font-size:12px;">📄 Download CSV Template</button>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="file-upload-area" id="csv-drop-area" onclick="document.getElementById('csv-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">📂 Drag & drop a CSV file here, or click to select</div>
+          <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSVFile(event)">
+          <div id="csv-file-name" style="font-size:13px;font-weight:600;color:var(--green-dark);display:none;"></div>
+        </div>
+        <div id="csv-preview-area" style="display:none;margin-top:12px;">
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📊 Preview (<span id="csv-row-count">0</span> rows)</div>
+          <div style="max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
+            <table class="csv-preview-table" id="csv-preview-table">
+              <thead id="csv-preview-thead"></thead>
+              <tbody id="csv-preview-tbody"></tbody>
+            </table>
+          </div>
+          <div class="csv-errors" id="csv-validation-errors" style="display:none;"></div>
+          <div style="margin-top:12px;display:flex;gap:8px;">
+            <button class="btn-primary" onclick="uploadCSV()" id="csv-upload-btn">📤 Upload CSV</button>
+            <button class="btn-primary btn-outline" onclick="clearCSVPreview()">🗑 Clear</button>
+          </div>
+        </div>
+        <div id="csv-upload-result" class="msg" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+    <a href="/dashboard/manage" class="back-link">← Back to Admin Dashboard</a>
+    <a href="/dashboard/user" class="home-link">🏠 My Dashboard</a>
+  </div>
+</div>
+
+<script>
+let currentPage = 1;
+let currentUserEmail = '';
+
+const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+  
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  const isAdmin = data.roles ? data.roles.includes('admin') : (data.role === 'admin');
+  if (!isAdmin) {
+    showMsg('error', 'Admin access required. You do not have admin privileges.');
+    setTimeout(() => { window.location.href = '/'; }, 2000);
+    return;
+  }
+  
+  currentUserEmail = data.email;
+  document.getElementById('admin-email').textContent = data.email;
+});
+
+function showMsg(type, text) {
+  const el = document.getElementById('msg-area');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+function phShowMsg(type, text) {
+  const el = document.getElementById('ph-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+}
+
+function updatePaginationUI(pagination) {
+  document.getElementById('ph-current-page').textContent = pagination.page;
+  document.getElementById('ph-total-pages').textContent = pagination.totalPages;
+  document.getElementById('ph-total-count').textContent = pagination.totalCount;
+  document.getElementById('ph-page-indicator').textContent = `Page ${pagination.page} of ${pagination.totalPages}`;
+
+  const prevBtn = document.getElementById('ph-prev-btn');
+  const nextBtn = document.getElementById('ph-next-btn');
+  prevBtn.disabled = !pagination.hasPrev;
+  nextBtn.disabled = !pagination.hasNext;
+}
+
+async function loadPaymentHistory(page) {
+  const limit = parseInt(document.getElementById('ph-page-size').value);
+
+  phShowMsg('', '');
+  document.getElementById('ph-loading').style.display = 'block';
+  document.getElementById('ph-empty').style.display = 'none';
+  document.getElementById('ph-table-wrap').style.display = 'none';
+  document.getElementById('ph-refresh-btn').disabled = true;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`/razorpay/admin-payments?page=${page}&limit=${limit}`, { headers });
+    const data = await res.json();
+
+    document.getElementById('ph-loading').style.display = 'none';
+    document.getElementById('ph-refresh-btn').disabled = false;
+
+    if (data.error) {
+      phShowMsg('error', data.error);
+      return;
+    }
+
+    const payments = data.payments || [];
+    const pagination = data.pagination || { page: 1, totalPages: 1, totalCount: 0, hasNext: false, hasPrev: false };
+
+    if (payments.length === 0) {
+      document.getElementById('ph-empty').style.display = 'block';
+      updatePaginationUI(pagination);
+      currentPage = pagination.page;
+      return;
+    }
+
+    currentPage = pagination.page;
+    document.getElementById('ph-table-wrap').style.display = 'block';
+    updatePaginationUI(pagination);
+
+    const tbody = document.getElementById('ph-tbody');
+    tbody.innerHTML = '';
+
+    for (const p of payments) {
+      const tr = document.createElement('tr');
+      const paymentId = p.paymentId || p.id || '';
+      const ts = p.createdAt || p.createdAtDate ? new Date((p.createdAt || 0) * 1000).getTime() : Date.now();
+      const dateStr = new Date(ts).toLocaleString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+      });
+
+      const isManual = p.isManualReceipt === true;
+      const manualBadge = isManual ? '<span class="manual-badge">MANUAL</span> ' : '';
+
+      const statusBadge = p.status === 'captured'
+        ? '<span class="role-badge" style="background:#e8f5e9;color:#2e7d32;">✅ Captured</span>'
+        : '<span class="role-badge" style="background:#fef2f2;color:#d32f2f;">❌ ' + (p.status || 'Unknown') + '</span>';
+
+      const amountDisplay = '₹' + Number(p.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+      const receiptNo = p.receiptNo || (isManual ? '' : paymentId);
+      const notes = p.manualNotes || p.donorComment || p.notes || '';
+
+      // Thank Letter column
+      const thankLetterSent = p.thankLetterSent;
+      let thankLetterHtml = '';
+      if (thankLetterSent === 'Yes') {
+        thankLetterHtml = '<span style="font-size:11px;color:#2e7d32;font-weight:600;">✅ Thanked</span> <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 8px;margin-left:4px;" onclick="sendThankLetter(\'' + paymentId + '\', this, true)">🔄 Resend</button>';
+      } else if (p.status !== 'captured') {
+        thankLetterHtml = '<span style="font-size:11px;color:#999;">—</span>';
+      } else {
+        thankLetterHtml = `<button class="btn-primary btn-sm" style="font-size:10px;padding:4px 10px;" onclick="sendThankLetter('${paymentId}', this, false)">✉️ Send</button>`;
+      }
+
+      const editBtnHtml = `<button class="ph-edit-btn" onclick="togglePHEditRow('${paymentId}', this)" title="Edit this row">✏️</button>`;
+
+      tr.dataset.paymentId = paymentId;
+      tr.dataset.isManual = isManual ? 'true' : 'false';
+      tr.dataset.originalReceiptNo = escapeHtml(receiptNo);
+      tr.dataset.originalNotes = escapeHtml(notes);
+      tr.dataset.originalPaymentId = escapeHtml(paymentId);
+      tr.dataset.originalDate = escapeHtml(dateStr);
+
+      let methodCellHtml;
+      if (isManual) {
+        methodCellHtml = '<span class="ph-readonly">' + (p.method || '—').toUpperCase() + '</span>'
+          + '<select class="ph-edit-field ph-select" data-field="method">'
+          + '<option value="ACCOUNTTRANSFER"' + (p.method === 'ACCOUNTTRANSFER' ? ' selected' : '') + '>ACCOUNT TRANSFER</option>'
+          + '<option value="CASH"' + (p.method === 'CASH' ? ' selected' : '') + '>CASH</option>'
+          + '</select>';
+      } else {
+        methodCellHtml = '<span class="ph-readonly">' + (p.method || '—').toUpperCase() + '</span>';
+      }
+
+      const canEditAll = isManual;
+
+      const dateOnly = p.paymentDate || (p.createdAtDate ? p.createdAtDate.split('T')[0] : (p.createdAt ? new Date(p.createdAt * 1000).toISOString().split('T')[0] : ''));
+      let dateCellHtml;
+      if (canEditAll) {
+        dateCellHtml = '<span class="ph-readonly">' + dateStr + '</span>'
+          + '<input type="date" class="ph-edit-field" data-field="paymentDate" value="' + dateOnly + '" style="width:140px;">';
+      } else {
+        dateCellHtml = '<span class="ph-readonly">' + dateStr + '</span>';
+      }
+
+      let payIdCellHtml;
+      if (canEditAll) {
+        payIdCellHtml = '<span class="ph-readonly">' + manualBadge + escapeHtml(paymentId) + '</span>'
+          + '<input type="text" class="ph-edit-field" data-field="paymentId" value="' + escapeHtml(paymentId) + '" placeholder="Payment ID" style="width:160px;">';
+      } else {
+        payIdCellHtml = '<span class="ph-readonly">' + manualBadge + escapeHtml(paymentId) + '</span>';
+      }
+
+      let receiptNoCellHtml = '<span class="ph-readonly">' + escapeHtml(receiptNo) + '</span>'
+        + '<input type="text" class="ph-edit-field" data-field="receiptNo" value="' + escapeHtml(receiptNo) + '" placeholder="Receipt No" style="width:140px;">';
+
+      let nameCellHtml;
+      if (canEditAll) {
+        nameCellHtml = '<span class="ph-readonly"><strong>' + escapeHtml(p.donorName || '—') + '</strong></span>'
+          + '<input type="text" class="ph-edit-field" data-field="donorName" value="' + escapeHtml(p.donorName || '') + '" placeholder="Name">';
+      } else {
+        nameCellHtml = '<span class="ph-readonly"><strong>' + escapeHtml(p.donorName || '—') + '</strong></span>';
+      }
+
+      let emailCellHtml;
+      const emailVal = p.email || p.donorEmail || '';
+      if (canEditAll) {
+        emailCellHtml = '<span class="ph-readonly">' + escapeHtml(emailVal || '—') + '</span>'
+          + '<input type="email" class="ph-edit-field" data-field="donorEmail" value="' + escapeHtml(emailVal) + '" placeholder="Email">';
+      } else {
+        emailCellHtml = '<span class="ph-readonly">' + escapeHtml(emailVal || '—') + '</span>';
+      }
+
+      let amountCellHtml;
+      if (canEditAll) {
+        amountCellHtml = '<span class="ph-readonly" style="font-weight:600;">' + amountDisplay + '</span>'
+          + '<input type="number" class="ph-edit-field" data-field="amount" value="' + (p.amount || '') + '" placeholder="Amount" step="0.01" style="width:100px;">';
+      } else {
+        amountCellHtml = '<span class="ph-readonly" style="font-weight:600;">' + amountDisplay + '</span>';
+      }
+
+      let panCellHtml;
+      if (canEditAll) {
+        panCellHtml = '<span class="ph-readonly">' + escapeHtml(p.donorPan || '—') + '</span>'
+          + '<input type="text" class="ph-edit-field" data-field="donorPan" value="' + escapeHtml(p.donorPan || '') + '" placeholder="PAN" style="text-transform:uppercase;width:110px;">';
+      } else {
+        panCellHtml = '<span class="ph-readonly">' + escapeHtml(p.donorPan || '—') + '</span>';
+      }
+
+      const addressVal = p.donorAddress || p.address || '';
+      let addressCellHtml;
+      if (canEditAll) {
+        addressCellHtml = '<span class="ph-readonly" style="max-width:180px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(addressVal) + '">' + (addressVal ? escapeHtml(addressVal) : '<span style="color:#bbb;font-style:italic;">—</span>') + '</span>'
+          + '<textarea class="ph-edit-field" data-field="donorAddress" placeholder="Address" rows="2" style="width:180px;">' + escapeHtml(addressVal) + '</textarea>';
+      } else {
+        addressCellHtml = '<span class="ph-readonly" style="max-width:180px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(addressVal) + '">' + (addressVal ? escapeHtml(addressVal) : '<span style="color:#bbb;font-style:italic;">—</span>') + '</span>';
+      }
+
+      let notesCellHtml = '<span class="ph-readonly" style="max-width:180px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(notes) + '">' + (notes ? escapeHtml(notes) : '<span style="color:#bbb;font-style:italic;">—</span>') + '</span>'
+        + '<textarea class="ph-edit-field" data-field="notes" placeholder="Notes" rows="2" style="width:180px;">' + escapeHtml(notes) + '</textarea>';
+
+      tr.innerHTML = `
+        <td style="text-align:center;white-space:nowrap;">${editBtnHtml}</td>
+        <td style="white-space:nowrap;font-size:12px;">${dateCellHtml}</td>
+        <td style="font-size:12px;">${receiptNoCellHtml}</td>
+        <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${paymentId}">${payIdCellHtml}</td>
+        <td>${nameCellHtml}</td>
+        <td>${emailCellHtml}</td>
+        <td style="font-weight:600;">${amountCellHtml}</td>
+        <td style="font-size:12px;">${methodCellHtml}</td>
+        <td style="font-size:12px;">${panCellHtml}</td>
+        <td style="font-size:12px;max-width:200px;">${addressCellHtml}</td>
+        <td style="font-size:12px;">${notesCellHtml}</td>
+        <td>${statusBadge}</td>
+        <td style="white-space:nowrap;text-align:center;">${thankLetterHtml}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  } catch (err) {
+    document.getElementById('ph-loading').style.display = 'none';
+    document.getElementById('ph-refresh-btn').disabled = false;
+    phShowMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+function togglePHEditRow(paymentId, btn) {
+  const tr = btn.closest('tr');
+  if (!tr) return;
+
+  const isEditing = tr.classList.toggle('ph-editing');
+  btn.classList.toggle('editing', isEditing);
+  btn.title = isEditing ? '💾 Save changes' : 'Edit this row';
+  btn.textContent = isEditing ? '💾' : '✏️';
+
+  if (!isEditing) {
+    savePHEdit(paymentId, tr, btn);
+  }
+}
+
+async function savePHEdit(paymentId, tr, btn) {
+  const isManual = tr.dataset.isManual === 'true';
+
+  const fields = {};
+  tr.querySelectorAll('.ph-edit-field').forEach(input => {
+    const field = input.dataset.field;
+    let value = input.value.trim();
+    if (field === 'amount') {
+      value = parseFloat(value);
+      if (isNaN(value) || value <= 0) return;
+    }
+    if (field === 'paymentId' && isManual) {
+      if (value && value !== paymentId) {
+        fields.newPaymentId = value;
+      }
+      return;
+    }
+    fields[field] = value;
+  });
+
+  fields.paymentId = paymentId;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/manual-receipt', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(fields),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      phShowMsg('error', data.error);
+      btn.disabled = false;
+      btn.textContent = '✏️';
+      tr.classList.remove('ph-editing');
+    } else {
+      phShowMsg('success', '✅ Payment updated successfully.');
+      btn.disabled = false;
+      btn.textContent = '✏️';
+      btn.classList.remove('editing');
+      btn.title = 'Edit this row';
+      setTimeout(() => loadPaymentHistory(currentPage), 500);
+    }
+  } catch (err) {
+    phShowMsg('error', 'Network error: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '✏️';
+    tr.classList.remove('ph-editing');
+  }
+}
+
+async function sendThankLetter(paymentId, btnEl, force) {
+  const originalText = btnEl.textContent;
+  btnEl.disabled = true;
+  btnEl.innerHTML = '<span class="spinner"></span>Sending...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/send-thank-letter', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ paymentId, force }),
+    });
+
+    const data = await res.json();
+
+    if (data.status === 'thanked') {
+      phShowMsg('success', '✅ ' + data.message);
+      btnEl.outerHTML = '<span style="font-size:11px;color:#2e7d32;font-weight:600;">✅ Thanked</span> <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 8px;margin-left:4px;" onclick="sendThankLetter(\'' + paymentId + '\', this, true)">🔄 Resend</button>';
+    } else if (data.status === 'ignored') {
+      phShowMsg('success', '⏭️ ' + data.message);
+      btnEl.outerHTML = '<span style="font-size:11px;color:#999;">—</span>';
+    } else if (data.status === 'error') {
+      phShowMsg('error', '❌ ' + data.message);
+      btnEl.disabled = false;
+      btnEl.textContent = originalText;
+    } else {
+      phShowMsg('error', '❌ Unexpected response: ' + (data.message || 'Unknown error'));
+      btnEl.disabled = false;
+      btnEl.textContent = originalText;
+    }
+  } catch (err) {
+    phShowMsg('error', '❌ Network error: ' + err.message);
+    btnEl.disabled = false;
+    btnEl.textContent = originalText;
+  }
+}
+
+// ── CSV file handling ──
+
+let currentCSVRows = [];
+let currentCSVHeaders = [];
+
+function downloadCSVTemplate() {
+  const headers = ['DATE', 'RECEIPT NO', 'PAYMENT ID', 'NAME', 'EMAIL', 'AMOUNT', 'METHOD', 'PAN', 'ADDRESS', 'notes'];
+  const exampleRow = [
+    '2026-06-24',
+    '2006/06/24/01',
+    'Q2345234234234234',
+    'John Doe',
+    'john@example.com',
+    '1000',
+    'ACCOUNTTRANSFER',
+    'ABCDE1234F',
+    '"123 Main St, City, State"',
+    'Monthly donation',
+  ];
+
+  const csvContent = [
+    headers.join(','),
+    exampleRow.join(','),
+  ].join('\n') + '\n';
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'direct-bank-payments-template.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('csv-drop-area').classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('csv-drop-area').classList.remove('dragover');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('csv-drop-area').classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length > 0 && files[0].name.endsWith('.csv')) {
+    readCSVFile(files[0]);
+  } else {
+    mrShowMsg('error', 'Please drop a .csv file');
+  }
+}
+
+function handleCSVFile(event) {
+  const file = event.target.files[0];
+  if (file) readCSVFile(file);
+}
+
+function readCSVFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    processCSVText(text);
+    document.getElementById('csv-file-name').textContent = '📄 ' + file.name;
+    document.getElementById('csv-file-name').style.display = 'block';
+  };
+  reader.readAsText(file);
+}
+
+function processCSVText(text) {
+  const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+  if (lines.length < 2) {
+    mrShowMsg('error', 'CSV file must have a header row and at least one data row.');
+    return;
+  }
+
+  const headers = lines[0].split(',').map(h => h.trim());
+  currentCSVHeaders = headers;
+
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    for (let j = 0; j < lines[i].length; j++) {
+      const ch = lines[i][j];
+      if (ch === '"') { inQuotes = !inQuotes; }
+      else if (ch === ',' && !inQuotes) { values.push(current.trim()); current = ''; }
+      else { current += ch; }
+    }
+    values.push(current.trim());
+    if (values.length === headers.length) {
+      const row = {};
+      for (let j = 0; j < headers.length; j++) {
+        row[headers[j]] = values[j];
+      }
+      rows.push(row);
+    }
+  }
+
+  currentCSVRows = rows;
+
+  const previewArea = document.getElementById('csv-preview-area');
+  previewArea.style.display = 'block';
+  document.getElementById('csv-row-count').textContent = rows.length;
+
+  const thead = document.getElementById('csv-preview-thead');
+  const tbody = document.getElementById('csv-preview-tbody');
+  thead.innerHTML = '<tr><th>#</th>' + headers.map(h => '<th>' + escapeHtml(h) + '</th>').join('') + '</tr>';
+  tbody.innerHTML = '';
+  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (i + 1) + '</td>' + headers.map(h => '<td>' + escapeHtml(rows[i][h] || '') + '</td>').join('');
+    tbody.appendChild(tr);
+  }
+
+  validateCSV(rows);
+}
+
+function validateCSV(rows) {
+  const errors = [];
+  const lowerHeaders = currentCSVHeaders.map(h => h.toLowerCase());
+  
+  const hasName = lowerHeaders.some(h => h === 'name' || h === 'donorname');
+  const hasEmail = lowerHeaders.some(h => h === 'email' || h === 'donoremail');
+  const hasAmount = lowerHeaders.some(h => h === 'amount');
+  const hasMethod = lowerHeaders.some(h => h === 'method');
+
+  if (!hasName) errors.push('Missing required column: NAME (or donorName)');
+  if (!hasEmail) errors.push('Missing required column: EMAIL (or donorEmail)');
+  if (!hasAmount) errors.push('Missing required column: AMOUNT');
+  if (!hasMethod) errors.push('Missing required column: METHOD');
+
+  const errorsEl = document.getElementById('csv-validation-errors');
+  if (errors.length > 0) {
+    errorsEl.style.display = 'block';
+    errorsEl.innerHTML = '<div style="font-weight:600;margin-bottom:4px;">⚠️ Validation Errors:</div>' +
+      errors.map(e => '<div class="error-item">• ' + escapeHtml(e) + '</div>').join('');
+  } else {
+    errorsEl.style.display = 'none';
+  }
+}
+
+function clearCSVPreview() {
+  document.getElementById('csv-preview-area').style.display = 'none';
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('csv-file-name').style.display = 'none';
+  document.getElementById('csv-file-name').textContent = '';
+  currentCSVRows = [];
+  currentCSVHeaders = [];
+  mrShowMsg('', '');
+}
+
+function mrShowMsg(type, text) {
+  const el = document.getElementById('csv-upload-result');
+  el.className = 'msg ' + type;
+  el.innerHTML = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+async function uploadCSV() {
+  if (currentCSVRows.length === 0) {
+    mrShowMsg('error', 'No CSV data to upload.');
+    return;
+  }
+
+  const btn = document.getElementById('csv-upload-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Uploading...';
+  mrShowMsg('', '');
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/manual-receipt', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ entries: currentCSVRows }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      mrShowMsg('error', data.error);
+    } else {
+      const inserted = data.result && data.result.inserted ? data.result.inserted : 0;
+      const updated = data.result && data.result.updated ? data.result.updated : 0;
+      const errors = data.result && data.result.errors ? data.result.errors.length : 0;
+      let msg = '✅ <strong>' + inserted + ' record(s) created</strong>';
+      if (updated > 0) {
+        msg += ', <strong>' + updated + ' record(s) updated</strong>';
+      }
+      if (errors > 0) {
+        msg += ', <strong style="color:#d32f2f;">' + errors + ' record(s) failed</strong>.';
+        msg += '<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:600;color:#d32f2f;">⚠️ View ' + errors + ' error(s)</summary>' +
+          '<div style="margin-top:6px;">' +
+          data.result.errors.map(e => '<div class="error-item" style="padding:4px 0;border-bottom:1px solid #fee2e2;">• ' + escapeHtml(JSON.stringify(e.error)) + '</div>').join('') +
+          '</div></details>';
+      } else {
+        msg += '.';
+      }
+      clearCSVPreview();
+      mrShowMsg('success', msg);
+    }
+  } catch (err) {
+    mrShowMsg('error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📤 Upload CSV';
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&#039;');
+}
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch('/auth/logout', { method: 'POST', headers });
+  } catch (_) {}
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>
