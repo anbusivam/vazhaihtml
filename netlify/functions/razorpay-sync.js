@@ -163,6 +163,8 @@ exports.handler = async function (event, context) {
           const userData = await store.get(`user:${email}`, { type: 'json' });
           if (userData) {
             // Compare and update fields (only if empty)
+            // For Sync & Update: update non-editorial fields from Razorpay data,
+            // but preserve receiptNo & notes if they already have values
             const differences = [];
             let needsUpdate = false;
 
@@ -263,35 +265,50 @@ exports.handler = async function (event, context) {
         }
 
         // ── Store payment record (deduplicate by payment ID) ──
+        // If the same payment ID already exists, UPDATE the record with latest Razorpay data.
+        // Preserve receiptNo and notes (donorComment) if they already have values,
+        // as these are editable fields entered by the admin.
         const paymentKey = `payment:${payment.id}`;
         const existingPayment = await store.get(paymentKey, { type: 'json' });
 
+        const paymentRecord = {
+          paymentId: payment.id,
+          orderId: payment.orderId,
+          amount: payment.amount,
+          currency: payment.currency,
+          status: payment.status,
+          method: payment.method,
+          email: payment.donorEmail || payment.email || '',
+          contact: payment.contact || '',
+          donorName: payment.donorName || '',
+          donorPhone: payment.donorPhone || '',
+          donorAddress: payment.donorAddress || '',
+          donorPan: payment.donorPan || '',
+          donorComment: payment.donorComment || '',
+          fee: payment.fee,
+          tax: payment.tax,
+          createdAt: payment.createdAt,
+          createdAtDate: payment.createdAtDate,
+          syncedAt: new Date().toISOString(),
+          syncedBy: session.email,
+        };
+
         if (existingPayment) {
-          detail.paymentAction = 'Payment record already exists (skipped)';
+          // Preserve receiptNo & notes if they already have values
+          if (existingPayment.receiptNo) {
+            paymentRecord.receiptNo = existingPayment.receiptNo;
+          }
+          if (existingPayment.manualNotes || existingPayment.donorComment) {
+            paymentRecord.manualNotes = existingPayment.manualNotes || existingPayment.donorComment;
+            paymentRecord.donorComment = existingPayment.manualNotes || existingPayment.donorComment;
+          }
+          // Mark as updated (not skipped)
+          paymentRecord.lastEditedAt = new Date().toISOString();
+          paymentRecord.lastEditedBy = session.email;
+          await store.setJSON(paymentKey, paymentRecord);
+          detail.paymentAction = 'Payment record updated';
           report.paymentsAlreadyExist++;
         } else {
-          const paymentRecord = {
-            paymentId: payment.id,
-            orderId: payment.orderId,
-            amount: payment.amount,
-            currency: payment.currency,
-            status: payment.status,
-            method: payment.method,
-            email: payment.donorEmail || payment.email || '',
-            contact: payment.contact || '',
-            donorName: payment.donorName || '',
-            donorPhone: payment.donorPhone || '',
-            donorAddress: payment.donorAddress || '',
-            donorPan: payment.donorPan || '',
-            donorComment: payment.donorComment || '',
-            fee: payment.fee,
-            tax: payment.tax,
-            createdAt: payment.createdAt,
-            createdAtDate: payment.createdAtDate,
-            syncedAt: new Date().toISOString(),
-            syncedBy: session.email,
-          };
-
           await store.setJSON(paymentKey, paymentRecord);
 
           // Add to payments list if not already there

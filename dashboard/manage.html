@@ -2125,8 +2125,12 @@ async function uploadCSV() {
       mrShowMsg('error', data.error);
     } else {
       const inserted = data.result && data.result.inserted ? data.result.inserted : 0;
+      const updated = data.result && data.result.updated ? data.result.updated : 0;
       const errors = data.result && data.result.errors ? data.result.errors.length : 0;
       let msg = '✅ <strong>' + inserted + ' record(s) created</strong>';
+      if (updated > 0) {
+        msg += ', <strong>' + updated + ' record(s) updated</strong>';
+      }
       if (errors > 0) {
         msg += ', <strong style="color:#d32f2f;">' + errors + ' record(s) failed</strong>.';
         msg += '<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:600;color:#d32f2f;">⚠️ View ' + errors + ' error(s)</summary>' +

@@ -157,10 +157,13 @@ exports.handler = async function (event, context) {
         receiptsMap = await buildReceiptsMap(store, paymentsList);
         await store.setJSON('receipts:map', receiptsMap);
       }
-      const results = { inserted: 0, errors: [] };
+      const results = { inserted: 0, updated: 0, errors: [] };
 
       for (const row of rows) {
         try {
+          // ── Track whether this is an update to an existing payment ──
+          let isUpdate = false;
+
           // ── Extract fields using safe getRowField (handles any key casing) ──
           const customPaymentId = getRowField(row, 'paymentId', 'paymentid', 'paymentId', 'PAYMENTID', 'payment_id', 'payId', 'payid');
           const receiptNo = getRowField(row, 'receiptNo', 'receiptno', 'receiptNumber', 'receiptnumber', 'receiptNo', 'receipt_id', 'RECEIPTNO', 'RECEIPT_NO');
@@ -186,13 +189,6 @@ exports.handler = async function (event, context) {
           }
           if (isNaN(amount) || amount <= 0) {
             results.errors.push({ row: row, error: 'Valid positive amount is required' });
-            continue;
-          }
-
-          // Validate method
-          // ── Check for duplicate receiptNo ──
-          if (receiptNo && receiptsMap[receiptNo]) {
-            results.errors.push({ row: row, error: `Duplicate receipt number "${receiptNo}" — already used by payment "${receiptsMap[receiptNo]}". Skipping.` });
             continue;
           }
 
@@ -291,13 +287,20 @@ exports.handler = async function (event, context) {
             // Check if this payment ID already exists (bank txn IDs are unique)
             const existing = await store.get(`payment:${paymentId}`, { type: 'json' });
             if (existing) {
-              results.errors.push({ row: row, error: `Duplicate payment ID "${paymentId}" — record already exists. Skipping.` });
-              continue;
+              // For manual upload: update ALL fields from the CSV data (overwrite everything)
+              isUpdate = true;
             }
           } else {
             const timestamp = Date.now();
             const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
             paymentId = `MANUAL-${timestamp}-${randomSuffix}`;
+          }
+
+          // ── Check for duplicate receiptNo (must be after payment ID determination so isUpdate is known) ──
+          // Allow if the receiptNo belongs to the same payment we're updating
+          if (receiptNo && receiptsMap[receiptNo] && (!isUpdate || receiptsMap[receiptNo] !== paymentId)) {
+            results.errors.push({ row: row, error: `Duplicate receipt number "${receiptNo}" — already used by payment "${receiptsMap[receiptNo]}". Skipping.` });
+            continue;
           }
 
           // Generate order ID
@@ -349,7 +352,11 @@ exports.handler = async function (event, context) {
             receiptsMap[receiptNo] = paymentId;
           }
 
-          results.inserted++;
+          if (isUpdate) {
+            results.updated++;
+          } else {
+            results.inserted++;
+          }
         } catch (err) {
           results.errors.push({ row: row, error: err.message });
         }
@@ -365,7 +372,7 @@ exports.handler = async function (event, context) {
         body: JSON.stringify({
           success: true,
           result: results,
-          message: `✅ ${results.inserted} manual receipt(s) uploaded. ${results.errors.length} error(s).`,
+          message: `✅ ${results.inserted} record(s) created, ${results.updated} record(s) updated. ${results.errors.length} error(s).`,
         }),
       };
     }
