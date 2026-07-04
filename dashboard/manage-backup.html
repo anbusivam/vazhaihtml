@@ -388,43 +388,185 @@ function handleBackupFile(event) {
     }
 
     const restoreMode = document.querySelector('input[name="restore-mode"]:checked').value;
-    const authData = dump.stores.auth;
-    const userCount = authData.users ? Object.keys(authData.users).length : 0;
-    const paymentCount = authData.payments ? Object.keys(authData.payments).length : 0;
-    const exportTime = dump.exportedAt ? new Date(dump.exportedAt).toLocaleString() : 'unknown';
 
-    let confirmMsg = `⚠️ RESTORE DATA?\n\n`;
-    confirmMsg += `Backup file: ${file.name}\n`;
-    confirmMsg += `Exported at: ${exportTime}\n`;
-    confirmMsg += `Mode: ${restoreMode.toUpperCase()}\n\n`;
-    confirmMsg += `This backup contains:\n`;
-    confirmMsg += `• ${userCount} user(s)\n`;
-    confirmMsg += `• ${paymentCount} payment(s)\n`;
-    confirmMsg += `• ${Object.keys(authData['receipts:map'] || {}).length} receipt mapping(s)\n`;
-    if (authData['thankletter_template']) confirmMsg += `• Thank letter template\n`;
-    if (dump.stores.blog) {
-      const blogCount = dump.stores.blog.blogs ? Object.keys(dump.stores.blog.blogs).length : 0;
-      const commentCount = dump.stores.blog['blog:comments'] ? dump.stores.blog['blog:comments'].length : 0;
-      if (blogCount > 0) confirmMsg += `• ${blogCount} blog post(s)\n`;
-      if (commentCount > 0) confirmMsg += `• ${commentCount} comment(s)\n`;
-    }
     if (restoreMode === 'replace') {
-      confirmMsg += `\n⚠️ REPLACE mode: All existing data will be OVERWRITTEN. Records not in backup will be DELETED.\n`;
-      confirmMsg += `\nBEFORE restoring, the system will automatically download a safety backup of your CURRENT data.\n`;
-      confirmMsg += `This is REQUIRED and cannot be skipped.\n\n`;
+      confirmReplaceWithDeletionPreview(dump, file.name);
     } else {
-      confirmMsg += `\nℹ️ MERGE mode: Backup data will be ADDED to existing data. Nothing will be deleted.\n\n`;
+      confirmMerge(dump, file.name);
     }
-    confirmMsg += `Proceed with restore?`;
+  };
+  reader.readAsText(file);
+}
 
-    if (!confirm(confirmMsg)) {
-      showRestoreMsg('', '');
+/**
+ * Show a detailed confirmation dialog for MERGE mode (simple, no deletion risk).
+ */
+function confirmMerge(dump, fileName) {
+  const authData = dump.stores.auth;
+  const userCount = authData.users ? Object.keys(authData.users).length : 0;
+  const paymentCount = authData.payments ? Object.keys(authData.payments).length : 0;
+  const exportTime = dump.exportedAt ? new Date(dump.exportedAt).toLocaleString() : 'unknown';
+
+  let msg = `ℹ️ MERGE DATA?\n\n`;
+  msg += `Backup file: ${fileName}\n`;
+  msg += `Exported at: ${exportTime}\n\n`;
+  msg += `This backup contains:\n`;
+  msg += `• ${userCount} user(s)\n`;
+  msg += `• ${paymentCount} payment(s)\n`;
+  msg += `• ${Object.keys(authData['receipts:map'] || {}).length} receipt mapping(s)\n`;
+  if (authData['thankletter_template']) msg += `• Thank letter template\n`;
+  if (dump.stores.blog) {
+    const blogCount = dump.stores.blog.blogs ? Object.keys(dump.stores.blog.blogs).length : 0;
+    const commentCount = dump.stores.blog.comments ? Object.keys(dump.stores.blog.comments).length : 0;
+    if (blogCount > 0) msg += `• ${blogCount} blog post(s)\n`;
+    if (commentCount > 0) msg += `• ${commentCount} comment(s)\n`;
+  }
+  msg += `\nℹ️ Merge mode: Backup data will be ADDED to existing data. Nothing will be deleted.\n\n`;
+  msg += `Proceed with merge?`;
+
+  if (!confirm(msg)) {
+    showRestoreMsg('', '');
+    return;
+  }
+
+  performRestore(dump, fileName);
+}
+
+/**
+ * For REPLACE mode: fetch current data, compare with backup, show what will be deleted,
+ * and offer to switch to merge if the admin is unsure.
+ */
+async function confirmReplaceWithDeletionPreview(dump, fileName) {
+  const authData = dump.stores.auth;
+  const backupUserEmails = new Set(Object.keys(authData.users || {}));
+  const backupPaymentIds = new Set(Object.keys(authData.payments || {}));
+  const backupReceiptKeys = new Set(Object.keys(authData['receipts:map'] || {}));
+  const backupSlugs = new Set(dump.stores.blog && dump.stores.blog.blogs ? Object.keys(dump.stores.blog.blogs) : []);
+  const userCount = backupUserEmails.size;
+  const paymentCount = backupPaymentIds.size;
+  const exportTime = dump.exportedAt ? new Date(dump.exportedAt).toLocaleString() : 'unknown';
+
+  showRestoreMsg('info', '⏳ Analysing backup vs current data to show what will be deleted...');
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/razorpay/blob-backup', { headers });
+    const currentData = await res.json();
+
+    if (currentData.error) {
+      showRestoreMsg('error', 'Failed to fetch current data for comparison: ' + currentData.error);
       return;
     }
 
-    performRestore(dump, file.name);
-  };
-  reader.readAsText(file);
+    const current = currentData.data;
+    const currentAuth = current.stores.auth;
+    const currentBlog = current.stores.blog;
+
+    // Determine what will be deleted
+    const currentUsersList = currentAuth['users:list'] || [];
+    const willDeleteUsers = currentUsersList.filter(email => !backupUserEmails.has(email));
+
+    const currentPaymentsList = currentAuth['payments:list'] || [];
+    const willDeletePayments = currentPaymentsList.filter(id => !backupPaymentIds.has(id));
+
+    const currentReceiptKeys = Object.keys(currentAuth['receipts:map'] || {});
+    const willDeleteReceipts = currentReceiptKeys.filter(key => !backupReceiptKeys.has(key));
+
+    let willDeleteBlogs = [];
+    let willDeleteComments = false;
+    if (currentBlog && currentBlog['blog:index']) {
+      const currentBlogIndex = currentBlog['blog:index'] || { posts: [] };
+      willDeleteBlogs = currentBlogIndex.posts
+        .filter(p => !backupSlugs.has(p.slug))
+        .map(p => p.slug);
+    }
+
+    const hasDeletions = willDeleteUsers.length > 0 || willDeletePayments.length > 0 ||
+                         willDeleteReceipts.length > 0 || willDeleteBlogs.length > 0;
+
+    let msg = `⚠️ REPLACE MODE — DELETION PREVIEW\n\n`;
+    msg += `Backup file: ${fileName}\n`;
+    msg += `Exported at: ${exportTime}\n\n`;
+    msg += `The backup contains:\n`;
+    msg += `• ${userCount} user(s)\n`;
+    msg += `• ${paymentCount} payment(s)\n`;
+    msg += `• ${backupReceiptKeys.size} receipt mapping(s)\n`;
+    if (authData['thankletter_template']) msg += `• Thank letter template\n`;
+    if (backupSlugs.size > 0) msg += `• ${backupSlugs.size} blog post(s)\n`;
+
+    msg += `\n━━━ RECORDS THAT WILL BE DELETED ━━━\n`;
+    if (!hasDeletions) {
+      msg += `✅ No records will be deleted (backup covers all existing data).\n`;
+    } else {
+      if (willDeleteUsers.length > 0) {
+        msg += `\n👤 USERS (${willDeleteUsers.length}):\n`;
+        const displayUsers = willDeleteUsers.slice(0, 10).map(e => `   - ${e}`).join('\n');
+        msg += displayUsers;
+        if (willDeleteUsers.length > 10) {
+          msg += `\n   ... and ${willDeleteUsers.length - 10} more`;
+        }
+        msg += '\n';
+      }
+      if (willDeletePayments.length > 0) {
+        msg += `\n💳 PAYMENTS (${willDeletePayments.length}):\n`;
+        const displayPayments = willDeletePayments.slice(0, 10).map(id => `   - ${id}`).join('\n');
+        msg += displayPayments;
+        if (willDeletePayments.length > 10) {
+          msg += `\n   ... and ${willDeletePayments.length - 10} more`;
+        }
+        msg += '\n';
+      }
+      if (willDeleteReceipts.length > 0) {
+        msg += `\n📋 RECEIPT MAPPINGS (${willDeleteReceipts.length})\n`;
+      }
+      if (willDeleteBlogs.length > 0) {
+        msg += `\n📝 BLOG POSTS (${willDeleteBlogs.length}):\n`;
+        const displayBlogs = willDeleteBlogs.slice(0, 10).map(s => `   - ${s}`).join('\n');
+        msg += displayBlogs;
+        if (willDeleteBlogs.length > 10) {
+          msg += `\n   ... and ${willDeleteBlogs.length - 10} more`;
+        }
+        msg += '\n';
+      }
+    }
+
+    msg += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `\nA safety backup of current data will be downloaded automatically.\n`;
+    msg += `Users will need to re-login after restore.\n\n`;
+    msg += `❓ Are you sure you want to REPLACE (delete these records and overwrite)?\n`;
+    msg += `   • Click OK → Proceed with Replace\n`;
+    msg += `   • Click Cancel → Not sure? Try MERGE instead (keeps everything)\n`;
+
+    if (!confirm(msg)) {
+      // User cancelled — suggest switching to merge
+      const switchToMerge = confirm(
+        `❓ Not sure about replacing?\n\n` +
+        `Would you like to switch to MERGE mode instead?\n\n` +
+        `Merge mode will ADD backup data to existing data without deleting anything.\n` +
+        `You can then review the result and decide if you want to do a full replace later.\n\n` +
+        `• Click OK → Switch to MERGE mode\n` +
+        `• Click Cancel → Cancel restore entirely`
+      );
+
+      if (switchToMerge) {
+        // Switch radio button to merge
+        document.querySelector('input[name="restore-mode"][value="merge"]').checked = true;
+        toggleRestoreMode();
+        showRestoreMsg('success', '🔄 Switched to MERGE mode. No data will be deleted. Click "Choose Backup File & Restore" again if you want to proceed with merge.');
+      } else {
+        showRestoreMsg('', '');
+      }
+      return;
+    }
+
+    performRestore(dump, fileName);
+
+  } catch (err) {
+    showRestoreMsg('error', 'Failed to analyse backup impact: ' + err.message);
+  }
 }
 
 async function performRestore(dump, fileName) {
