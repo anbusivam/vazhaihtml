@@ -187,21 +187,43 @@
   <!-- Messages -->
   <div id="msg-area" class="msg"></div>
 
-  <!-- Backup & Restore Card -->
-  <div class="card" id="backup-card">
-    <h2>💾 Backup & Restore</h2>
-    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Export all blob data (users, payments, receipts, blog posts, comments, thank letter template) as a JSON file, or restore from a previously exported backup file.</p>
-    <div class="warning-box">
-      <strong>⚠️ Important:</strong> Before restoring, the system will automatically download a backup of your current data. This is a safety measure to prevent accidental data loss. After restore, users will need to re-login.
-    </div>
+  <!-- Export Backup Card -->
+  <div class="card" id="export-card">
+    <h2>⬇️ Export Backup</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Download all blob data (users, payments, receipts, blog posts, comments, thank letter template) as a JSON file for safekeeping.</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
       <button class="btn-primary" id="backup-export-btn" onclick="exportBackup()">⬇️ Export Backup</button>
-      <button class="btn-primary btn-outline" id="backup-restore-btn" onclick="document.getElementById('backup-file-input').click()">📤 Restore from File</button>
-      <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="handleBackupFile(event)">
     </div>
     <div id="backup-msg" class="msg"></div>
     <div id="backup-progress" class="loading-state" style="display:none;">Processing backup...</div>
     <div id="backup-stats" style="display:none;" class="stats-box"></div>
+  </div>
+
+  <!-- Restore from File Card -->
+  <div class="card" id="restore-card">
+    <h2>📤 Restore from File</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Restore data from a previously exported backup JSON file.</p>
+    <div class="warning-box" id="restore-warning">
+      <strong>⚠️ Important:</strong> Before restoring, the system will automatically download a backup of your current data. This is a safety measure to prevent accidental data loss. After restore, users will need to re-login.
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn-primary btn-outline" id="backup-restore-btn" onclick="document.getElementById('backup-file-input').click()">📤 Choose Backup File & Restore</button>
+      <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="handleBackupFile(event)">
+    </div>
+    <div style="margin-bottom:16px;font-size:13px;">
+      <label style="font-weight:600;color:var(--text);display:block;margin-bottom:6px;">Restore Mode:</label>
+      <label style="margin-right:20px;cursor:pointer;">
+        <input type="radio" name="restore-mode" value="replace" checked onchange="toggleRestoreMode()">
+        <strong>Replace</strong> — Overwrite all data with backup. Removes records not in backup.
+      </label>
+      <label style="cursor:pointer;">
+        <input type="radio" name="restore-mode" value="merge" onchange="toggleRestoreMode()">
+        <strong>Merge</strong> — Add backup data to existing data. Keeps everything.
+      </label>
+    </div>
+    <div id="restore-msg" class="msg"></div>
+    <div id="restore-progress" class="loading-state" style="display:none;">Processing restore...</div>
+    <div id="restore-stats" style="display:none;" class="stats-box"></div>
   </div>
 
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
@@ -252,6 +274,14 @@ function showMsg(type, text) {
 
 function showBackupMsg(type, text) {
   const el = document.getElementById('backup-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+function showRestoreMsg(type, text) {
+  const el = document.getElementById('restore-msg');
   el.className = 'msg ' + type;
   el.textContent = text;
   if (text) el.style.display = 'block';
@@ -319,6 +349,16 @@ async function exportBackup() {
   }
 }
 
+function toggleRestoreMode() {
+  const mode = document.querySelector('input[name="restore-mode"]:checked').value;
+  const warningBox = document.getElementById('restore-warning');
+  if (mode === 'merge') {
+    warningBox.innerHTML = '<strong>ℹ️ Merge Mode:</strong> Backup data will be ADDED to existing data. No existing data will be removed. Existing records will be overwritten by backup if they share the same key. No safety backup is needed in merge mode, but it is still created automatically just in case.';
+  } else {
+    warningBox.innerHTML = '<strong>⚠️ Important:</strong> Before restoring, the system will automatically download a backup of your current data. This is a safety measure to prevent accidental data loss. After restore, users will need to re-login.';
+  }
+}
+
 function handleBackupFile(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -332,21 +372,22 @@ function handleBackupFile(event) {
     try {
       dump = JSON.parse(text);
     } catch (err) {
-      showBackupMsg('error', 'Invalid JSON file: ' + err.message);
+      showRestoreMsg('error', 'Invalid JSON file: ' + err.message);
       return;
     }
 
     if (!dump || !dump.stores || !dump.stores.auth) {
-      showBackupMsg('error', 'Invalid backup file format. Expected a JSON object with "stores.auth" property. Make sure you are using a backup file exported from this system.');
+      showRestoreMsg('error', 'Invalid backup file format. Expected a JSON object with "stores.auth" property. Make sure you are using a backup file exported from this system.');
       return;
     }
 
     const version = dump.version || 0;
     if (version !== 1) {
-      showBackupMsg('error', `Unrecognized backup format version (${version}). Expected version 1.`);
+      showRestoreMsg('error', `Unrecognized backup format version (${version}). Expected version 1.`);
       return;
     }
 
+    const restoreMode = document.querySelector('input[name="restore-mode"]:checked').value;
     const authData = dump.stores.auth;
     const userCount = authData.users ? Object.keys(authData.users).length : 0;
     const paymentCount = authData.payments ? Object.keys(authData.payments).length : 0;
@@ -354,7 +395,8 @@ function handleBackupFile(event) {
 
     let confirmMsg = `⚠️ RESTORE DATA?\n\n`;
     confirmMsg += `Backup file: ${file.name}\n`;
-    confirmMsg += `Exported at: ${exportTime}\n\n`;
+    confirmMsg += `Exported at: ${exportTime}\n`;
+    confirmMsg += `Mode: ${restoreMode.toUpperCase()}\n\n`;
     confirmMsg += `This backup contains:\n`;
     confirmMsg += `• ${userCount} user(s)\n`;
     confirmMsg += `• ${paymentCount} payment(s)\n`;
@@ -366,13 +408,17 @@ function handleBackupFile(event) {
       if (blogCount > 0) confirmMsg += `• ${blogCount} blog post(s)\n`;
       if (commentCount > 0) confirmMsg += `• ${commentCount} comment(s)\n`;
     }
-    confirmMsg += `\n⚠️ WARNING: This will OVERWRITE all existing data in the system!\n`;
-    confirmMsg += `\nBEFORE restoring, the system will automatically download a safety backup of your CURRENT data.\n`;
-    confirmMsg += `This is REQUIRED and cannot be skipped.\n\n`;
+    if (restoreMode === 'replace') {
+      confirmMsg += `\n⚠️ REPLACE mode: All existing data will be OVERWRITTEN. Records not in backup will be DELETED.\n`;
+      confirmMsg += `\nBEFORE restoring, the system will automatically download a safety backup of your CURRENT data.\n`;
+      confirmMsg += `This is REQUIRED and cannot be skipped.\n\n`;
+    } else {
+      confirmMsg += `\nℹ️ MERGE mode: Backup data will be ADDED to existing data. Nothing will be deleted.\n\n`;
+    }
     confirmMsg += `Proceed with restore?`;
 
     if (!confirm(confirmMsg)) {
-      showBackupMsg('', '');
+      showRestoreMsg('', '');
       return;
     }
 
@@ -383,13 +429,13 @@ function handleBackupFile(event) {
 
 async function performRestore(dump, fileName) {
   const restoreBtn = document.getElementById('backup-restore-btn');
-  const progressEl = document.getElementById('backup-progress');
-  const statsEl = document.getElementById('backup-stats');
+  const progressEl = document.getElementById('restore-progress');
+  const statsEl = document.getElementById('restore-stats');
 
   restoreBtn.disabled = true;
   progressEl.style.display = 'block';
   progressEl.textContent = 'Step 1/3: Creating safety backup of current data...';
-  showBackupMsg('', '');
+  showRestoreMsg('', '');
   statsEl.style.display = 'none';
 
   try {
@@ -402,7 +448,7 @@ async function performRestore(dump, fileName) {
     const backupData = await backupRes.json();
 
     if (backupData.error) {
-      showBackupMsg('error', 'Failed to create safety backup: ' + backupData.error + '. Restore aborted.');
+      showRestoreMsg('error', 'Failed to create safety backup: ' + backupData.error + '. Restore aborted.');
       restoreBtn.disabled = false;
       progressEl.style.display = 'none';
       return;
@@ -426,36 +472,70 @@ async function performRestore(dump, fileName) {
 
     progressEl.textContent = 'Step 3/3: Sending restore data to server...';
 
+    const restoreMode = document.querySelector('input[name="restore-mode"]:checked').value;
+
     const restoreRes = await fetch('/razorpay/blob-backup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ data: dump }),
+      body: JSON.stringify({ data: dump, mode: restoreMode }),
     });
 
     const restoreResult = await restoreRes.json();
 
     if (restoreResult.error) {
-      showBackupMsg('error', 'Restore failed: ' + restoreResult.error);
+      showRestoreMsg('error', 'Restore failed: ' + restoreResult.error);
       restoreBtn.disabled = false;
       progressEl.style.display = 'none';
       return;
     }
 
     const r = restoreResult.results;
+    const isMerge = r.mode === 'merge';
+
     let statsHtml = '<strong>✅ Data restored successfully!</strong><br>';
-    statsHtml += '<small style="color:var(--text-light);">A safety backup of your previous data was downloaded automatically.</small><br><br>';
+    if (isMerge) {
+      statsHtml += '<small style="color:var(--text-light);">Merge mode: backup data was added to existing data.</small><br><br>';
+    } else {
+      statsHtml += '<small style="color:var(--text-light);">A safety backup of your previous data was downloaded automatically.</small><br><br>';
+    }
     statsHtml += '<strong>Restored items:</strong><br>';
-    if (r.restored['users:list']) statsHtml += `👤 Users list: ${r.restored['users:list']} entries<br>`;
-    if (r.restored.users) statsHtml += `👤 User profiles: ${r.restored.users}<br>`;
-    if (r.restored['payments:list']) statsHtml += `💳 Payments list: ${r.restored['payments:list']} entries<br>`;
-    if (r.restored.payments) statsHtml += `💳 Payment records: ${r.restored.payments}<br>`;
-    if (r.restored['receipts:map']) statsHtml += `📋 Receipt mappings: ${r.restored['receipts:map']}<br>`;
+
+    // Helper to display value (plain number or { total, added } object)
+    function fmt(v) {
+      if (v === null || v === undefined) return null;
+      if (typeof v === 'object') return `${v.total} total (${v.added} added from backup)`;
+      return v;
+    }
+
+    const ul = fmt(r.restored['users:list']);
+    if (ul) statsHtml += `👤 Users list: ${ul}<br>`;
+    const up = fmt(r.restored.users);
+    if (up) statsHtml += `👤 User profiles: ${up}<br>`;
+    const pl = fmt(r.restored['payments:list']);
+    if (pl) statsHtml += `💳 Payments list: ${pl}<br>`;
+    const pp = fmt(r.restored.payments);
+    if (pp) statsHtml += `💳 Payment records: ${pp}<br>`;
+    const rm = fmt(r.restored['receipts:map']);
+    if (rm) statsHtml += `📋 Receipt mappings: ${rm}<br>`;
     if (r.restored['thankletter_template']) statsHtml += `📝 Thank letter template: restored<br>`;
-    if (r.restored.blogs) statsHtml += `📝 Blog posts: ${r.restored.blogs}<br>`;
-    if (r.restored.comments) statsHtml += `💬 Comments: ${r.restored.comments}<br>`;
+    const bi = fmt(r.restored['blog:index']);
+    if (bi) statsHtml += `📝 Blog index: ${bi}<br>`;
+    const bp = fmt(r.restored.blogs);
+    if (bp) statsHtml += `📝 Blog posts: ${bp}<br>`;
+    const cc = fmt(r.restored.comments);
+    if (cc) statsHtml += `💬 Comments: ${cc}<br>`;
+    const pc = fmt(r.restored['pending-comments']);
+    if (pc) statsHtml += `💬 Pending comments: ${pc}<br>`;
+
+    // Show orphaned records deleted (replace mode only)
+    if (r.restored['orphaned-users-deleted']) statsHtml += `🗑️ Orphaned users deleted: ${r.restored['orphaned-users-deleted']}<br>`;
+    if (r.restored['orphaned-payments-deleted']) statsHtml += `🗑️ Orphaned payments deleted: ${r.restored['orphaned-payments-deleted']}<br>`;
+    if (r.restored['orphaned-receipts-removed']) statsHtml += `🗑️ Orphaned receipt mappings removed: ${r.restored['orphaned-receipts-removed']}<br>`;
+    if (r.restored['orphaned-blogs-deleted']) statsHtml += `🗑️ Orphaned blog posts deleted: ${r.restored['orphaned-blogs-deleted']}<br>`;
+
     if (r.errors && r.errors.length > 0) {
       statsHtml += `<br><span style="color:#d32f2f;">⚠️ ${r.errors.length} error(s) during restore:</span><br>`;
       statsHtml += r.errors.slice(0, 5).map(e => `<small style="color:#d32f2f;">• ${escapeHtml(e)}</small><br>`).join('');
@@ -465,9 +545,10 @@ async function performRestore(dump, fileName) {
     statsEl.innerHTML = statsHtml;
     statsEl.style.display = 'block';
 
-    showBackupMsg('success', '✅ Restore completed! A safety backup of your previous data was downloaded. Users may need to re-login.');
+    const modeLabel = isMerge ? 'merged' : 'restored';
+    showRestoreMsg('success', `✅ Data ${modeLabel} successfully! A safety backup of your previous data was downloaded. Users may need to re-login.`);
   } catch (err) {
-    showBackupMsg('error', 'Restore failed: ' + err.message);
+    showRestoreMsg('error', 'Restore failed: ' + err.message);
   } finally {
     restoreBtn.disabled = false;
     progressEl.style.display = 'none';
