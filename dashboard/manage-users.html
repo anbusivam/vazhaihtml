@@ -515,7 +515,81 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   currentUserEmail = data.email;
   document.getElementById('admin-email').textContent = data.email;
+  
+  // Support URL-based navigation: ?email=user@example.com&action=fetch
+  // This allows other UIs to link directly to a specific user for viewing/editing
+  const params = new URLSearchParams(window.location.search);
+  const targetEmail = params.get('email');
+  const action = params.get('action');
+  
+  if (targetEmail && action === 'fetch') {
+    // Clean the URL without reloading the page
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, '', cleanUrl);
+    
+    // Fetch the specific user
+    await loadSingleUser(targetEmail);
+  }
 });
+
+/**
+ * Fetch a single user by email using the GET /auth/admin?email=X endpoint.
+ * Displays only that user in the table and opens the row in edit mode.
+ */
+async function loadSingleUser(email) {
+  const token = localStorage.getItem('vazhai_session');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  document.getElementById('users-loading').style.display = 'block';
+  document.getElementById('users-empty').style.display = 'none';
+  document.getElementById('users-table-wrap').style.display = 'none';
+  document.getElementById('fetch-users-btn').disabled = true;
+
+  try {
+    const res = await fetch('/auth/admin?email=' + encodeURIComponent(email), { headers });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      document.getElementById('users-loading').style.display = 'none';
+      document.getElementById('fetch-users-btn').disabled = false;
+      showMsg('error', data.error || 'Failed to fetch user.');
+      return;
+    }
+
+    if (!data.users || data.users.length === 0) {
+      document.getElementById('users-loading').style.display = 'none';
+      document.getElementById('users-empty').style.display = 'block';
+      document.getElementById('fetch-users-btn').disabled = false;
+      showMsg('error', 'User not found.');
+      return;
+    }
+
+    // Render only this single user into the table
+    renderUsers(data.users);
+    document.getElementById('users-loading').style.display = 'none';
+    document.getElementById('fetch-users-btn').disabled = false;
+
+    // Automatically open edit mode for the target user's row
+    const safeEmail = email.replace(/[@.]/g, '_');
+    const targetRow = document.querySelector(`tr[data-email="${email}"]`);
+    if (targetRow) {
+      const editBtn = targetRow.querySelector('.edit-row-btn');
+      if (editBtn && !editBtn.disabled) {
+        toggleEditRow(email, editBtn);
+      }
+      // Scroll the row into view
+      targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    showMsg('success', '✅ Fetched user: ' + email);
+  } catch (err) {
+    document.getElementById('users-loading').style.display = 'none';
+    document.getElementById('fetch-users-btn').disabled = false;
+    showMsg('error', 'Network error fetching user.');
+    console.error('[loadSingleUser]', err);
+  }
+}
 
 function showMsg(type, text) {
   const el = document.getElementById('msg-area');
@@ -640,24 +714,11 @@ function formatRolesDisplay(roles) {
   return roles.map(r => `<span class="role-badge" style="background:var(--green-light);color:var(--green-dark);padding:2px 6px;border-radius:4px;font-size:11px;margin-right:3px;">${r}</span>`).join(' ');
 }
 
-async function loadUsers() {
-  document.getElementById('users-loading').style.display = 'block';
-  document.getElementById('users-empty').style.display = 'none';
-  document.getElementById('users-table-wrap').style.display = 'none';
-  document.getElementById('fetch-users-btn').disabled = true;
-  document.getElementById('fetch-users-btn').innerHTML = '<span class="spinner"></span>Loading...';
-  
-  const data = await apiCall('GET');
-  
-  document.getElementById('users-loading').style.display = 'none';
-  document.getElementById('fetch-users-btn').disabled = false;
-  document.getElementById('fetch-users-btn').innerHTML = '📥 Fetch Users';
-  
-  if (!data.users || data.users.length === 0) {
-    document.getElementById('users-empty').style.display = 'block';
-    return;
-  }
-  
+/**
+ * Render an array of user objects into the users table.
+ * Resets usersData, originalUsersData, and dirty state.
+ */
+function renderUsers(users) {
   document.getElementById('users-table-wrap').style.display = 'block';
   const tbody = document.getElementById('users-tbody');
   tbody.innerHTML = '';
@@ -667,7 +728,7 @@ async function loadUsers() {
   dirtyEmails.clear();
   updateSaveButton();
   
-  for (const user of data.users) {
+  for (const user of users) {
     const tr = document.createElement('tr');
     tr.dataset.email = user.email;
     
@@ -755,6 +816,27 @@ async function loadUsers() {
     `;
     tbody.appendChild(tr);
   }
+}
+
+async function loadUsers() {
+  document.getElementById('users-loading').style.display = 'block';
+  document.getElementById('users-empty').style.display = 'none';
+  document.getElementById('users-table-wrap').style.display = 'none';
+  document.getElementById('fetch-users-btn').disabled = true;
+  document.getElementById('fetch-users-btn').innerHTML = '<span class="spinner"></span>Loading...';
+  
+  const data = await apiCall('GET');
+  
+  document.getElementById('users-loading').style.display = 'none';
+  document.getElementById('fetch-users-btn').disabled = false;
+  document.getElementById('fetch-users-btn').innerHTML = '📥 Fetch Users';
+  
+  if (!data.users || data.users.length === 0) {
+    document.getElementById('users-empty').style.display = 'block';
+    return;
+  }
+  
+  renderUsers(data.users);
 }
 
 function toggleEditRow(email, btn) {

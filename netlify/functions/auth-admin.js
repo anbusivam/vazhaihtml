@@ -47,10 +47,33 @@ exports.handler = async function (event, context) {
       return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Forbidden: admin access required' }) };
     }
 
-    // GET: list all users
+    // GET: list all users (or fetch a specific user by email query param)
     if (event.httpMethod === 'GET') {
-      // We need to iterate all user: keys - blobs doesn't support listing natively,
-      // so we use a separate "users:list" key to track registered emails
+      const queryParams = new URL(event.rawUrl || `http://nohost${event.path}`, 'http://nohost').searchParams;
+      const targetEmail = queryParams.get('email');
+
+      if (targetEmail) {
+        // Fetch a single user by email (used for targeted navigation from other UIs)
+        const normalizedEmail = targetEmail.toLowerCase().trim();
+        const userData = await store.get(`user:${normalizedEmail}`, { type: 'json' });
+
+        if (!userData) {
+          return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'User not found.' }) };
+        }
+
+        // Authorization check: only system admins can view other system admins
+        if (ADMIN_EMAILS.includes(normalizedEmail) && !ADMIN_EMAILS.includes(session.email)) {
+          return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Forbidden: cannot view system admin profiles.' }) };
+        }
+
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({ users: [userData] }),
+        };
+      }
+
+      // List all users
       const usersList = await store.get('users:list', { type: 'json' }) || [];
       const users = [];
 
