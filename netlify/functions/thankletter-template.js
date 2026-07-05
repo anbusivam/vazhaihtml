@@ -1,6 +1,9 @@
 // Netlify Function: GET/POST /razorpay/thankletter-template
-// Admin only: Retrieve or update the thank-you letter HTML template stored in Netlify Blobs.
-// On first deployment, it reads the default template from the static file and seeds the blob.
+// Admin only: Manage thank-you letter HTML templates stored in Netlify Blobs.
+// The legacy "Thank You Letter" (id: thank_letter_legacy) is the one used for
+// sending emails (stored at `thankletter_template` blob key). Additional
+// templates can be created for future use in other contexts.
+// Each template has a `deletable` flag. The legacy letter is non-deletable.
 const { getStore, ADMIN_EMAILS } = require('./auth-store');
 
 const CORS_HEADERS = {
@@ -26,19 +29,10 @@ async function getSession(store, event) {
 }
 
 /**
- * Get the default template as a fallback (from the static ThankLetterTemplate.html at project root).
- * In production, the file may not be accessible from the function runtime directory,
- * so this is used only for seeding the blob store on first access.
+ * Standard base HTML template for new templates.
  */
-function getDefaultTemplate() {
-  const fs = require('fs');
-  const path = require('path');
-  const templatePath = path.resolve(__dirname, '..', '..', 'ThankLetterTemplate.html');
-  try {
-    return fs.readFileSync(templatePath, 'utf8');
-  } catch (_) {
-    // If file not readable (production), return a minimal default
-    return `<!DOCTYPE html>
+function getBaseTemplate() {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><title>Thank You from Vazhai</title></head>
 <body style="font-family: Arial, sans-serif; padding: 20px; background: #f4f6f8;">
@@ -54,21 +48,70 @@ function getDefaultTemplate() {
 </div></td></tr></table>
 </body>
 </html>`;
+}
+
+const LIST_KEY = 'thankletter_template:list';
+const LEGACY_ID = 'thank_letter_legacy';
+
+/**
+ * Get the list of template metadata from the blob store.
+ * Returns an array of {id, name, deletable, createdAt, updatedAt}.
+ */
+async function getTemplateList(store) {
+  const raw = await store.get(LIST_KEY, { type: 'text' });
+  let list = [];
+  if (raw) {
+    try {
+      list = JSON.parse(raw);
+    } catch {
+      list = [];
+    }
   }
+
+  // If the legacy blob exists but is not in the list, migrate it
+  const legacyContent = await store.get('thankletter_template', { type: 'text' });
+  if (legacyContent && !list.find(t => t.id === LEGACY_ID)) {
+    const now = new Date().toISOString();
+    await store.set(`thankletter_template:${LEGACY_ID}`, legacyContent);
+    list.unshift({
+      id: LEGACY_ID,
+      name: 'Thank You Letter',
+      deletable: false,
+      createdAt: now,
+      updatedAt: now,
+    });
+    await saveTemplateList(store, list);
+  }
+
+  return list;
 }
 
 /**
- * Get the thank letter template from Netlify Blobs.
- * Falls back to the default file-based template if not yet stored.
+ * Save the template list to the blob store.
  */
-async function getTemplate(store) {
-  const stored = await store.get('thankletter_template', { type: 'text' });
-  if (stored) return stored;
-  
-  // Seed from the default file
-  const defaultTemplate = getDefaultTemplate();
-  await store.set('thankletter_template', defaultTemplate);
-  return defaultTemplate;
+async function saveTemplateList(store, list) {
+  await store.set(LIST_KEY, JSON.stringify(list));
+}
+
+/**
+ * Generate a short unique ID for a template.
+ */
+function generateId() {
+  return 'tl_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
+}
+
+/**
+ * Get the list of all supported placeholders (for reference, no required flag).
+ */
+function getSupportedPlaceholders() {
+  return [
+    { key: '[donor-name]', desc: "Donor's name (from payment)" },
+    { key: '[user-name]', desc: "User's saved name (from profile)" },
+    { key: '[user-tamilname]', desc: "User's saved Tamil name (from profile)" },
+    { key: '[donation-amount]', desc: 'Donation amount (e.g. ₹1,000.00)' },
+    { key: '[donation-date]', desc: 'Date of donation' },
+    { key: '[donor-mail-id]', desc: "Donor's email address" },
+  ];
 }
 
 exports.handler = async function (event, context) {
@@ -87,55 +130,278 @@ exports.handler = async function (event, context) {
       return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Forbidden: admin access required' }) };
     }
 
-    // ── GET: Return the current template ──
-    if (event.httpMethod === 'GET') {
-      const template = await getTemplate(store);
-      return {
-        statusCode: 200,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({ template }),
-      };
-    }
+    const method = event.httpMethod;
+    // Netlify Functions provide queryStringParameters directly
+    const queryParams = new URLSearchParams(event.queryStringParameters || {});
 
-    // ── POST: Update the template ──
-    if (event.httpMethod === 'POST') {
-      const { template } = JSON.parse(event.body || '{}');
-      if (!template || typeof template !== 'string') {
+    // ── GET ──
+    if (method === 'GET') {
+      // GET ?placeholders=true → return supported placeholders list
+      if (queryParams.get('placeholders') === 'true') {
         return {
-          statusCode: 400,
+          statusCode: 200,
           headers: CORS_HEADERS,
-          body: JSON.stringify({ error: 'template (string) is required in the request body.' }),
+          body: JSON.stringify({ placeholders: getSupportedPlaceholders() }),
         };
       }
 
-      // Validate template contains required placeholders
-      // At least one name placeholder is required: [donor-name], [user-name], or [user-tamilname]
-      const hasNamePlaceholder = template.includes('[donor-name]') || 
-                                 template.includes('[user-name]') || 
-                                 template.includes('[user-tamilname]');
-      const otherRequired = ['[donation-amount]', '[donation-date]', '[donor-mail-id]'];
-      const missingOther = otherRequired.filter(p => !template.includes(p));
-      const missing = [];
-      if (!hasNamePlaceholder) missing.push('[donor-name] / [user-name] / [user-tamilname]');
-      missing.push(...missingOther);
-      if (missing.length > 0) {
+      // GET ?list=true → return template list
+      if (queryParams.get('list') === 'true') {
+        const list = await getTemplateList(store);
         return {
-          statusCode: 400,
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({ templates: list }),
+        };
+      }
+
+      // GET ?id=xxx → return specific template
+      const id = queryParams.get('id');
+      if (id) {
+        const template = await store.get(`thankletter_template:${id}`, { type: 'text' });
+        if (!template) {
+          return {
+            statusCode: 404,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'Template not found.' }),
+          };
+        }
+        const list = await getTemplateList(store);
+        const meta = list.find(t => t.id === id) || { id, name: 'Unknown', deletable: true };
+        return {
+          statusCode: 200,
           headers: CORS_HEADERS,
           body: JSON.stringify({
-            error: 'Template is missing required placeholders: ' + missing.join(', '),
-            missing,
+            template,
+            name: meta.name,
+            id: meta.id,
+            deletable: meta.deletable,
           }),
         };
       }
 
-      await store.set('thankletter_template', template);
-      console.log('[thankletter-template] Template updated by', session.email);
+      // GET (no params) → return the thank letter (backward compatible)
+      const thankLetter = await store.get('thankletter_template', { type: 'text' });
+      if (thankLetter) {
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({ template: thankLetter, name: 'Thank You Letter', id: LEGACY_ID }),
+        };
+      }
 
+      // No template exists yet → return base template
+      const baseTemplate = getBaseTemplate();
       return {
         statusCode: 200,
         headers: CORS_HEADERS,
-        body: JSON.stringify({ status: 'saved', message: 'Thank letter template updated successfully.' }),
+        body: JSON.stringify({ template: baseTemplate, name: 'Thank You Letter', id: LEGACY_ID }),
+      };
+    }
+
+    // ── POST ──
+    if (method === 'POST') {
+      const body = JSON.parse(event.body || '{}');
+      const { action } = body;
+
+      // ── Create new template ──
+      if (action === 'create') {
+        const { name, template } = body;
+        if (!name || !name.trim()) {
+          return {
+            statusCode: 400,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'Template name is required.' }),
+          };
+        }
+        if (!template || typeof template !== 'string') {
+          return {
+            statusCode: 400,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'template (HTML string) is required.' }),
+          };
+        }
+
+        const id = generateId();
+        const now = new Date().toISOString();
+
+        // Store the template content
+        await store.set(`thankletter_template:${id}`, template);
+
+        // Add to the list
+        const list = await getTemplateList(store);
+        list.push({ id, name: name.trim(), deletable: true, createdAt: now, updatedAt: now });
+        await saveTemplateList(store, list);
+
+        console.log('[thankletter-template] Template created:', id, 'by', session.email);
+
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            status: 'created',
+            id,
+            name: name.trim(),
+            deletable: true,
+            message: `Template "${name.trim()}" created successfully.`,
+          }),
+        };
+      }
+
+      // ── Update existing template ──
+      if (action === 'update') {
+        const { id, name, template } = body;
+        if (!id) {
+          return {
+            statusCode: 400,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'Template id is required.' }),
+          };
+        }
+
+        // Verify template exists
+        const existingContent = await store.get(`thankletter_template:${id}`, { type: 'text' });
+        if (!existingContent) {
+          return {
+            statusCode: 404,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'Template not found.' }),
+          };
+        }
+
+        const list = await getTemplateList(store);
+        const metaIndex = list.findIndex(t => t.id === id);
+        if (metaIndex === -1) {
+          return {
+            statusCode: 404,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'Template metadata not found.' }),
+          };
+        }
+
+        const now = new Date().toISOString();
+
+        if (template !== undefined) {
+          if (typeof template !== 'string') {
+            return {
+              statusCode: 400,
+              headers: CORS_HEADERS,
+              body: JSON.stringify({ error: 'template must be a string.' }),
+            };
+          }
+          await store.set(`thankletter_template:${id}`, template);
+          list[metaIndex].updatedAt = now;
+
+          // If this is the legacy Thank You Letter, also update the backward-compatible key
+          if (id === LEGACY_ID) {
+            await store.set('thankletter_template', template);
+          }
+        }
+
+        if (name && name.trim()) {
+          list[metaIndex].name = name.trim();
+          list[metaIndex].updatedAt = now;
+        }
+
+        await saveTemplateList(store, list);
+
+        console.log('[thankletter-template] Template updated:', id, 'by', session.email);
+
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            status: 'updated',
+            id,
+            name: list[metaIndex].name,
+            deletable: list[metaIndex].deletable,
+            message: `Template "${list[metaIndex].name}" updated successfully.`,
+          }),
+        };
+      }
+
+      // ── Delete template ──
+      if (action === 'delete') {
+        const { id } = body;
+        if (!id) {
+          return {
+            statusCode: 400,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'Template id is required.' }),
+          };
+        }
+
+        const list = await getTemplateList(store);
+        const metaIndex = list.findIndex(t => t.id === id);
+        if (metaIndex === -1) {
+          return {
+            statusCode: 404,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'Template not found.' }),
+          };
+        }
+
+        // Check if template is deletable
+        if (list[metaIndex].deletable === false) {
+          return {
+            statusCode: 403,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'This template is protected and cannot be deleted.' }),
+          };
+        }
+
+        // Delete the template content
+        await store.delete(`thankletter_template:${id}`);
+
+        // Remove from list
+        list.splice(metaIndex, 1);
+        await saveTemplateList(store, list);
+
+        console.log('[thankletter-template] Template deleted:', id, 'by', session.email);
+
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            status: 'deleted',
+            message: 'Template deleted successfully.',
+          }),
+        };
+      }
+
+      // ── Legacy: Direct save template (backward compat) ──
+      // When body has {template: "..."} without action, update the thank letter content
+      if (body.template && typeof body.template === 'string' && !action) {
+        const { template } = body;
+
+        // Update the legacy Thank You Letter's managed content
+        const list = await getTemplateList(store);
+        const legacyMeta = list.find(t => t.id === LEGACY_ID);
+        if (legacyMeta) {
+          await store.set(`thankletter_template:${LEGACY_ID}`, template);
+          legacyMeta.updatedAt = new Date().toISOString();
+          await saveTemplateList(store, list);
+        }
+
+        // Always update the backward-compatible key
+        await store.set('thankletter_template', template);
+
+        console.log('[thankletter-template] Template updated (legacy) by', session.email);
+
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            status: 'saved',
+            message: 'Thank letter template updated successfully.',
+          }),
+        };
+      }
+
+      return {
+        statusCode: 400,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: 'Invalid request. Provide action (create/update/delete) or template content.' }),
       };
     }
 
