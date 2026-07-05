@@ -133,8 +133,12 @@
     </div>
 
     <div class="create-bar">
-      <input type="text" id="new-template-name" placeholder="New template name..." maxlength="100">
+      <input type="text" id="new-template-name" placeholder="Template name (display label)..." maxlength="100">
+      <input type="text" id="new-template-key" placeholder="Key ID (e.g. welcome_letter) — auto-derived from name if blank" maxlength="50" pattern="[a-zA-Z][a-zA-Z0-9_\-]*">
       <button class="btn-primary" id="create-btn" onclick="createTemplate()">+ Create Template</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-light);margin:-12px 0 16px;padding-left:4px;">
+      The <strong>Key ID</strong> is used to reference this template elsewhere (e.g. <code>thankletter_template:your_key</code>).
     </div>
 
     <div id="template-list-container">
@@ -210,7 +214,8 @@ const TemplateService = {
   getList() { return this.request('GET', null, 'list=true'); },
   getById(id) { return this.request('GET', null, `id=${encodeURIComponent(id)}`); },
   getPlaceholders() { return this.request('GET', null, 'placeholders=true'); },
-  create(name, template) { return this.request('POST', { action: 'create', name, template }); },
+  create(name, template, key) { return this.request('POST', { action: 'create', name, template, key }); },
+  // key is optional — if omitted, it's auto-derived from the name on the server
   update(id, updates) { return this.request('POST', { action: 'update', id, ...updates }); },
   delete(id) { return this.request('POST', { action: 'delete', id }); },
 };
@@ -379,11 +384,12 @@ function renderTemplateList(templates) {
     const isProtected = t.deletable === false;
     const createdDate = t.createdAt ? new Date(t.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Unknown';
     const updatedDate = t.updatedAt ? new Date(t.updatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    const keyDisplay = isProtected ? '' : `<span style="font-family:monospace;font-size:11px;color:var(--text-light);background:#f0f0f0;padding:1px 6px;border-radius:4px;">Key: ${escHtml(t.id)}</span>`;
     html += `<div class="template-item ${isProtected ? 'protected' : ''}">
       <div class="template-item-info">
         <div class="template-item-name">
           ${escHtml(t.name)}
-          ${isProtected ? '<span class="badge badge-protected">📧 Thank You Letter</span>' : ''}
+          ${isProtected ? '<span class="badge badge-protected">📧 Thank You Letter</span>' : keyDisplay}
         </div>
         <div class="template-item-date">Created: ${createdDate}${updatedDate ? ' · Updated: ' + updatedDate : ''}</div>
       </div>
@@ -404,14 +410,16 @@ function renderTemplateList(templates) {
 async function createTemplate() {
   const name = document.getElementById('new-template-name').value.trim();
   if (!name) { tlShowMsg('error', 'Please enter a template name.'); return; }
+  const key = document.getElementById('new-template-key').value.trim() || undefined;
   const btn = document.getElementById('create-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Creating...';
   tlShowMsg('', '');
   try {
     const baseHtml = getStandardBaseTemplate();
-    const data = await TemplateService.create(name, baseHtml);
-    tlShowMsg('success', `✅ Template "${data.name}" created. You can now edit it.`);
+    const data = await TemplateService.create(name, baseHtml, key);
+    tlShowMsg('success', `✅ Template "${data.name}" created with key "${data.id}". You can now edit it.`);
     document.getElementById('new-template-name').value = '';
+    document.getElementById('new-template-key').value = '';
     await loadTemplateList();
   } catch (err) { tlShowMsg('error', 'Failed to create template: ' + err.message); }
   finally { btn.disabled = false; btn.innerHTML = '+ Create Template'; }

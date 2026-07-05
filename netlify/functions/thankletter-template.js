@@ -52,6 +52,18 @@ function getBaseTemplate() {
 
 const LIST_KEY = 'thankletter_template:list';
 const LEGACY_ID = 'thank_letter_legacy';
+const KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_\-]{1,50}$/;
+
+/**
+ * Convert a template name to a machine-friendly key (slug).
+ */
+function nameToKey(name) {
+  return name.trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '')
+    .slice(0, 50);
+}
 
 /**
  * Get the list of template metadata from the blob store.
@@ -91,13 +103,6 @@ async function getTemplateList(store) {
  */
 async function saveTemplateList(store, list) {
   await store.set(LIST_KEY, JSON.stringify(list));
-}
-
-/**
- * Generate a short unique ID for a template.
- */
-function generateId() {
-  return 'tl_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
 }
 
 /**
@@ -206,7 +211,7 @@ exports.handler = async function (event, context) {
 
       // ── Create new template ──
       if (action === 'create') {
-        const { name, template } = body;
+        const { name, template, key } = body;
         if (!name || !name.trim()) {
           return {
             statusCode: 400,
@@ -222,14 +227,44 @@ exports.handler = async function (event, context) {
           };
         }
 
-        const id = generateId();
+        // Determine the template ID: use provided key, or auto-derive from name
+        let id;
+        if (key && key.trim()) {
+          id = key.trim();
+          if (!KEY_REGEX.test(id)) {
+            return {
+              statusCode: 400,
+              headers: CORS_HEADERS,
+              body: JSON.stringify({ error: 'Invalid key. Must start with a letter and contain only letters, numbers, hyphens, and underscores (2-50 chars).' }),
+            };
+          }
+        } else {
+          id = nameToKey(name);
+          if (!id || id.length < 2) {
+            return {
+              statusCode: 400,
+              headers: CORS_HEADERS,
+              body: JSON.stringify({ error: 'Could not derive a valid key from the name. Please provide a key explicitly.' }),
+            };
+          }
+        }
+
+        // Check for duplicate key
+        const list = await getTemplateList(store);
+        if (list.find(t => t.id === id)) {
+          return {
+            statusCode: 409,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: `A template with key "${id}" already exists.` }),
+          };
+        }
+
         const now = new Date().toISOString();
 
         // Store the template content
         await store.set(`thankletter_template:${id}`, template);
 
         // Add to the list
-        const list = await getTemplateList(store);
         list.push({ id, name: name.trim(), deletable: true, createdAt: now, updatedAt: now });
         await saveTemplateList(store, list);
 
@@ -243,7 +278,7 @@ exports.handler = async function (event, context) {
             id,
             name: name.trim(),
             deletable: true,
-            message: `Template "${name.trim()}" created successfully.`,
+            message: `Template "${name.trim()}" created with key "${id}".`,
           }),
         };
       }
