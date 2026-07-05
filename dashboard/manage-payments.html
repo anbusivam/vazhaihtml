@@ -580,11 +580,12 @@ async function loadPaymentHistory(page) {
 
       let emailCellHtml;
       const emailVal = p.email || p.donorEmail || '';
+      const emailLink = emailVal ? '<a href="/dashboard/manage-users.html?email=' + encodeURIComponent(emailVal) + '&action=fetch" target="_blank" style="color:var(--green-dark);text-decoration:underline;font-weight:500;" title="View user in Manage Users">' + escapeHtml(emailVal) + '</a>' : '—';
       if (canEditAll) {
-        emailCellHtml = '<span class="ph-readonly">' + escapeHtml(emailVal || '—') + '</span>'
+        emailCellHtml = '<span class="ph-readonly">' + emailLink + '</span>'
           + '<input type="email" class="ph-edit-field" data-field="donorEmail" value="' + escapeHtml(emailVal) + '" placeholder="Email">';
       } else {
-        emailCellHtml = '<span class="ph-readonly">' + escapeHtml(emailVal || '—') + '</span>';
+        emailCellHtml = '<span class="ph-readonly">' + emailLink + '</span>';
       }
 
       let amountCellHtml;

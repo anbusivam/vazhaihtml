@@ -73,9 +73,13 @@ exports.handler = async function (event, context) {
         };
       }
 
-      // List all users
+      // List all users with optional search and pagination
+      const page = Math.max(1, parseInt(queryParams.get('page') || '1', 10) || 1);
+      const limit = Math.min(500, Math.max(1, parseInt(queryParams.get('limit') || '50', 10) || 50));
+      const search = (queryParams.get('search') || '').trim().toLowerCase();
+
       const usersList = await store.get('users:list', { type: 'json' }) || [];
-      const users = [];
+      let users = [];
 
       for (const email of usersList) {
         const userData = await store.get(`user:${email}`, { type: 'json' });
@@ -84,10 +88,43 @@ exports.handler = async function (event, context) {
         }
       }
 
+      // Apply search filter across all fields
+      if (search) {
+        users = users.filter(u => {
+          const email = (u.email || '').toLowerCase();
+          const name = (u.name || '').toLowerCase();
+          const phone = (u.phone || '').toLowerCase();
+          const pan = (u.pan || '').toLowerCase();
+          const address = (u.address || '').toLowerCase();
+          const tamilName = (u.tamilName || '').toLowerCase();
+          const notes = (u.notes || '').toLowerCase();
+          const roles = (Array.isArray(u.roles) ? u.roles.join(' ') : u.role || '').toLowerCase();
+          return email.includes(search) || name.includes(search) || phone.includes(search) ||
+                 pan.includes(search) || address.includes(search) || tamilName.includes(search) ||
+                 notes.includes(search) || roles.includes(search);
+        });
+      }
+
+      // Paginate
+      const total = users.length;
+      const totalPages = Math.ceil(total / limit);
+      const startIndex = (page - 1) * limit;
+      const paginatedUsers = users.slice(startIndex, startIndex + limit);
+
       return {
         statusCode: 200,
         headers: CORS_HEADERS,
-        body: JSON.stringify({ users }),
+        body: JSON.stringify({
+          users: paginatedUsers,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
+        }),
       };
     }
 
