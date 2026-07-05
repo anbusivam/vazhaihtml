@@ -1014,7 +1014,33 @@ async function saveAllChanges() {
   }
   
   showMsg('success', data.message);
-  await loadUsers();
+  
+  // Update originals to match current data (save was successful)
+  for (const email of dirtyEmails) {
+    const user = usersData.find(u => u.email === email);
+    if (user) {
+      originalUsersData[email] = JSON.parse(JSON.stringify(user));
+    }
+  }
+  dirtyEmails.clear();
+  updateSaveButton();
+  
+  // Exit edit mode for all rows and remove dirty styling
+  document.querySelectorAll('tr.editing').forEach(tr => {
+    const editBtn = tr.querySelector('.edit-row-btn');
+    if (editBtn) {
+      tr.classList.remove('editing');
+      editBtn.classList.remove('editing');
+      editBtn.title = 'Edit this row';
+      editBtn.textContent = '✏️';
+    }
+  });
+  
+  // Remove dirty class from all inputs
+  document.querySelectorAll('.dirty').forEach(el => el.classList.remove('dirty'));
+  
+  // Reset role checkbox container borders
+  document.querySelectorAll('[id^="role-cbs-"]').forEach(el => el.style.borderColor = '');
 }
 
 async function addUser() {
