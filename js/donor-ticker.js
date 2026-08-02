@@ -1,7 +1,9 @@
 /* ═══════════════════════════════════════════════════
-   DONOR TICKER — public rolling "news" of recent donors
-   Fetches /donor-wall (sanitized, cache 5 min) and renders
-   a seamless marquee. Falls back gracefully on error/empty.
+   DONOR SPOTLIGHT — floating rotating donor name
+   Fetches /donor-wall (sanitized, cache 5 min) and
+   displays one donor name at a time at the top of
+   the viewport with fade in/out animations.
+   Falls back gracefully on error/empty.
 ═══════════════════════════════════════════════════ */
 
 (function() {
@@ -12,15 +14,18 @@
   const lang = (document.documentElement.lang || 'en').toLowerCase();
   const STRINGS = {
     en: {
-      eyebrow: '💛 Recent Supporters',
-      fallback: 'Be the first to support a child this month → Donate',
+      label: '✦ Thanking our recent donor',
+      fallback: 'Be the first to support → Donate',
     },
     ta: {
-      eyebrow: '💛 சமீபத்திய நன்கொடையாளர்கள்',
-      fallback: 'இந்த மாதம் முதல் நன்கொடையாளராக இருங்கள் → நன்கொடை',
+      label: '✦ சமீபத்தில் நன்கொடையளித்தவருக்கு நன்றி',
+      fallback: 'முதல் நன்கொடையாளராக இருங்கள் → நன்கொடை',
     },
   };
   const S = STRINGS[lang] || STRINGS.en;
+
+  const SHOW_MS = 3500;   // How long each donor stays visible
+  const FADE_MS = 600;    // Fade transition duration
 
   async function fetchDonors() {
     // Try sessionStorage cache first
@@ -40,7 +45,6 @@
       const data = await res.json();
       donors = Array.isArray(data.donors) ? data.donors : [];
     } catch (_) {
-      // Fail soft — use empty so fallback shows
       donors = [];
     }
 
@@ -52,68 +56,74 @@
     return donors;
   }
 
-  function init() {
-    const inner = document.getElementById('donor-ticker-inner');
-    if (!inner) return;
+  function createSpotlight() {
+    // Build the floating pill element
+    const pill = document.createElement('div');
+    pill.className = 'donor-spotlight';
+    pill.setAttribute('role', 'status');
+    pill.setAttribute('aria-live', 'polite');
 
-    // Set eyebrow label from JS so i18n works without per-page markup differences
-    const eyebrowEl = document.querySelector('.donor-ticker-eyebrow');
-    if (eyebrowEl) eyebrowEl.textContent = S.eyebrow;
+    // Label (small uppercase text)
+    const label = document.createElement('span');
+    label.className = 'donor-spotlight-label';
+    label.textContent = S.label;
+    pill.appendChild(label);
+
+    // Donor name (big bold)
+    const name = document.createElement('span');
+    name.className = 'donor-spotlight-name';
+    pill.appendChild(name);
+
+    document.body.appendChild(pill);
+    return { pill, name };
+  }
+
+  function init() {
+    // Check if we should run (no old ticker markup needed; we self-inject)
+    const spot = createSpotlight();
+    const { pill, name } = spot;
 
     fetchDonors().then(donors => {
+      // No donors — show fallback once, then hide
       if (!donors || donors.length === 0) {
-        // Fallback message
-        const fallback = document.createElement('span');
-        fallback.className = 'dt-fallback';
-        fallback.textContent = S.fallback;
-        // Link to donate
-        const wrap = document.createElement('a');
-        wrap.href = lang.startsWith('ta') ? '/ta/donate' : '/donate';
-        wrap.style.textDecoration = 'none';
-        wrap.style.color = 'inherit';
-        wrap.appendChild(fallback);
-        // Duplicate for the seamless -50% loop
-        inner.appendChild(wrap.cloneNode(true));
-        inner.appendChild(wrap.cloneNode(true));
+        name.textContent = S.fallback;
+        // Make it a link
+        const link = document.createElement('a');
+        link.href = lang.startsWith('ta') ? '/ta/donate' : '/donate';
+        link.style.textDecoration = 'underline';
+        link.style.color = 'inherit';
+        link.textContent = S.fallback;
+        name.innerHTML = '';
+        name.appendChild(link);
+
+        pill.classList.add('show');
+        setTimeout(() => pill.classList.remove('show'), SHOW_MS + FADE_MS * 2);
         return;
       }
 
-      // Build one full pass of donor items
-      const buildPass = () => {
-        const frag = document.createDocumentFragment();
-        for (const d of donors) {
-          const span = document.createElement('span');
-          span.className = 'dt-item';
+      // Build array of names only
+      const names = donors.map(d => d.name || 'Anonymous');
 
-          const name = document.createElement('strong');
-          name.textContent = d.name || 'Anonymous';
+      let idx = 0;
+      let timer = null;
 
-          span.appendChild(name);
+      function showNext() {
+        name.textContent = names[idx % names.length];
+        idx++;
 
-          if (d.message && d.message.trim()) {
-            const msg = document.createElement('em');
-            msg.className = 'dt-msg';
-            msg.textContent = ' — ' + d.message.trim();
-            span.appendChild(msg);
-          }
+        pill.classList.add('show');
 
-          if (d.month) {
-            const month = document.createElement('span');
-            month.className = 'dt-month';
-            month.textContent = ' · ' + d.month;
-            span.appendChild(month);
-          }
+        // After show duration, fade out and then show next
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          pill.classList.remove('show');
+          // After fade-out completes, show next
+          setTimeout(showNext, FADE_MS + 400);
+        }, SHOW_MS);
+      }
 
-          frag.appendChild(span);
-        }
-        return frag;
-      };
-
-      // Duplicate the pass twice for a seamless translateX(-50%) loop
-      const pass1 = buildPass();
-      const pass2 = buildPass();
-      inner.appendChild(pass1);
-      inner.appendChild(pass2);
+      // Start the cycle
+      showNext();
     });
   }
 
