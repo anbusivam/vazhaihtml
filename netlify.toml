@@ -129,6 +129,16 @@
   to = "/ta/blog/index.html"
   status = 200
 
+[[redirects]]
+  from = "/donors"
+  to = "/donors.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/donors"
+  to = "/ta/donors.html"
+  status = 200
+
 # Clean URL rewrites (status=200 means internal rewrite, no client redirect)
 [[redirects]]
   from = "/who-we-are"

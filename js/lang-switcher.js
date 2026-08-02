@@ -34,6 +34,8 @@
     '/privacy-policy':    '/ta/privacy-policy',
     '/privacy-policy.html': '/ta/privacy-policy',
     '/blog':              '/ta/blog',
+    '/donors':            '/ta/donors',
+    '/donors.html':       '/ta/donors',
   };
 
   const reverseMap = {};
