@@ -302,6 +302,19 @@ exports.handler = async function (event, context) {
             paymentRecord.manualNotes = existingPayment.manualNotes || existingPayment.donorComment;
             paymentRecord.donorComment = existingPayment.manualNotes || existingPayment.donorComment;
           }
+          // Preserve thank letter sent status and related fields
+          if (existingPayment.thankLetterSent) {
+            paymentRecord.thankLetterSent = existingPayment.thankLetterSent;
+          }
+          if (existingPayment.thankLetterUpdatedAt) {
+            paymentRecord.thankLetterUpdatedAt = existingPayment.thankLetterUpdatedAt;
+          }
+          if (existingPayment.thankLetterSentBy) {
+            paymentRecord.thankLetterSentBy = existingPayment.thankLetterSentBy;
+          }
+          if (existingPayment.thankLetterError) {
+            paymentRecord.thankLetterError = existingPayment.thankLetterError;
+          }
           // Mark as updated (not skipped)
           paymentRecord.lastEditedAt = new Date().toISOString();
           paymentRecord.lastEditedBy = session.email;

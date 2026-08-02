@@ -17,6 +17,7 @@
         "npm:editorjs-html@^4.0.5",
         "npm:express@^4.19.2",
         "npm:nodemon@^3.1.4",
+        "npm:pdfkit@~0.19.1",
         "npm:razorpay@^2.9.2"
       ]
     }
