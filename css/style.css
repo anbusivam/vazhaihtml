@@ -498,6 +498,91 @@ body {
 @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
 /* ═══════════════════════
+   DONOR TICKER
+═══════════════════════ */
+.donor-ticker {
+  background: var(--green-l);
+  border-top: 1.5px solid var(--green);
+  border-bottom: 1.5px solid var(--green);
+  padding: 12px 0 14px;
+  overflow: hidden;
+}
+.donor-ticker-eyebrow {
+  text-align: center;
+  font-size: .58rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--green-d);
+  margin-bottom: 8px;
+}
+.donor-ticker-track {
+  overflow: hidden;
+  white-space: nowrap;
+  min-height: 1.7rem;
+}
+.donor-ticker-inner {
+  display: inline-block;
+  animation: ticker 28s linear infinite;
+  will-change: transform;
+}
+.donor-ticker-inner > * {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--ink2);
+  padding: 0 24px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.donor-ticker-inner > *::before {
+  content: '✦';
+  color: var(--amber);
+  font-size: .65rem;
+}
+.donor-ticker-inner .dt-msg {
+  color: var(--muted);
+  font-weight: 600;
+  font-style: italic;
+  font-family: var(--ff-serif);
+}
+.donor-ticker-inner .dt-month {
+  color: var(--muted);
+  font-weight: 600;
+}
+.donor-ticker:hover .donor-ticker-inner,
+.donor-ticker:focus-within .donor-ticker-inner {
+  animation-play-state: paused;
+}
+.donor-ticker .dt-fallback {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--green-d);
+}
+@media (prefers-reduced-motion: reduce) {
+  .donor-ticker-inner {
+    animation: none;
+  }
+  .donor-ticker-track {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+@media (min-width: 768px) {
+  .donor-ticker {
+    padding: 14px 0 16px;
+  }
+  .donor-ticker-inner > * {
+    font-size: .78rem;
+  }
+  .donor-ticker-eyebrow {
+    margin-bottom: 10px;
+  }
+}
+
+/* ═══════════════════════
    STAT CARDS
 ═══════════════════════ */
 .stats-grid {

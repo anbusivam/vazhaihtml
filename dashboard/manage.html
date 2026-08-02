@@ -206,6 +206,11 @@
         <div class="nav-title">Thank You Letter Template</div>
         <div class="nav-desc">View and edit the HTML template used for thank-you emails to donors</div>
       </a>
+      <a href="/dashboard/manage-donor-wall" class="nav-item" id="nav-donor-wall" style="display:none;">
+        <div class="nav-icon">💛</div>
+        <div class="nav-title">Donor Wall</div>
+        <div class="nav-desc">Build the public donor wall, view donor totals, and permanently exclude specific donors</div>
+      </a>
       <a href="/dashboard/manage-backup" class="nav-item" id="nav-backup" style="display:none;">
         <div class="nav-icon">💾</div>
         <div class="nav-title">Backup & Restore</div>
@@ -245,6 +250,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (isHardcodedAdmin) {
     document.getElementById('nav-razorpay').style.display = 'flex';
     document.getElementById('nav-backup').style.display = 'flex';
+    document.getElementById('nav-donor-wall').style.display = 'flex';
   }
 });
 

@@ -205,6 +205,11 @@
   to = "/dashboard/manage.html"
   status = 200
 
+[[redirects]]
+  from = "/dashboard/manage-donor-wall"
+  to = "/dashboard/manage-donor-wall.html"
+  status = 200
+
 # Blog API endpoints (MUST come before the catch-all wildcard rule)
 [[redirects]]
   from = "/blog/list"
@@ -329,4 +334,19 @@
 [[redirects]]
   from = "/razorpay/blob-backup"
   to = "/.netlify/functions/blob-backup"
+  status = 200
+
+[[redirects]]
+  from = "/donor-wall"
+  to = "/.netlify/functions/donor-wall"
+  status = 200
+
+[[redirects]]
+  from = "/donor-wall/build"
+  to = "/.netlify/functions/donor-wall-build"
+  status = 200
+
+[[redirects]]
+  from = "/donor-wall/manage"
+  to = "/.netlify/functions/donor-wall-manage"
   status = 200
