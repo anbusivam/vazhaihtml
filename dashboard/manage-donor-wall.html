@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Donor Wall — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-header .user-info .email {
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-primary:disabled:hover { background: #ccc; }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+    }
+    .btn-outline:hover {
+      background: var(--green-light);
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .home-link {
+      display: inline-block;
+      margin-top: 16px;
+      margin-left: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .home-link:hover { text-decoration: underline; }
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .users-table th {
+      text-align: left;
+      padding: 8px 8px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .users-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    .users-table tr:hover td {
+      background: #fafafa;
+    }
+    .excluded-row td {
+      background: #fef2f2 !important;
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .toolbar .info-text {
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    .exclusion-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px dashed var(--border);
+    }
+    .exclusion-section h3 {
+      font-size: 16px;
+      color: var(--green-dark);
+      margin: 0 0 12px;
+    }
+    .exclusion-empty {
+      font-size: 13px;
+      color: var(--text-light);
+      padding: 12px;
+      background: var(--green-bg);
+      border-radius: 8px;
+    }
+    .exclusion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .exclusion-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--green-bg);
+      border: 1px solid #c8e6c9;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .exclusion-item .email {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .exclusion-item .meta {
+      color: var(--text-light);
+      font-size: 12px;
+    }
+    .manual-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .manual-form .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .manual-form label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+    .manual-form input {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .manual-form input:focus {
+      border-color: var(--green);
+    }
+    .manual-form .form-actions {
+      display: flex;
+      align-items: flex-end;
+    }
+    .manual-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .manual-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      background: #fffbea;
+      border: 1px solid #f0e0b0;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .manual-item .name {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .manual-item .meta {
+      color: var(--text-light);
+      font-size: 12px;
+    }
+    .manual-item .amount {
+      font-weight: 700;
+      color: var(--green-dark);
+    }
+    .manual-empty {
+      font-size: 13px;
+      color: var(--text-light);
+      padding: 12px;
+      background: var(--green-bg);
+      border-radius: 8px;
+    }
+    @media (max-width: 768px) {
+      .manual-form { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+      .toolbar { flex-direction: column; align-items: flex-start; }
+      .users-table { font-size: 12px; }
+      .users-table th, .users-table td { padding: 5px 4px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>💛 Donor Wall</h1>
+  <div class="user-info">
+    <span>Signed in as <span class="email" id="admin-email"></span></span>
+    <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Messages -->
+  <div id="msg-area" class="msg"></div>
+
+  <!-- Build Donor Wall Card -->
+  <div class="card" id="build-card">
+    <h2>🏗️ Build Donor Wall</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">
+      Scans all payments from the last <strong>365 days</strong>, aggregates each donor's total, and stores
+      the result in the <code>donor-wall</code> blob. Excluded users (below) are always skipped.
+      The public Wall of Gratitude automatically picks up the rebuilt list.
+    </p>
+    <div class="toolbar">
+      <button class="btn-primary" id="build-btn" onclick="buildDonorWall()">🏗️ Build Donor Wall</button>
+      <span class="info-text" id="last-built-text">Last built: never</span>
+    </div>
+    <div id="build-msg" class="msg"></div>
+    <div id="build-loading" class="loading-state" style="display:none;">Scanning payments and aggregating donors... this may take a moment.</div>
+  </div>
+
+  <!-- Donor List (preview with amounts) Card -->
+  <div class="card" id="preview-card">
+    <h2>👥 Donor List (Last 365 Days)</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">
+      Amounts shown here are <strong>admin-only</strong> — they are never exposed on the public website.
+      Check a row to exclude that donor permanently (future donations also excluded).
+    </p>
+    <div id="preview-loading" class="loading-state" style="display:none;">Loading donor list...</div>
+    <div id="preview-empty" class="empty-state" style="display:none;">No donor wall built yet. Click "Build Donor Wall" above.</div>
+    <div id="preview-wrap" style="display:none;">
+      <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">
+        <strong id="preview-count">0</strong> donors · Total: <strong id="preview-total">₹0</strong>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="users-table" style="min-width:760px;">
+          <thead>
+            <tr>
+              <th style="width:34px;">Exclude</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Total Amount (₹)</th>
+              <th>Donations</th>
+              <th>Last Active</th>
+              <th>Public Name</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody id="preview-tbody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn-primary btn-sm btn-outline" onclick="saveExclusions()">💾 Save Exclusions</button>
+        <span style="font-size:12px;color:var(--text-light);align-self:center;">Changes apply to the next "Build Donor Wall" run.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Permanent Exclusion List Card -->
+  <div class="card" id="exclusion-card">
+    <div class="exclusion-section" style="border-top:none;padding-top:0;margin-top:0;">
+      <h3>🚫 Permanent Exclusion List</h3>
+      <p style="font-size:13px;color:var(--text-light);margin:0 0 12px;">
+        Excluded donors are <strong>never</strong> shown on the donor wall — including future donations, not just the last 365 days.
+      </p>
+      <div id="exclusion-loading" class="loading-state" style="display:none;">Loading excluded donors...</div>
+      <div id="exclusion-empty" class="exclusion-empty" style="display:none;">No excluded donors yet.</div>
+      <div class="exclusion-list" id="exclusion-list"></div>
+    </div>
+  </div>
+
+  <!-- Manual Donor Management Card -->
+  <div class="card" id="manual-card">
+    <h2>✍️ Manually Added Donors</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">
+      Add a donor's name manually. These entries are <strong>permanent</strong> — they appear on the public
+      donor wall alongside payment-based donors until you remove them.
+    </p>
+    <div class="manual-form">
+      <div class="form-field">
+        <label for="manual-name">Name *</label>
+        <input type="text" id="manual-name" placeholder="e.g. Priya R.">
+      </div>
+      <div class="form-field">
+        <label for="manual-message">Message (optional)</label>
+        <input type="text" id="manual-message" placeholder="e.g. Keep up the great work!">
+      </div>
+      <div class="form-field">
+        <label for="manual-month">Month (optional)</label>
+        <input type="text" id="manual-month" placeholder="e.g. Jan 2026">
+      </div>
+      <div class="form-field">
+        <label for="manual-amount">Amount (₹)</label>
+        <input type="number" id="manual-amount" placeholder="e.g. 5000" min="0" step="0.01">
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary" id="add-manual-btn" onclick="addManualDonor()">➕ Add Donor</button>
+      </div>
+    </div>
+    <div id="manual-msg" class="msg"></div>
+    <div id="manual-loading" class="loading-state" style="display:none;">Loading manually added donors...</div>
+    <div id="manual-empty" class="manual-empty" style="display:none;">No manually added donors yet.</div>
+    <div class="manual-list" id="manual-list"></div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+    <a href="/dashboard/manage" class="back-link">← Back to Admin Dashboard</a>
+    <a href="/dashboard/user" class="home-link">🏠 My Dashboard</a>
+  </div>
+</div>
+
+<script>
+let excludedEmails = new Set();
+let currentDonors = [];
+let manualDonors = [];
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+
+  const isAdmin = data.roles ? data.roles.includes('admin') : (data.role === 'admin');
+  if (!isAdmin) {
+    showMsg('error', 'Admin access required. You do not have admin privileges.');
+    setTimeout(() => { window.location.href = '/'; }, 2000);
+    return;
+  }
+
+  document.getElementById('admin-email').textContent = data.email;
+  await loadDonorWall();
+});
+
+function showMsg(type, text) {
+  const el = document.getElementById('msg-area');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+async function loadDonorWall() {
+  document.getElementById('preview-loading').style.display = 'block';
+  document.getElementById('preview-empty').style.display = 'none';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('exclusion-loading').style.display = 'block';
+  document.getElementById('exclusion-empty').style.display = 'none';
+  document.getElementById('exclusion-list').innerHTML = '';
+  document.getElementById('manual-loading').style.display = 'block';
+  document.getElementById('manual-empty').style.display = 'none';
+  document.getElementById('manual-list').innerHTML = '';
+  const manualMsg = document.getElementById('manual-msg');
+  manualMsg.className = 'msg';
+  manualMsg.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/donor-wall/manage', { headers });
+    const data = await res.json();
+
+    document.getElementById('preview-loading').style.display = 'none';
+    document.getElementById('exclusion-loading').style.display = 'none';
+
+    if (data.error) {
+      document.getElementById('manual-loading').style.display = 'none';
+      showMsg('error', data.error);
+      return;
+    }
+
+    const wall = data.wall || { donors: [], updated: null };
+    currentDonors = wall.donors || [];
+
+    // Update "last built" text
+    if (wall.updated) {
+      const builtDate = new Date(wall.updated);
+      document.getElementById('last-built-text').textContent = 'Last built: ' + builtDate.toLocaleString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    // Excluded emails
+    excludedEmails = new Set((data.excluded || []).map(e => (e.email || '').toLowerCase().trim()));
+
+    // Manual donors
+    manualDonors = data.manualDonors || [];
+    renderManualDonors();
+
+    // Render preview
+    if (currentDonors.length === 0) {
+      document.getElementById('preview-empty').style.display = 'block';
+    } else {
+      document.getElementById('preview-wrap').style.display = 'block';
+      document.getElementById('preview-count').textContent = currentDonors.length;
+      const total = currentDonors.reduce((s, d) => s + (d.totalAmount || 0), 0);
+      document.getElementById('preview-total').textContent = '₹' + Number(total).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+      const tbody = document.getElementById('preview-tbody');
+      tbody.innerHTML = '';
+
+      for (const d of currentDonors) {
+        const tr = document.createElement('tr');
+        const email = (d.email || '').toLowerCase().trim();
+        const isExcluded = excludedEmails.has(email);
+
+        if (isExcluded) tr.classList.add('excluded-row');
+
+        const lastActive = d.month || '—';
+        const amountStr = '₹' + Number(d.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const message = d.message || '';
+
+        tr.innerHTML = `
+          <td style="text-align:center;">
+            <input type="checkbox" ${isExcluded ? 'checked' : ''} onchange="toggleExclusion('${escapeHtml(email)}', '${escapeHtml(d.name || '')}', this.checked)" title="Exclude from donor wall">
+          </td>
+          <td><strong>${escapeHtml(d.name || '—')}</strong></td>
+          <td style="font-size:12px;">${escapeHtml(email || '—')}</td>
+          <td style="font-weight:600;">${amountStr}</td>
+          <td style="text-align:center;">${d.count || 0}</td>
+          <td style="font-size:12px;">${lastActive}</td>
+          <td style="font-size:12px;color:var(--text-light);">${escapeHtml(sanitizePublicName(d.name || '') || '—')}</td>
+          <td style="font-size:12px;max-width:220px;max-height:60px;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(message || '')}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // Render exclusion list
+    const excluded = data.excluded || [];
+    if (excluded.length === 0) {
+      document.getElementById('exclusion-empty').style.display = 'block';
+    } else {
+      const listEl = document.getElementById('exclusion-list');
+      listEl.innerHTML = '';
+      for (const e of excluded) {
+        const div = document.createElement('div');
+        div.className = 'exclusion-item';
+        div.innerHTML = `
+          <div>
+            <div class="email">${escapeHtml(e.email)}</div>
+            <div class="meta">${e.name ? escapeHtml(e.name) + ' · ' : ''}Excluded ${new Date(e.excludedAt).toLocaleDateString('en-IN')} by ${escapeHtml(e.excludedBy || '')}</div>
+          </div>
+          <button class="btn-primary btn-sm btn-outline" onclick="unexcludeUser('${escapeHtml(e.email)}')">↩ Restore</button>
+        `;
+        listEl.appendChild(div);
+      }
+    }
+
+  } catch (err) {
+    document.getElementById('preview-loading').style.display = 'none';
+    document.getElementById('exclusion-loading').style.display = 'none';
+    document.getElementById('manual-loading').style.display = 'none';
+    showMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+function renderManualDonors() {
+  document.getElementById('manual-loading').style.display = 'none';
+  const listEl = document.getElementById('manual-list');
+  const emptyEl = document.getElementById('manual-empty');
+
+  if (manualDonors.length === 0) {
+    emptyEl.style.display = 'block';
+    listEl.innerHTML = '';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  listEl.innerHTML = '';
+
+  for (const d of manualDonors) {
+    const div = document.createElement('div');
+    div.className = 'manual-item';
+    const metaParts = [];
+    if (d.month) metaParts.push(d.month);
+    if (d.addedAt) metaParts.push('Added ' + new Date(d.addedAt).toLocaleDateString('en-IN'));
+    if (d.addedBy) metaParts.push('by ' + d.addedBy);
+    const amountHtml = d.totalAmount > 0
+      ? `<span class="amount">₹${Number(d.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span> · `
+      : '';
+    const msgHtml = d.message ? escapeHtml(d.message) + ' · ' : '';
+    div.innerHTML = `
+      <div>
+        <div class="name">${escapeHtml(d.name)}</div>
+        <div class="meta">${amountHtml}${msgHtml}${escapeHtml(metaParts.join(' · '))}</div>
+      </div>
+      <button class="btn-primary btn-sm btn-outline" onclick="removeManualDonor('${escapeHtml(d.id)}')">🗑 Remove</button>
+    `;
+    listEl.appendChild(div);
+  }
+}
+
+async function addManualDonor() {
+  const nameEl = document.getElementById('manual-name');
+  const messageEl = document.getElementById('manual-message');
+  const monthEl = document.getElementById('manual-month');
+  const amountEl = document.getElementById('manual-amount');
+  const msgEl = document.getElementById('manual-msg');
+  const btn = document.getElementById('add-manual-btn');
+
+  const name = nameEl.value.trim();
+  const message = messageEl.value.trim();
+  const month = monthEl.value.trim();
+  const amount = amountEl.value.trim();
+
+  if (!name) {
+    msgEl.className = 'msg error';
+    msgEl.textContent = 'Name is required.';
+    msgEl.style.display = 'block';
+    return;
+  }
+
+  msgEl.className = 'msg';
+  msgEl.style.display = 'none';
+  btn.disabled = true;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/donor-wall/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action: 'add-manual', name, message, month, amount }),
+    });
+    const data = await res.json();
+
+    btn.disabled = false;
+
+    if (data.success) {
+      nameEl.value = '';
+      messageEl.value = '';
+      monthEl.value = '';
+      amountEl.value = '';
+      await loadDonorWall();
+      msgEl.className = 'msg success';
+      msgEl.textContent = `✅ ${name} added to the donor wall.`;
+      msgEl.style.display = 'block';
+    } else {
+      msgEl.className = 'msg error';
+      msgEl.textContent = data.error || 'Failed to add donor.';
+      msgEl.style.display = 'block';
+    }
+  } catch (err) {
+    btn.disabled = false;
+    msgEl.className = 'msg error';
+    msgEl.textContent = 'Network error: ' + err.message;
+    msgEl.style.display = 'block';
+  }
+}
+
+async function removeManualDonor(id) {
+  const msgEl = document.getElementById('manual-msg');
+  msgEl.className = 'msg';
+  msgEl.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/donor-wall/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action: 'remove-manual', id }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      await loadDonorWall();
+      msgEl.className = 'msg success';
+      msgEl.textContent = '✅ Donor removed from the wall.';
+      msgEl.style.display = 'block';
+    } else {
+      msgEl.className = 'msg error';
+      msgEl.textContent = data.error || 'Failed to remove donor.';
+      msgEl.style.display = 'block';
+    }
+  } catch (err) {
+    msgEl.className = 'msg error';
+    msgEl.textContent = 'Network error: ' + err.message;
+    msgEl.style.display = 'block';
+  }
+}
+
+function toggleExclusion(email, name, checked) {
+  // Update in-memory set to show the checked state
+  if (checked) {
+    excludedEmails.add(email);
+  } else {
+    excludedEmails.delete(email);
+  }
+  // Bypass the row color unless already saved; we'll just indicate via checkbox
+}
+
+async function saveExclusions() {
+  const token = localStorage.getItem('vazhai_session');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  showMsg('', '');
+
+  try {
+    const res = await fetch('/donor-wall/manage', { headers });
+    const data = await res.json();
+    const savedList = data.excluded || [];
+    const savedSet = new Set(savedList.map(e => (e.email || '').toLowerCase()));
+
+    // Compute changes: emails in excludedEmails but not savedSet → exclude
+    // emails in savedSet but not excludedEmails → unexclude
+    const toExclude = [...excludedEmails].filter(e => !savedSet.has(e));
+    const toUnexclude = [...savedSet].filter(e => !excludedEmails.has(e));
+
+    let err = null;
+    let excludedCount = 0;
+    let unexcludedCount = 0;
+
+    for (const email of toExclude) {
+      const donor = currentDonors.find(d => (d.email || '').toLowerCase().trim() === email);
+      const name = donor ? donor.name : '';
+      const r = await fetch('/donor-wall/manage', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ action: 'exclude', email, name }),
+      });
+      const rd = await r.json();
+      if (rd.success) excludedCount++;
+      else err = rd.error || err;
+    }
+
+    for (const email of toUnexclude) {
+      const r = await fetch('/donor-wall/manage', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ action: 'unexclude', email }),
+      });
+      const rd = await r.json();
+      if (rd.success) unexcludedCount++;
+      else err = rd.error || err;
+    }
+
+    if (err) {
+      showMsg('error', 'Some changes failed: ' + err);
+    } else {
+      showMsg('success', `✅ Exclusions saved: ${excludedCount} excluded, ${unexcludedCount} restored.`);
+      await loadDonorWall();
+    }
+  } catch (errMsg) {
+    showMsg('error', 'Network error: ' + errMsg.message);
+  }
+}
+
+async function unexcludeUser(email) {
+  const token = localStorage.getItem('vazhai_session');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  try {
+    const res = await fetch('/donor-wall/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action: 'unexclude', email }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      excludedEmails.delete(email);
+      showMsg('success', `✅ ${email} restored.`);
+      await loadDonorWall();
+    } else {
+      showMsg('error', data.error || 'Failed to restore user.');
+    }
+  } catch (err) {
+    showMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+async function buildDonorWall() {
+  document.getElementById('build-msg').className = 'msg';
+  document.getElementById('build-msg').style.display = 'none';
+  document.getElementById('build-loading').style.display = 'block';
+  document.getElementById('build-btn').disabled = true;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/donor-wall/build', {
+      method: 'POST',
+      headers,
+      body: '{}',
+    });
+
+    const data = await res.json();
+
+    document.getElementById('build-loading').style.display = 'none';
+    document.getElementById('build-btn').disabled = false;
+
+    if (data.error) {
+      document.getElementById('build-msg').className = 'msg error';
+      document.getElementById('build-msg').textContent = data.error;
+      document.getElementById('build-msg').style.display = 'block';
+      return;
+    }
+
+    const totalAmount = '₹' + Number(data.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    document.getElementById('build-msg').className = 'msg success';
+    document.getElementById('build-msg').textContent =
+      `✅ Donor wall built: ${data.donorsCount} donors, total ${totalAmount} (last ${data.windowDays} days). ${data.excludedCount} excluded.`;
+    document.getElementById('build-msg').style.display = 'block';
+
+    // Refresh the preview + exclusion list
+    await loadDonorWall();
+
+  } catch (err) {
+    document.getElementById('build-loading').style.display = 'none';
+    document.getElementById('build-btn').disabled = false;
+    document.getElementById('build-msg').className = 'msg error';
+    document.getElementById('build-msg').textContent = 'Network error: ' + err.message;
+    document.getElementById('build-msg').style.display = 'block';
+  }
+}
+
+function sanitizePublicName(rawName) {
+  if (!rawName || !rawName.trim()) return 'Anonymous';
+  const parts = rawName.trim().replace(/\s+/g, ' ').split(' ');
+  if (parts.length === 1) {
+    const single = parts[0];
+    if (single.length <= 12) return single;
+    return single.charAt(0).toUpperCase() + '.';
+  }
+  return (parts[0] + ' ' + parts[parts.length - 1].charAt(0).toUpperCase() + '.').trim();
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&#039;');
+}
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch('/auth/logout', { method: 'POST', headers });
+  } catch (_) {}
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>

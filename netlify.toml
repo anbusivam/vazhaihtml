@@ -129,6 +129,16 @@
   to = "/ta/blog/index.html"
   status = 200
 
+[[redirects]]
+  from = "/donors"
+  to = "/donors.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/donors"
+  to = "/ta/donors.html"
+  status = 200
+
 # Clean URL rewrites (status=200 means internal rewrite, no client redirect)
 [[redirects]]
   from = "/who-we-are"
@@ -203,6 +213,11 @@
 [[redirects]]
   from = "/dashboard/manage"
   to = "/dashboard/manage.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard/manage-donor-wall"
+  to = "/dashboard/manage-donor-wall.html"
   status = 200
 
 # Blog API endpoints (MUST come before the catch-all wildcard rule)
@@ -329,4 +344,19 @@
 [[redirects]]
   from = "/razorpay/blob-backup"
   to = "/.netlify/functions/blob-backup"
+  status = 200
+
+[[redirects]]
+  from = "/donor-wall"
+  to = "/.netlify/functions/donor-wall"
+  status = 200
+
+[[redirects]]
+  from = "/donor-wall/build"
+  to = "/.netlify/functions/donor-wall-build"
+  status = 200
+
+[[redirects]]
+  from = "/donor-wall/manage"
+  to = "/.netlify/functions/donor-wall-manage"
   status = 200

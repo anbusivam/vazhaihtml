@@ -175,19 +175,40 @@ body {
 }
 
 /* ═══════════════════════
-   AUTH FLOAT — fixed top-right login/email badge
+   TOP-RIGHT FLOAT — donor list link (no bg) + login/user badge
 ═══════════════════════ */
-#auth-float {
+#auth-wrap {
   position: fixed;
   top: 14px;
   right: 14px;
   z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* Donor list link — NO background */
+#donor-list-link {
+  color: var(--amber);
+  text-decoration: none;
   font-size: .72rem;
   font-weight: 700;
   letter-spacing: .02em;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transition: opacity .15s;
+}
+#donor-list-link:hover {
+  opacity: .8;
+  text-decoration: underline;
+}
+#auth-float {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .02em;
 }
 #auth-float a {
   color: var(--amber);
