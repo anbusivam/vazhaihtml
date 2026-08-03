@@ -89,10 +89,40 @@ exports.handler = async function (event, context) {
 
     // ── Aggregate per email ──
     const byEmail = new Map();
+    const userNameCache = new Map();
     let skippedExcluded = 0;
     let skippedNotCaptured = 0;
     let skippedOutsideWindow = 0;
     let skippedInvalid = 0;
+
+    // Fallback: derive a display name from the email's local part (before the @).
+    // e.g. "priya.ram@example.com" → "priya.ram"
+    function deriveEmailName(email) {
+      if (!email) return '';
+      const localPart = email.split('@')[0] || '';
+      return localPart.trim();
+    }
+
+    // Resolve a donor's name from their user profile (user:<email> blob) by email.
+    // The user-profile name is the authoritative source — the payment's donorName
+    // is only used as a fallback when the user record has no name on file.
+    // If neither exists, the email's local part (before @) is used so the
+    // donor never shows as "Anonymous". Results are cached per email to avoid
+    // repeated blob reads.
+    async function resolveDonorName(email, paymentName) {
+      if (userNameCache.has(email)) {
+        return userNameCache.get(email) || paymentName || deriveEmailName(email);
+      }
+      let userName = '';
+      try {
+        const userData = await store.get(`user:${email}`, { type: 'json' });
+        if (userData && userData.name) userName = userData.name.trim();
+      } catch (_) {
+        // Ignore lookup errors — fall back to payment donorName / email local part
+      }
+      userNameCache.set(email, userName);
+      return userName || paymentName || deriveEmailName(email);
+    }
 
     for (const paymentId of paymentsList) {
       try {
@@ -109,20 +139,26 @@ exports.handler = async function (event, context) {
         if (!email) { skippedInvalid++; continue; }
         if (excludedEmails.has(email)) { skippedExcluded++; continue; }
 
+        // Always prefer the user-profile name (user:<email> blob);
+        // fall back to the payment's donorName only when the user has no name.
+        const paymentName = (p.donorName || '').trim();
+        const resolvedName = await resolveDonorName(email, paymentName);
+
         const existing = byEmail.get(email);
         if (existing) {
           existing.totalAmount = (existing.totalAmount || 0) + (p.amount || 0);
           existing.count = (existing.count || 0) + 1;
-          // Keep the newest donorName / comment / date
+          // Keep the newest comment / date, and always keep the
+          // user-profile name as the authoritative donor name.
           if (createdAt > (existing.lastTs || 0)) {
             existing.lastTs = createdAt;
-            existing.rawName = p.donorName || existing.rawName;
             existing.comment = p.donorComment || existing.comment;
           }
+          if (resolvedName) existing.rawName = resolvedName;
         } else {
           byEmail.set(email, {
             email,
-            rawName: p.donorName || '',
+            rawName: resolvedName,
             comment: p.donorComment || '',
             totalAmount: p.amount || 0,
             count: 1,
