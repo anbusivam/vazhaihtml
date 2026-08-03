@@ -29,20 +29,11 @@ async function getSession(store, event) {
   return session;
 }
 
-// Sanitize a donor name to: first name + last initial  → "Priya R."
+// Sanitize a donor name to: full name as provided.
 // Falls back to "Anonymous" if the name can't be parsed.
 function sanitizeName(rawName) {
   if (!rawName || !rawName.trim()) return 'Anonymous';
-  const parts = rawName.trim().replace(/\s+/g, ' ').split(' ');
-  if (parts.length === 1) {
-    // Single word — show full name if short, else first 2 chars + '.'
-    const single = parts[0];
-    if (single.length <= 12) return single;
-    return single.charAt(0).toUpperCase() + '.';
-  }
-  const first = parts[0];
-  const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase();
-  return (first + ' ' + lastInitial + '.').trim();
+  return rawName.trim().replace(/\s+/g, ' ');
 }
 
 // Format a timestamp as "Jan 2026"

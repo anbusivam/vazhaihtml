@@ -854,13 +854,7 @@ async function buildDonorWall() {
 
 function sanitizePublicName(rawName) {
   if (!rawName || !rawName.trim()) return 'Anonymous';
-  const parts = rawName.trim().replace(/\s+/g, ' ').split(' ');
-  if (parts.length === 1) {
-    const single = parts[0];
-    if (single.length <= 12) return single;
-    return single.charAt(0).toUpperCase() + '.';
-  }
-  return (parts[0] + ' ' + parts[parts.length - 1].charAt(0).toUpperCase() + '.').trim();
+  return rawName.trim().replace(/\s+/g, ' ');
 }
 
 function escapeHtml(str) {
