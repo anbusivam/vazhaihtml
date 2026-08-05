@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Bank Transactions — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-header .user-info .email {
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-primary:disabled:hover { background: #ccc; }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+    }
+    .btn-outline:hover {
+      background: var(--green-light);
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .home-link {
+      display: inline-block;
+      margin-top: 16px;
+      margin-left: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .home-link:hover { text-decoration: underline; }
+    .file-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .file-upload-area:hover {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .file-upload-area.dragover {
+      border-color: var(--green-dark);
+      background: #c8e6c9;
+    }
+    .file-upload-area input[type="file"] {
+      display: none;
+    }
+    .txn-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .txn-table th {
+      text-align: left;
+      padding: 8px 8px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .txn-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    .txn-table tr:hover td {
+      background: #fafafa;
+    }
+    .txn-narration {
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
+    .txn-amount {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .txn-amount.dr { color: #d32f2f; }
+    .txn-amount.cr { color: #2e7d32; }
+    .txn-date {
+      white-space: nowrap;
+      font-size: 11px;
+    }
+    .txn-chq {
+      white-space: nowrap;
+      font-size: 11px;
+    }
+    .txn-count-badge {
+      display: inline-block;
+      background: var(--green-light);
+      color: var(--green-dark);
+      border-radius: 12px;
+      padding: 2px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .csv-errors {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #d32f2f;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .csv-errors .error-item {
+      padding: 2px 0;
+    }
+    @media (max-width: 768px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>🏦 Bank Transactions</h1>
+  <div class="user-info">
+    <span>Signed in as <span class="email" id="admin-email"></span></span>
+    <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Messages -->
+  <div id="msg-area" class="msg"></div>
+
+  <!-- Import CSV Card -->
+  <div class="card" id="import-card">
+    <h2>📥 Import Bank Transactions</h2>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Upload a bank statement CSV file. The system will look for these columns: <strong>TRAN DATE</strong>, <strong>VALUE DATE</strong>, <strong>NARRATION</strong>, <strong>CHQ.NO.</strong>, <strong>WITHDRAWAL(DR)</strong>, <strong>DEPOSIT(CR)</strong>. Other columns are ignored.</p>
+    <div style="margin-top:12px;">
+      <div class="file-upload-area" id="csv-drop-area" onclick="document.getElementById('csv-file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+        <div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">📂 Drag & drop a CSV file here, or click to select</div>
+        <input type="file" id="csv-file-input" accept=".csv" onchange="handleCSVFile(event)">
+        <div id="csv-file-name" style="font-size:13px;font-weight:600;color:var(--green-dark);display:none;"></div>
+      </div>
+      <div id="csv-preview-area" style="display:none;margin-top:12px;">
+        <div style="font-weight:600;font-size:13px;margin-bottom:4px;">📊 Preview (<span id="csv-row-count">0</span> rows)</div>
+        <div style="max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
+          <table class="txn-table" id="csv-preview-table">
+            <thead id="csv-preview-thead"></thead>
+            <tbody id="csv-preview-tbody"></tbody>
+          </table>
+        </div>
+        <div class="csv-errors" id="csv-validation-errors" style="display:none;"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn-primary" onclick="uploadCSV()" id="csv-upload-btn">📤 Import CSV</button>
+          <button class="btn-primary btn-outline" onclick="clearCSVPreview()">🗑 Clear</button>
+        </div>
+      </div>
+      <div id="csv-upload-result" class="msg" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Transactions List Card -->
+  <div class="card" id="transactions-card">
+    <h2>📋 Imported Transactions <span class="txn-count-badge" id="txn-count">0</span></h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn-primary" id="txn-refresh-btn" onclick="loadTransactions()">🔄 Refresh</button>
+    </div>
+    <div id="txn-msg" class="msg"></div>
+    <div id="txn-loading" class="loading-state" style="display:none;">Loading transactions...</div>
+    <div id="txn-empty" class="empty-state" style="display:none;">No bank transactions imported yet. Upload a CSV file above to get started.</div>
+    <div id="txn-table-wrap" style="display:none;">
+      <div style="overflow-x:auto;">
+        <table class="txn-table" style="min-width:800px;">
+          <thead>
+            <tr>
+              <th>TRAN DATE</th>
+              <th>VALUE DATE</th>
+              <th>NARRATION</th>
+              <th>CHQ.NO.</th>
+              <th>WITHDRAWAL (DR)</th>
+              <th>DEPOSIT (CR)</th>
+            </tr>
+          </thead>
+          <tbody id="txn-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+    <a href="/dashboard/manage" class="back-link">← Back to Admin Dashboard</a>
+    <a href="/dashboard/user" class="home-link">🏠 My Dashboard</a>
+  </div>
+</div>
+
+<script>
+let currentUserEmail = '';
+let currentCSVRows = [];
+let currentCSVHeaders = [];
+let currentCSVText = '';
+
+const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+  
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  const isAdmin = data.roles ? data.roles.includes('admin') : (data.role === 'admin');
+  if (!isAdmin) {
+    showMsg('error', 'Admin access required. You do not have admin privileges.');
+    setTimeout(() => { window.location.href = '/'; }, 2000);
+    return;
+  }
+  
+  currentUserEmail = data.email;
+  document.getElementById('admin-email').textContent = data.email;
+
+  // Auto-load transactions on page load
+  loadTransactions();
+});
+
+function showMsg(type, text) {
+  const el = document.getElementById('msg-area');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+function txnShowMsg(type, text) {
+  const el = document.getElementById('txn-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+async function loadTransactions() {
+  txnShowMsg('', '');
+  document.getElementById('txn-loading').style.display = 'block';
+  document.getElementById('txn-empty').style.display = 'none';
+  document.getElementById('txn-table-wrap').style.display = 'none';
+  document.getElementById('txn-refresh-btn').disabled = true;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/bank/transactions', { headers });
+    const data = await res.json();
+
+    document.getElementById('txn-loading').style.display = 'none';
+    document.getElementById('txn-refresh-btn').disabled = false;
+
+    if (data.error) {
+      txnShowMsg('error', data.error);
+      return;
+    }
+
+    const transactions = data.transactions || [];
+    document.getElementById('txn-count').textContent = transactions.length;
+
+    if (transactions.length === 0) {
+      document.getElementById('txn-empty').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('txn-table-wrap').style.display = 'block';
+
+    const tbody = document.getElementById('txn-tbody');
+    tbody.innerHTML = '';
+
+    for (const txn of transactions) {
+      const tr = document.createElement('tr');
+      
+      const withdrawal = txn.withdrawal ? '₹' + Number(txn.withdrawal).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
+      const deposit = txn.deposit ? '₹' + Number(txn.deposit).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
+      
+      tr.innerHTML = `
+        <td class="txn-date">${escapeHtml(txn.tranDate || '—')}</td>
+        <td class="txn-date">${escapeHtml(txn.valueDate || '—')}</td>
+        <td><span class="txn-narration" title="${escapeHtml(txn.narration || '')}">${escapeHtml(txn.narration || '—')}</span></td>
+        <td class="txn-chq">${escapeHtml(txn.chqNo || '—')}</td>
+        <td class="txn-amount dr">${withdrawal}</td>
+        <td class="txn-amount cr">${deposit}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  } catch (err) {
+    document.getElementById('txn-loading').style.display = 'none';
+    document.getElementById('txn-refresh-btn').disabled = false;
+    txnShowMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+// ── CSV file handling ──
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('csv-drop-area').classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('csv-drop-area').classList.remove('dragover');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('csv-drop-area').classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length > 0 && files[0].name.endsWith('.csv')) {
+    readCSVFile(files[0]);
+  } else {
+    csvShowMsg('error', 'Please drop a .csv file');
+  }
+}
+
+function handleCSVFile(event) {
+  const file = event.target.files[0];
+  if (file) readCSVFile(file);
+}
+
+function readCSVFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    currentCSVText = text;
+    processCSVText(text);
+    document.getElementById('csv-file-name').textContent = '📄 ' + file.name;
+    document.getElementById('csv-file-name').style.display = 'block';
+  };
+  reader.readAsText(file);
+}
+
+function processCSVText(text) {
+  // Parse CSV into rows
+  const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+  if (lines.length < 2) {
+    csvShowMsg('error', 'CSV file must have a header row and at least one data row.');
+    return;
+  }
+
+  // Find the header row containing required columns
+  const requiredCols = ['TRAN DATE', 'VALUE DATE', 'NARRATION', 'CHQ.NO.', 'WITHDRAWAL(DR)', 'DEPOSIT(CR)'];
+  const requiredNorm = requiredCols.map(c => c.toLowerCase().replace(/[^a-z0-9]/g, ''));
+
+  let headerRowIdx = -1;
+  let headers = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    const normalized = values.map(v => v.toLowerCase().replace(/[^a-z0-9]/g, ''));
+    const foundCount = requiredNorm.filter(col => normalized.includes(col)).length;
+    if (foundCount === requiredNorm.length) {
+      headerRowIdx = i;
+      headers = values;
+      break;
+    }
+  }
+
+  if (headerRowIdx === -1) {
+    csvShowMsg('error', 'Required columns not found in CSV. Expected: TRAN DATE, VALUE DATE, NARRATION, CHQ.NO., WITHDRAWAL(DR), DEPOSIT(CR). The CSV structure may be different.');
+    return;
+  }
+
+  // Check for missing columns
+  const missingCols = [];
+  const normalizedHeaders = headers.map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+  for (let i = 0; i < requiredCols.length; i++) {
+    if (!normalizedHeaders.includes(requiredNorm[i])) {
+      missingCols.push(requiredCols[i]);
+    }
+  }
+
+  if (missingCols.length > 0) {
+    csvShowMsg('error', 'Missing required column(s): ' + missingCols.join(', ') + '. The CSV must contain: ' + requiredCols.join(', ') + '.');
+    return;
+  }
+
+  // Parse data rows — only extract the 6 relevant columns
+  const relevantCols = ['TRAN DATE', 'VALUE DATE', 'NARRATION', 'CHQ.NO.', 'WITHDRAWAL(DR)', 'DEPOSIT(CR)'];
+  // Match headers to their indices
+  const colIndices = {};
+  for (let j = 0; j < headers.length; j++) {
+    const norm = headers[j].toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const col of relevantCols) {
+      const normCol = col.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (norm === normCol && colIndices[col] === undefined) {
+        colIndices[col] = j;
+      }
+    }
+  }
+
+  const rows = [];
+  for (let i = headerRowIdx + 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    const row = {};
+    for (const col of relevantCols) {
+      const idx = colIndices[col];
+      row[col] = (idx !== undefined && values[idx] !== undefined) ? values[idx] : '';
+    }
+    // Only include rows with narration (the key) — skips footer/header noise
+    const hasNarration = row['NARRATION'] && row['NARRATION'].trim() !== '';
+    if (hasNarration) {
+      rows.push(row);
+    }
+  }
+
+  currentCSVRows = rows;
+  currentCSVHeaders = headers;
+
+  const previewArea = document.getElementById('csv-preview-area');
+  previewArea.style.display = 'block';
+  document.getElementById('csv-row-count').textContent = rows.length;
+
+  // Show only the relevant columns in the preview
+  const thead = document.getElementById('csv-preview-thead');
+  const tbody = document.getElementById('csv-preview-tbody');
+  thead.innerHTML = '<tr><th>#</th>' + relevantCols.map(h => '<th>' + escapeHtml(h) + '</th>').join('') + '</tr>';
+  tbody.innerHTML = '';
+  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (i + 1) + '</td>' + relevantCols.map(h => '<td>' + escapeHtml(rows[i][h] || '') + '</td>').join('');
+    tbody.appendChild(tr);
+  }
+
+  // Clear any previous error
+  document.getElementById('csv-validation-errors').style.display = 'none';
+  csvShowMsg('', '');
+}
+
+function parseCSVLine(line) {
+  const values = [];
+  let current = '';
+  let inQuotes = false;
+  for (let j = 0; j < line.length; j++) {
+    const ch = line[j];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      values.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  values.push(current.trim());
+  return values;
+}
+
+function clearCSVPreview() {
+  document.getElementById('csv-preview-area').style.display = 'none';
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('csv-file-name').style.display = 'none';
+  document.getElementById('csv-file-name').textContent = '';
+  currentCSVRows = [];
+  currentCSVHeaders = [];
+  currentCSVText = '';
+  csvShowMsg('', '');
+}
+
+function csvShowMsg(type, text) {
+  const el = document.getElementById('csv-upload-result');
+  el.className = 'msg ' + type;
+  el.innerHTML = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+async function uploadCSV() {
+  if (currentCSVRows.length === 0) {
+    csvShowMsg('error', 'No CSV data to upload.');
+    return;
+  }
+
+  const btn = document.getElementById('csv-upload-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Importing...';
+  csvShowMsg('', '');
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    // Send the raw CSV text to the server for parsing
+    if (!currentCSVText) {
+      csvShowMsg('error', 'No CSV content available. Please select a CSV file first.');
+      btn.disabled = false;
+      btn.textContent = '📤 Import CSV';
+      return;
+    }
+
+    const res = await fetch('/bank/transactions', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ csv: currentCSVText }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      csvShowMsg('error', data.error);
+    } else {
+      const inserted = data.result && data.result.inserted ? data.result.inserted : 0;
+      const skipped = data.result && data.result.skipped ? data.result.skipped : 0;
+      const errors = data.result && data.result.errors ? data.result.errors.length : 0;
+      let msg = '✅ <strong>' + inserted + ' transaction(s) imported</strong>';
+      if (skipped > 0) {
+        msg += ', <strong>' + skipped + ' duplicate(s) skipped</strong>';
+      }
+      if (errors > 0) {
+        msg += ', <strong style="color:#d32f2f;">' + errors + ' error(s)</strong>.';
+        msg += '<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:600;color:#d32f2f;">⚠️ View ' + errors + ' error(s)</summary>' +
+          '<div style="margin-top:6px;">' +
+          data.result.errors.map(e => '<div class="error-item" style="padding:4px 0;border-bottom:1px solid #fee2e2;">• ' + escapeHtml(JSON.stringify(e.error)) + '</div>').join('') +
+          '</div></details>';
+      } else {
+        msg += '.';
+      }
+      clearCSVPreview();
+      csvShowMsg('success', msg);
+      // Refresh the transactions list
+      loadTransactions();
+    }
+  } catch (err) {
+    csvShowMsg('error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📤 Import CSV';
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&#039;');
+}
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch('/auth/logout', { method: 'POST', headers });
+  } catch (_) {}
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>

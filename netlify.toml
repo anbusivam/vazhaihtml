@@ -220,6 +220,11 @@
   to = "/dashboard/manage-donor-wall.html"
   status = 200
 
+[[redirects]]
+  from = "/dashboard/manage-bank-transactions"
+  to = "/dashboard/manage-bank-transactions.html"
+  status = 200
+
 # Blog API endpoints (MUST come before the catch-all wildcard rule)
 [[redirects]]
   from = "/blog/list"
@@ -344,6 +349,11 @@
 [[redirects]]
   from = "/razorpay/blob-backup"
   to = "/.netlify/functions/blob-backup"
+  status = 200
+
+[[redirects]]
+  from = "/bank/transactions"
+  to = "/.netlify/functions/bank-transactions"
   status = 200
 
 [[redirects]]
