@@ -1,14 +1,20 @@
-// Netlify Function: GET/POST /bank/narration-mapping
+// Netlify Function: GET/POST/DELETE /bank/narration-mapping
 // Admin only: Manage narration pattern → user mappings and link bank transactions to users.
 //
 // GET /bank/narration-mapping — List all narration pattern → user mappings.
 //
 // POST /bank/narration-mapping
-//   Body: { action: 'save', narration, regexPattern, userId, transactionKey }
+//   Body: { action: 'save', narration, regexPattern, userId, transactionKey (optional) }
 //     — Validates regex matches narration, validates user exists,
-//       saves the mapping, and links the bank transaction to the user.
+//       saves the mapping, and optionally links the bank transaction to the user.
+//   Body: { action: 'update', mappingKey, narration, regexPattern, userId }
+//     — Updates an existing mapping's fields.
 //   Body: { action: 'link', transactionKey, userId }
 //     — Links a bank transaction to an existing user without saving a new mapping.
+//   Body: { action: 'delete', mappingKey }
+//     — Deletes a narration pattern mapping by key.
+//
+// DELETE /bank/narration-mapping?key=xxx — Delete a narration pattern mapping by key.
 
 const { getStore, ADMIN_EMAILS } = require('./auth-store');
 const { getBankStore } = require('./bank-store');
@@ -16,7 +22,7 @@ const { getBankStore } = require('./bank-store');
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
@@ -41,6 +47,23 @@ function generateMappingKey(narration) {
   if (key.length > 80) key = key.substring(0, 80);
   if (!key) key = 'mapping';
   return `${key}-${Date.now()}`;
+}
+
+/**
+ * Compile a regex pattern, supporting the PCRE inline (?i) case-insensitive flag.
+ * JavaScript doesn't support (?i) natively, so we strip it and use the 'i' flag.
+ */
+function compileRegex(pattern) {
+  let flags = '';
+  let cleanPattern = pattern;
+  
+  // Handle inline (?i) flag - remove all occurrences and add 'i' flag
+  if (cleanPattern.includes('(?i)')) {
+    cleanPattern = cleanPattern.replace(/\(\?i\)/g, '');
+    flags += 'i';
+  }
+  
+  return new RegExp(cleanPattern, flags);
 }
 
 async function getUserData(store, userId) {
@@ -96,12 +119,45 @@ exports.handler = async function (event, context) {
       };
     }
 
-    // ─── POST: Save mapping + link, or link using existing mapping ───
+    // ─── DELETE: Delete a narration pattern mapping by key ───
+    if (event.httpMethod === 'DELETE') {
+      const url = new URL(event.url, 'http://localhost');
+      const mappingKey = url.searchParams.get('key');
+
+      if (!mappingKey) {
+        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Mapping key is required.' }) };
+      }
+
+      // Check if the mapping exists
+      const mapping = await bankStore.get(`narration-mapping:${mappingKey}`, { type: 'json' });
+      if (!mapping) {
+        return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Mapping not found.' }) };
+      }
+
+      // Delete the mapping record
+      await bankStore.delete(`narration-mapping:${mappingKey}`);
+
+      // Remove from the mappings list
+      const mappingsList = await bankStore.get('narration-mapping:list', { type: 'json' }) || [];
+      const updatedList = mappingsList.filter(k => k !== mappingKey);
+      await bankStore.setJSON('narration-mapping:list', updatedList);
+
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({
+          success: true,
+          message: `✅ Mapping "${mapping.narration || mappingKey}" deleted successfully.`,
+        }),
+      };
+    }
+
+    // ─── POST: Save/Update/Link/Delete ───
     if (event.httpMethod === 'POST') {
       const body = JSON.parse(event.body || '{}');
       const { action } = body;
 
-      // ── action: 'save' — save a new narration pattern → user mapping and link the txn ──
+      // ── action: 'save' — save a new narration pattern → user mapping and optionally link the txn ──
       if (action === 'save') {
         const { narration, regexPattern, userId, transactionKey } = body;
 
@@ -114,14 +170,11 @@ exports.handler = async function (event, context) {
         if (!userId || typeof userId !== 'string') {
           return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'User ID (email) is required.' }) };
         }
-        if (!transactionKey) {
-          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Transaction key is required.' }) };
-        }
 
         // Validate regex compiles
         let regex;
         try {
-          regex = new RegExp(regexPattern);
+          regex = compileRegex(regexPattern);
         } catch (err) {
           return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `Invalid regex pattern: ${err.message}` }) };
         }
@@ -139,12 +192,6 @@ exports.handler = async function (event, context) {
         }
 
         const userData = await getUserData(store, normalizedUserId);
-
-        // Load the transaction
-        const txn = await bankStore.get(`transaction:${transactionKey}`, { type: 'json' });
-        if (!txn) {
-          return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Bank transaction not found.' }) };
-        }
 
         // Create the mapping
         const mapping = {
@@ -167,13 +214,24 @@ exports.handler = async function (event, context) {
           await bankStore.setJSON('narration-mapping:list', mappingsList);
         }
 
-        // Link the transaction to the user
-        txn.linkedUserId = normalizedUserId;
-        txn.linkedUserName = userData ? userData.name || '' : '';
-        txn.linkedPhone = userData ? userData.phone || '' : '';
-        txn.linkedAt = new Date().toISOString();
-        txn.linkedBy = session.email;
-        await bankStore.setJSON(`transaction:${txn.key}`, txn);
+        // Optionally link the transaction to the user
+        let txn = null;
+        if (transactionKey) {
+          txn = await bankStore.get(`transaction:${transactionKey}`, { type: 'json' });
+          if (!txn) {
+            return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Bank transaction not found.' }) };
+          }
+          txn.linkedUserId = normalizedUserId;
+          txn.linkedUserName = userData ? userData.name || '' : '';
+          txn.linkedPhone = userData ? userData.phone || '' : '';
+          txn.linkedAt = new Date().toISOString();
+          txn.linkedBy = session.email;
+          await bankStore.setJSON(`transaction:${txn.key}`, txn);
+        }
+
+        const msg = transactionKey
+          ? `✅ Narration pattern saved and transaction linked to ${userData && userData.name ? userData.name : normalizedUserId}.`
+          : `✅ Narration pattern saved and mapped to ${userData && userData.name ? userData.name : normalizedUserId}.`;
 
         return {
           statusCode: 200,
@@ -182,7 +240,74 @@ exports.handler = async function (event, context) {
             success: true,
             mapping,
             transaction: txn,
-            message: `✅ Narration pattern saved and transaction linked to ${userData && userData.name ? userData.name : normalizedUserId}.`,
+            message: msg,
+          }),
+        };
+      }
+
+      // ── action: 'update' — update an existing mapping ──
+      if (action === 'update') {
+        const { mappingKey, narration, regexPattern, userId } = body;
+
+        if (!mappingKey) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Mapping key is required.' }) };
+        }
+        if (!narration || typeof narration !== 'string' || narration.trim() === '') {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Narration is required.' }) };
+        }
+        if (!regexPattern || typeof regexPattern !== 'string' || regexPattern.trim() === '') {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Regex pattern is required.' }) };
+        }
+        if (!userId || typeof userId !== 'string') {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'User ID (email) is required.' }) };
+        }
+
+        // Check if the mapping exists
+        const existingMapping = await bankStore.get(`narration-mapping:${mappingKey}`, { type: 'json' });
+        if (!existingMapping) {
+          return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Mapping not found.' }) };
+        }
+
+        // Validate regex compiles
+        let regex;
+        try {
+          regex = compileRegex(regexPattern);
+        } catch (err) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `Invalid regex pattern: ${err.message}` }) };
+        }
+
+        // Validate regex matches the narration
+        if (!regex.test(narration)) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'The regex pattern does not match the narration text.' }) };
+        }
+
+        // Validate user exists
+        const normalizedUserId = String(userId).toLowerCase().trim();
+        const userExists = await checkUserExists(store, normalizedUserId);
+        if (!userExists) {
+          return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'User not found with ID: ' + userId }) };
+        }
+
+        const userData = await getUserData(store, normalizedUserId);
+
+        // Update the mapping
+        existingMapping.narration = narration;
+        existingMapping.regexPattern = regexPattern;
+        existingMapping.userId = normalizedUserId;
+        existingMapping.userName = userData ? userData.name || '' : '';
+        existingMapping.userPhone = userData ? userData.phone || '' : '';
+        existingMapping.updatedAt = new Date().toISOString();
+        existingMapping.updatedBy = session.email;
+
+        await bankStore.setJSON(`narration-mapping:${mappingKey}`, existingMapping);
+
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            success: true,
+            mapping: { ...existingMapping, key: mappingKey },
+            message: `✅ Mapping updated successfully.`,
           }),
         };
       }
@@ -232,10 +357,42 @@ exports.handler = async function (event, context) {
         };
       }
 
-      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid action. Use "save" or "link".' }) };
+      // ── action: 'delete' — delete a narration pattern mapping ──
+      if (action === 'delete') {
+        const { mappingKey } = body;
+
+        if (!mappingKey) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Mapping key is required.' }) };
+        }
+
+        // Check if the mapping exists
+        const mapping = await bankStore.get(`narration-mapping:${mappingKey}`, { type: 'json' });
+        if (!mapping) {
+          return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Mapping not found.' }) };
+        }
+
+        // Delete the mapping record
+        await bankStore.delete(`narration-mapping:${mappingKey}`);
+
+        // Remove from the mappings list
+        const mappingsList = await bankStore.get('narration-mapping:list', { type: 'json' }) || [];
+        const updatedList = mappingsList.filter(k => k !== mappingKey);
+        await bankStore.setJSON('narration-mapping:list', updatedList);
+
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            success: true,
+            message: `✅ Mapping "${mapping.narration || mappingKey}" deleted successfully.`,
+          }),
+        };
+      }
+
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid action. Use "save", "update", "link", or "delete".' }) };
     }
 
-    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed. Use GET (list) or POST (save/link).' }) };
+    return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed. Use GET (list), POST (save/update/link/delete), or DELETE (delete).' }) };
   } catch (err) {
     console.error('[/bank/narration-mapping] Error:', err.message, err.stack);
     return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Server error: ' + err.message }) };
