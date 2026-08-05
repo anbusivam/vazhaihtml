@@ -318,6 +318,7 @@
     <h2>📋 Imported Transactions <span class="txn-count-badge" id="txn-count">0</span></h2>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
       <button class="btn-primary" id="txn-refresh-btn" onclick="loadTransactions()">🔄 Refresh</button>
+      <button class="btn-primary" id="txn-match-btn" onclick="matchPayments()">🔗 Match Payments</button>
     </div>
     <div id="txn-msg" class="msg"></div>
     <div id="txn-loading" class="loading-state" style="display:none;">Loading transactions...</div>
@@ -333,6 +334,7 @@
               <th data-col="chqNo">CHQ.NO.<span class="resize-handle" data-col="chqNo"></span></th>
               <th data-col="withdrawal">WITHDRAWAL (DR)<span class="resize-handle" data-col="withdrawal"></span></th>
               <th data-col="deposit">DEPOSIT (CR)<span class="resize-handle" data-col="deposit"></span></th>
+              <th data-col="paymentId">PAYMENT ID<span class="resize-handle" data-col="paymentId"></span></th>
             </tr>
           </thead>
           <tbody id="txn-tbody"></tbody>
@@ -467,6 +469,8 @@ async function loadTransactions() {
       const withdrawal = txn.withdrawal ? '₹' + Number(txn.withdrawal).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
       const deposit = txn.deposit ? '₹' + Number(txn.deposit).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
       
+      const paymentIdHtml = txn.paymentId ? `<span style="font-weight:600;color:var(--green-dark);">${escapeHtml(txn.paymentId)}</span>` : '—';
+      
       tr.innerHTML = `
         <td class="txn-date">${escapeHtml(txn.tranDate || '—')}</td>
         <td class="txn-date">${escapeHtml(txn.valueDate || '—')}</td>
@@ -474,6 +478,7 @@ async function loadTransactions() {
         <td class="txn-chq">${escapeHtml(txn.chqNo || '—')}</td>
         <td class="txn-amount dr">${withdrawal}</td>
         <td class="txn-amount cr">${deposit}</td>
+        <td class="txn-payment-id">${paymentIdHtml}</td>
       `;
       tbody.appendChild(tr);
     }
@@ -484,6 +489,57 @@ async function loadTransactions() {
     document.getElementById('txn-loading').style.display = 'none';
     document.getElementById('txn-refresh-btn').disabled = false;
     txnShowMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+async function matchPayments() {
+  const btn = document.getElementById('txn-match-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Matching...';
+  txnShowMsg('', '');
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/bank/match-payments', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({}),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      txnShowMsg('error', data.error);
+      return;
+    }
+
+    const report = data.report || {};
+    const messages = report.messages || [];
+    
+    let msg = '✅ <strong>' + report.matched + ' payment(s) matched</strong>';
+    msg += ', <strong>' + report.alreadyMatched + ' already matched</strong>';
+    msg += ', <strong>' + report.notFound + ' not found</strong>';
+    msg += ', <strong>' + report.multipleMatches + ' multiple matches (skipped)</strong>.';
+    
+    if (messages.length > 0) {
+      msg += '<details style="margin-top:8px;"><summary style="cursor:pointer;font-weight:600;color:#d32f2f;">⚠️ ' + messages.length + ' message(s)</summary>' +
+        '<div style="margin-top:6px;">' +
+        messages.map(m => '<div class="error-item" style="padding:4px 0;border-bottom:1px solid #fee2e2;">• ' + escapeHtml(m) + '</div>').join('') +
+        '</div></details>';
+    }
+
+    txnShowMsg('success', msg);
+    
+    // Refresh the transactions list to show updated payment IDs
+    loadTransactions();
+  } catch (err) {
+    txnShowMsg('error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔗 Match Payments';
   }
 }
 

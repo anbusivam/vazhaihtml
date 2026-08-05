@@ -357,6 +357,11 @@
   status = 200
 
 [[redirects]]
+  from = "/bank/match-payments"
+  to = "/.netlify/functions/bank-match-payments"
+  status = 200
+
+[[redirects]]
   from = "/donor-wall"
   to = "/.netlify/functions/donor-wall"
   status = 200
