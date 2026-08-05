@@ -719,6 +719,126 @@
       color: var(--text-light);
       margin-bottom: 16px;
     }
+
+    /* ── Create Payment from Bank Transaction styles ── */
+    .create-payment-btn {
+      padding: 5px 10px;
+      font-size: 11px;
+      border-radius: 5px;
+      background: #fff8e1;
+      color: #b45309;
+      border: 1.5px solid #f59e0b;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .create-payment-btn:hover {
+      background: #f59e0b;
+      color: white;
+    }
+    .action-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      white-space: nowrap;
+    }
+    .bank-detail-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+    .bank-detail-row .label {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .bank-detail-row .value {
+      font-weight: 500;
+      color: var(--green-dark);
+    }
+    .payment-review-grid {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+    .payment-review-grid th,
+    .payment-review-grid td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+    .payment-review-grid th {
+      width: 140px;
+      font-weight: 600;
+      color: var(--text-light);
+      background: #fafafa;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .payment-review-grid td {
+      color: var(--text);
+      font-weight: 500;
+      word-break: break-word;
+    }
+    .payment-review-grid .highlight {
+      color: var(--green-dark);
+      font-weight: 700;
+    }
+    .payment-review-grid .empty-val {
+      color: var(--text-light);
+      font-style: italic;
+      font-weight: 400;
+    }
+    .review-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green-dark);
+      margin-top: 20px;
+      margin-bottom: 4px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--green-light);
+    }
+    .success-check {
+      text-align: center;
+      font-size: 48px;
+      color: var(--green-dark);
+      margin-bottom: 8px;
+    }
+    .success-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--green-dark);
+      margin-bottom: 4px;
+    }
+    .success-subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 16px;
+    }
+    .user-updates-list {
+      margin-top: 8px;
+      padding: 10px 14px;
+      background: var(--green-light);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--green-dark);
+    }
+    .user-updates-list ul {
+      margin: 6px 0 0;
+      padding-left: 18px;
+    }
+    .user-updates-list li {
+      margin-bottom: 2px;
+    }
   </style>
 </head>
 <body>
@@ -908,6 +1028,111 @@
   </div>
 </div>
 
+<!-- Create Payment from Bank Transaction Modal -->
+<div class="modal-overlay" id="create-payment-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCreatePaymentModal()">✕</button>
+    <h3 id="create-payment-title">💰 Create Payment Record</h3>
+
+    <!-- Step 1: Fill payment details -->
+    <div id="create-payment-form">
+      <!-- Bank transaction details -->
+      <div class="review-section-title">🏦 Bank Transaction Details</div>
+      <div class="bank-detail-row"><span class="label">Narration:</span> <span class="value" id="cp-bank-narration"></span></div>
+      <div class="bank-detail-row"><span class="label">Date:</span> <span class="value" id="cp-bank-date"></span></div>
+      <div class="bank-detail-row"><span class="label">Amount:</span> <span class="value" id="cp-bank-amount"></span></div>
+      <div class="bank-detail-row"><span class="label">Chq.No:</span> <span class="value" id="cp-bank-chq"></span></div>
+
+      <!-- User search -->
+      <div class="review-section-title">👤 User</div>
+      <div class="form-group">
+        <label>Search & Select User <span class="hint">— search by name, email, or phone (optional)</span></label>
+        <div class="user-search-box">
+          <input type="text" class="user-search-input" id="cp-user-search-input" placeholder="Type name, email, or phone..." autocomplete="off" oninput="onCreatePaymentUserSearchInput()">
+          <button class="user-search-clear" id="cp-user-search-clear" onclick="clearCreatePaymentUserSearch()" style="display:none;">✕</button>
+          <div class="user-search-results" id="cp-user-search-results"></div>
+        </div>
+        <div id="cp-selected-user-chip"></div>
+        <input type="hidden" id="cp-selected-user-id">
+      </div>
+
+      <!-- Payment details -->
+      <div class="review-section-title">📝 Payment Details</div>
+      <div class="form-group">
+        <label>Payment ID <span class="hint">— must be part of the bank narration</span></label>
+        <input type="text" id="cp-payment-id" placeholder="Payment ID from narration" autocomplete="off">
+        <div style="font-size:11px;color:var(--text-light);margin-top:4px;">This should be a reference number found within the bank narration text.</div>
+      </div>
+      <div class="form-group">
+        <label>Receipt Number <span class="hint">— format: yyyy/mm/dd/<sequence></span></label>
+        <input type="text" id="cp-receipt-no" placeholder="e.g. 2026/05/08/001" autocomplete="off">
+        <div style="font-size:11px;color:var(--text-light);margin-top:4px;">Auto-generated based on the transaction date. You may edit it if needed.</div>
+      </div>
+      <div class="form-group">
+        <label>Donor Name <span class="hint" id="cp-name-hint">— from user or bank</span></label>
+        <input type="text" id="cp-donor-name" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label>Donor Email</label>
+        <input type="text" id="cp-donor-email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label>Donor Phone</label>
+        <input type="text" id="cp-donor-phone" placeholder="Phone number">
+      </div>
+      <div class="form-group">
+        <label>PAN</label>
+        <input type="text" id="cp-donor-pan" placeholder="PAN number (optional)">
+      </div>
+      <div class="form-group">
+        <label>Address</label>
+        <textarea id="cp-donor-address" placeholder="Address (optional)"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Comment / Note</label>
+        <textarea id="cp-donor-comment" placeholder="Any notes about this payment"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-primary btn-outline" onclick="closeCreatePaymentModal()">Cancel</button>
+        <button class="btn-primary" id="create-payment-save-btn" onclick="createPaymentRecord()">💾 Create Payment</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Review created payment -->
+    <div id="create-payment-review" style="display:none;">
+      <div class="success-check">✅</div>
+      <div class="success-title">Payment Record Created!</div>
+      <div class="success-subtitle" id="cp-review-subtitle"></div>
+
+      <div class="review-section-title">💰 Generated Payment</div>
+      <table class="payment-review-grid">
+        <tr><th>Payment ID</th><td class="highlight" id="cp-review-payment-id"></td></tr>
+        <tr><th>Receipt No</th><td class="highlight" id="cp-review-receipt-no"></td></tr>
+        <tr><th>Amount</th><td id="cp-review-amount"></td></tr>
+        <tr><th>Date</th><td id="cp-review-date"></td></tr>
+        <tr><th>Status</th><td id="cp-review-status"></td></tr>
+        <tr><th>Method</th><td id="cp-review-method"></td></tr>
+        <tr><th>Donor Name</th><td id="cp-review-name"></td></tr>
+        <tr><th>Donor Email</th><td id="cp-review-email"></td></tr>
+        <tr><th>Donor Phone</th><td id="cp-review-phone"></td></tr>
+        <tr><th>PAN</th><td id="cp-review-pan"></td></tr>
+        <tr><th>Address</th><td id="cp-review-address"></td></tr>
+        <tr><th>Comment</th><td id="cp-review-comment"></td></tr>
+      </table>
+
+      <div id="cp-review-user-updates" class="user-updates-list" style="display:none;">
+        <strong>👤 User profile updated with:</strong>
+        <ul id="cp-review-user-updates-list"></ul>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="closeCreatePaymentModal()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 let currentUserEmail = '';
 let currentCSVRows = [];
@@ -960,6 +1185,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
       if (document.getElementById('mapping-modal').classList.contains('open')) {
         closeMappingModal();
+      }
+      if (document.getElementById('create-payment-modal').classList.contains('open')) {
+        closeCreatePaymentModal();
       }
     }
   });
@@ -1045,6 +1273,16 @@ async function loadTransactions() {
       // Link button
       const linkBtnClass = txn.linkedUserId ? 'linked' : '';
       const linkBtnHtml = `<button class="link-btn ${linkBtnClass}" onclick="openLinkModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}')">${txn.linkedUserId ? '✓ Linked' : '🔗 Link User'}</button>`;
+
+      // Create Payment button — show when:
+      // 1. Payment ID is missing
+      // 2. It's a deposit (CR)
+      // 3. Narration doesn't start with "NEFT-AXIS" and end with "RAZORPAY PAYMENTS PVT LTD PA"
+      // 4. Narration doesn't contain both "Int:" and "TAX:"
+      let createPaymentHtml = '';
+      if (shouldShowCreatePayment(txn)) {
+        createPaymentHtml = `<button class="create-payment-btn" onclick="openCreatePaymentModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}', ${Number(txn.deposit) || 0}, '${escapeHtmlAttr(txn.tranDate || '')}', '${escapeHtmlAttr(txn.chqNo || '')}')">💰 Create Payment</button>`;
+      }
       
       tr.innerHTML = `
         <td class="txn-date">${escapeHtml(txn.tranDate || '—')}</td>
@@ -1055,7 +1293,7 @@ async function loadTransactions() {
         <td class="txn-amount cr">${deposit}</td>
         <td class="txn-payment-id">${paymentIdHtml}</td>
         <td>${linkedUserHtml}</td>
-        <td>${linkBtnHtml}</td>
+        <td><div class="action-btns">${linkBtnHtml}${createPaymentHtml}</div></td>
       `;
       tbody.appendChild(tr);
     }
@@ -2228,6 +2466,418 @@ function clearUserSearch() {
   document.getElementById('user-search-clear').style.display = 'none';
   document.getElementById('user-search-results').classList.remove('open');
   userSearchResults = [];
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Create Payment from Bank Transaction Logic
+// ════════════════════════════════════════════════════════════════════
+
+let cpSelectedUserId = '';
+let cpUserSearchResults = [];
+let cpUserSearchTimeout = null;
+let cpCurrentTxnKey = '';
+let cpCurrentNarration = '';
+let cpCurrentAmount = 0;
+let cpCurrentTranDate = '';
+let cpCurrentChqNo = '';
+
+/**
+ * Determine whether to show the "Create Payment" button for a transaction.
+ * Shows when:
+ *   1. Payment ID is missing
+ *   2. It's a deposit (CR)
+ *   3. Narration doesn't start with "NEFT-AXIS" AND end with "RAZORPAY PAYMENTS PVT LTD PA"
+ *   4. Narration doesn't contain both "Int:" and "TAX:"
+ */
+function shouldShowCreatePayment(txn) {
+  if (txn.paymentId) return false;
+
+  const deposit = Number(txn.deposit);
+  if (!deposit || deposit <= 0) return false;
+
+  const narration = (txn.narration || '').toUpperCase();
+  const startsWithNeft = narration.startsWith('NEFT-AXIS');
+  const endsWithRazorpay = narration.endsWith('RAZORPAY PAYMENTS PVT LTD PA');
+  const containsInt = narration.includes('INT:');
+  const containsTax = narration.includes('TAX:');
+
+  // Hide if it's a Razorpay NEFT pattern
+  if (startsWithNeft && endsWithRazorpay) return false;
+  // Hide if it contains both Int: and TAX: (Razorpay fee/tax entries)
+  if (containsInt && containsTax) return false;
+
+  return true;
+}
+
+/**
+ * Open the Create Payment modal.
+ * Calls the backend to suggest a payment ID (from narration) and receipt number.
+ */
+async function openCreatePaymentModal(txnKey, narration, amount, tranDate, chqNo) {
+  cpCurrentTxnKey = txnKey;
+  cpCurrentNarration = narration || '';
+  cpCurrentAmount = Number(amount) || 0;
+  cpCurrentTranDate = tranDate || '';
+  cpCurrentChqNo = chqNo || '';
+
+  // Populate bank details
+  document.getElementById('cp-bank-narration').textContent = cpCurrentNarration || '—';
+  document.getElementById('cp-bank-date').textContent = cpCurrentTranDate || '—';
+  document.getElementById('cp-bank-amount').textContent = cpCurrentAmount ? '₹' + cpCurrentAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
+  document.getElementById('cp-bank-chq').textContent = cpCurrentChqNo || '—';
+
+  // Reset form state
+  clearCreatePaymentUserSearch();
+  document.getElementById('cp-donor-name').value = '';
+  document.getElementById('cp-donor-email').value = '';
+  document.getElementById('cp-donor-phone').value = '';
+  document.getElementById('cp-donor-pan').value = '';
+  document.getElementById('cp-donor-address').value = '';
+  document.getElementById('cp-donor-comment').value = cpCurrentNarration || '';
+  document.getElementById('cp-payment-id').value = '';
+  document.getElementById('cp-receipt-no').value = '';
+  document.getElementById('cp-payment-id').classList.remove('input-error');
+  document.getElementById('cp-receipt-no').classList.remove('input-error');
+
+  // Show form, hide review
+  document.getElementById('create-payment-form').style.display = 'block';
+  document.getElementById('create-payment-review').style.display = 'none';
+  document.getElementById('create-payment-title').textContent = '💰 Create Payment Record';
+
+  // Open modal
+  document.getElementById('create-payment-modal').classList.add('open');
+
+  // Call the suggest endpoint to pre-fill payment ID and receipt number
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/bank/create-payment', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        action: 'suggest',
+        transactionKey: cpCurrentTxnKey,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('cp-payment-id').value = data.suggestedPaymentId || '';
+      document.getElementById('cp-receipt-no').value = data.suggestedReceiptNo || '';
+    } else if (data.error) {
+      // Show error but still open the modal
+      console.warn('Suggest failed:', data.error);
+    }
+  } catch (err) {
+    console.warn('Suggest error:', err.message);
+  }
+
+  // Focus payment ID field
+  setTimeout(() => {
+    document.getElementById('cp-payment-id').focus();
+  }, 100);
+}
+
+/**
+ * Close the Create Payment modal.
+ */
+function closeCreatePaymentModal() {
+  document.getElementById('create-payment-modal').classList.remove('open');
+  clearCreatePaymentUserSearch();
+  cpCurrentTxnKey = '';
+  cpCurrentNarration = '';
+  cpCurrentAmount = 0;
+  cpCurrentTranDate = '';
+  cpCurrentChqNo = '';
+}
+
+/**
+ * Handle user search input in the create payment modal.
+ */
+function onCreatePaymentUserSearchInput() {
+  const query = document.getElementById('cp-user-search-input').value.trim();
+  const clearBtn = document.getElementById('cp-user-search-clear');
+  clearBtn.style.display = query ? 'inline-block' : 'none';
+
+  clearTimeout(cpUserSearchTimeout);
+  cpUserSearchTimeout = setTimeout(() => {
+    doCreatePaymentUserSearch(query);
+  }, 300);
+}
+
+/**
+ * Search users for the create payment modal.
+ */
+async function doCreatePaymentUserSearch(query) {
+  const resultsEl = document.getElementById('cp-user-search-results');
+
+  if (!query) {
+    resultsEl.classList.remove('open');
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/auth/admin?search=' + encodeURIComponent(query) + '&limit=20', { headers });
+    const data = await res.json();
+
+    if (data.error) {
+      resultsEl.innerHTML = '<div class="user-search-empty">Error: ' + escapeHtml(data.error) + '</div>';
+      resultsEl.classList.add('open');
+      return;
+    }
+
+    const users = data.users || [];
+    cpUserSearchResults = users;
+
+    if (users.length === 0) {
+      resultsEl.innerHTML = '<div class="user-search-empty">No users found matching "' + escapeHtml(query) + '"</div>';
+      resultsEl.classList.add('open');
+      return;
+    }
+
+    let html = '';
+    for (const user of users) {
+      const name = user.name || '(no name)';
+      const email = user.email || '';
+      const phone = user.phone || '';
+      const avatarLetter = (name && name[0]) ? name[0].toUpperCase() : '?';
+      html += `<div class="user-search-result-item" onclick="selectCreatePaymentUser('${escapeHtmlAttr(email)}')">` +
+        `<div class="avatar">${escapeHtml(avatarLetter)}</div>` +
+        `<div class="user-info">` +
+          `<div class="name">${escapeHtml(name)}</div>` +
+          `<div class="email">${escapeHtml(email)}${phone ? ' • ' + escapeHtml(phone) : ''}</div>` +
+        `</div>` +
+      `</div>`;
+    }
+    resultsEl.innerHTML = html;
+    resultsEl.classList.add('open');
+  } catch (err) {
+    resultsEl.innerHTML = '<div class="user-search-empty">Network error: ' + escapeHtml(err.message) + '</div>';
+    resultsEl.classList.add('open');
+  }
+}
+
+/**
+ * Select a user in the create payment modal and populate fields.
+ */
+function selectCreatePaymentUser(userId) {
+  cpSelectedUserId = userId;
+  document.getElementById('cp-selected-user-id').value = userId;
+
+  // Find the matching user data
+  const user = cpUserSearchResults.find(u => u.email === userId);
+  const name = user && user.name ? user.name : '';
+  const phone = user && user.phone ? user.phone : '';
+  const email = user && user.email ? user.email : userId;
+
+  // Show chip
+  const chipEl = document.getElementById('cp-selected-user-chip');
+  chipEl.innerHTML = `<span class="selected-user-chip">` +
+    `<span>👤 ${name ? escapeHtml(name) + ' <span style="font-weight:400;color:var(--text-light);">(' + escapeHtml(email) + ')</span>' : escapeHtml(email)}</span>` +
+    `<button class="remove" onclick="clearCreatePaymentUserSearch()">✕</button>` +
+  `</span>`;
+
+  // Hide search results
+  document.getElementById('cp-user-search-results').classList.remove('open');
+  document.getElementById('cp-user-search-input').value = '';
+  document.getElementById('cp-user-search-clear').style.display = 'none';
+
+  // Pre-fill payment fields from user data (only if empty or from user)
+  if (user) {
+    if (user.name && !document.getElementById('cp-donor-name').value) {
+      document.getElementById('cp-donor-name').value = user.name;
+    }
+    if (user.email && !document.getElementById('cp-donor-email').value) {
+      document.getElementById('cp-donor-email').value = user.email;
+    }
+    if (user.phone && !document.getElementById('cp-donor-phone').value) {
+      document.getElementById('cp-donor-phone').value = user.phone;
+    }
+    if (user.pan && !document.getElementById('cp-donor-pan').value) {
+      document.getElementById('cp-donor-pan').value = user.pan;
+    }
+    if (user.address && !document.getElementById('cp-donor-address').value) {
+      document.getElementById('cp-donor-address').value = user.address;
+    }
+  }
+}
+
+/**
+ * Clear the user search in the create payment modal.
+ */
+function clearCreatePaymentUserSearch() {
+  cpSelectedUserId = '';
+  document.getElementById('cp-selected-user-id').value = '';
+  document.getElementById('cp-selected-user-chip').innerHTML = '';
+  document.getElementById('cp-user-search-input').value = '';
+  document.getElementById('cp-user-search-clear').style.display = 'none';
+  document.getElementById('cp-user-search-results').classList.remove('open');
+  cpUserSearchResults = [];
+}
+
+/**
+ * Create the payment record by calling the backend.
+ */
+async function createPaymentRecord() {
+  const paymentId = document.getElementById('cp-payment-id').value.trim();
+  const receiptNo = document.getElementById('cp-receipt-no').value.trim();
+  const donorName = document.getElementById('cp-donor-name').value.trim();
+  const donorEmail = document.getElementById('cp-donor-email').value.trim();
+  const donorPhone = document.getElementById('cp-donor-phone').value.trim();
+  const donorPan = document.getElementById('cp-donor-pan').value.trim();
+  const donorAddress = document.getElementById('cp-donor-address').value.trim();
+  const donorComment = document.getElementById('cp-donor-comment').value.trim();
+  const userId = cpSelectedUserId;
+
+  // Validate: Payment ID is required and must be part of the narration
+  if (!paymentId) {
+    alert('Payment ID is required. It should be part of the bank narration.');
+    document.getElementById('cp-payment-id').classList.add('input-error');
+    document.getElementById('cp-payment-id').focus();
+    return;
+  }
+  document.getElementById('cp-payment-id').classList.remove('input-error');
+
+  // Validate: Payment ID must be part of the narration
+  const narrationUpper = (cpCurrentNarration || '').toUpperCase();
+  if (!narrationUpper.includes(paymentId.toUpperCase())) {
+    alert(`Payment ID "${paymentId}" must be part of the bank narration.\n\nNarration: "${cpCurrentNarration}"`);
+    document.getElementById('cp-payment-id').classList.add('input-error');
+    document.getElementById('cp-payment-id').focus();
+    return;
+  }
+  document.getElementById('cp-payment-id').classList.remove('input-error');
+
+  // Validate: Receipt Number is required and must match format yyyy/mm/dd/<sequence>
+  if (!receiptNo) {
+    alert('Receipt number is required.');
+    document.getElementById('cp-receipt-no').classList.add('input-error');
+    document.getElementById('cp-receipt-no').focus();
+    return;
+  }
+  document.getElementById('cp-receipt-no').classList.remove('input-error');
+
+  if (!/^\d{4}\/\d{2}\/\d{2}\/\d+$/.test(receiptNo)) {
+    alert(`Receipt number "${receiptNo}" is invalid. Expected format: yyyy/mm/dd/<sequence> (e.g. 2026/05/08/001).`);
+    document.getElementById('cp-receipt-no').classList.add('input-error');
+    document.getElementById('cp-receipt-no').focus();
+    return;
+  }
+  document.getElementById('cp-receipt-no').classList.remove('input-error');
+
+  // Validate: at least donor name or email is required
+  if (!donorName && !donorEmail) {
+    alert('Please provide at least a donor name or email.');
+    return;
+  }
+
+  // Validate email format if provided
+  if (donorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donorEmail)) {
+    alert('Please enter a valid email address.');
+    document.getElementById('cp-donor-email').focus();
+    return;
+  }
+
+  const btn = document.getElementById('create-payment-save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Creating...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/bank/create-payment', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        action: 'create',
+        transactionKey: cpCurrentTxnKey,
+        userId: userId || '',
+        paymentFields: {
+          paymentId,
+          receiptNo,
+          donorName,
+          donorEmail,
+          donorPhone,
+          donorPan,
+          donorAddress,
+          donorComment,
+        },
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      alert('Error: ' + data.error);
+      return;
+    }
+
+    // Show review screen
+    showCreatePaymentReview(data);
+
+    // Refresh transactions list to update the payment ID display
+    loadTransactions();
+  } catch (err) {
+    alert('Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Create Payment';
+  }
+}
+
+/**
+ * Show the review screen after creating a payment.
+ */
+function showCreatePaymentReview(data) {
+  const payment = data.payment || {};
+  const userUpdates = data.userUpdates || [];
+
+  // Hide form, show review
+  document.getElementById('create-payment-form').style.display = 'none';
+  document.getElementById('create-payment-review').style.display = 'block';
+  document.getElementById('create-payment-title').textContent = '✅ Payment Created';
+
+  // Populate review
+  document.getElementById('cp-review-subtitle').textContent = data.message || 'Payment record created successfully.';
+
+  const amount = payment.amount ? '₹' + Number(payment.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
+  const date = payment.createdAtDate ? new Date(payment.createdAtDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+  document.getElementById('cp-review-payment-id').textContent = payment.paymentId || '—';
+  document.getElementById('cp-review-receipt-no').textContent = payment.receiptNo || '—';
+  document.getElementById('cp-review-amount').textContent = amount;
+  document.getElementById('cp-review-date').textContent = date;
+  document.getElementById('cp-review-status').textContent = payment.status || '—';
+  document.getElementById('cp-review-method').textContent = payment.method || '—';
+  document.getElementById('cp-review-name').textContent = payment.donorName || '<span class="empty-val">(empty)</span>';
+  document.getElementById('cp-review-email').textContent = payment.email || '<span class="empty-val">(empty)</span>';
+  document.getElementById('cp-review-phone').textContent = payment.donorPhone || '<span class="empty-val">(empty)</span>';
+  document.getElementById('cp-review-pan').textContent = payment.donorPan || '<span class="empty-val">(empty)</span>';
+  document.getElementById('cp-review-address').textContent = payment.donorAddress || '<span class="empty-val">(empty)</span>';
+  document.getElementById('cp-review-comment').textContent = payment.donorComment || '<span class="empty-val">(empty)</span>';
+
+  // Show user updates if any
+  const updatesEl = document.getElementById('cp-review-user-updates');
+  const updatesListEl = document.getElementById('cp-review-user-updates-list');
+  if (userUpdates && userUpdates.length > 0) {
+    updatesEl.style.display = 'block';
+    updatesListEl.innerHTML = userUpdates.map(u => `<li><strong>${escapeHtml(u.field)}</strong>: ${escapeHtml(u.value)}</li>`).join('');
+  } else {
+    updatesEl.style.display = 'none';
+  }
+
+  // Scroll to top of modal
+  const modalBox = document.querySelector('#create-payment-modal .modal-box');
+  if (modalBox) modalBox.scrollTop = 0;
 }
 
 async function logout() {

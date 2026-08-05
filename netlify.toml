@@ -367,6 +367,11 @@
   status = 200
 
 [[redirects]]
+  from = "/bank/create-payment"
+  to = "/.netlify/functions/bank-create-payment"
+  status = 200
+
+[[redirects]]
   from = "/donor-wall"
   to = "/.netlify/functions/donor-wall"
   status = 200
