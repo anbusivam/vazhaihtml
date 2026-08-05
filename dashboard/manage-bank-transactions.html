@@ -106,6 +106,11 @@
     .btn-outline:hover {
       background: var(--green-light);
     }
+    .btn-danger {
+      background: #d32f2f;
+      border-color: #d32f2f;
+    }
+    .btn-danger:hover { background: #b71c1c; }
     .msg {
       padding: 10px 14px;
       border-radius: 8px;
@@ -299,6 +304,331 @@
     @media (max-width: 768px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; }
     }
+
+    /* ── Link User Modal & Mapping styles ── */
+    .link-btn {
+      padding: 5px 10px;
+      font-size: 11px;
+      border-radius: 5px;
+      background: white;
+      color: var(--green-dark);
+      border: 1.5px solid var(--green-dark);
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .link-btn:hover {
+      background: var(--green-light);
+    }
+    .link-btn.linked {
+      background: var(--green-dark);
+      color: white;
+    }
+    .linked-user-chip {
+      display: inline-block;
+      background: var(--green-light);
+      color: var(--green-dark);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      max-width: 700px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      position: relative;
+    }
+    .modal-box h3 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      color: var(--green-dark);
+    }
+    .modal-close {
+      position: absolute;
+      top: 12px; right: 16px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-light);
+      line-height: 1;
+      padding: 4px;
+    }
+    .modal-close:hover { color: var(--text); }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .form-group label .hint {
+      font-weight: 400;
+      color: var(--text-light);
+      font-size: 12px;
+    }
+    .form-group input[type="text"],
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      background: #fff;
+    }
+    .form-group input[type="text"]:focus,
+    .form-group textarea:focus {
+      border-color: var(--green);
+    }
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .form-group textarea.input-error,
+    .form-group input[type="text"].input-error {
+      border-color: #d32f2f;
+      background: #fef2f2;
+    }
+    /* User search */
+    .user-search-box {
+      position: relative;
+    }
+    .user-search-input {
+      width: 100%;
+      padding: 10px 14px;
+      padding-right: 36px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    .user-search-input:focus {
+      border-color: var(--green);
+    }
+    .user-search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--text-light);
+      padding: 2px;
+      line-height: 1;
+    }
+    .user-search-clear:hover { color: var(--text); }
+    .user-search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+      margin-top: 4px;
+    }
+    .user-search-results.open {
+      display: block;
+    }
+    .user-search-result-item {
+      padding: 8px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .user-search-result-item:hover {
+      background: var(--green-light);
+    }
+    .user-search-result-item .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--green-light);
+      color: var(--green-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .user-search-result-item .user-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .user-search-result-item .user-info .name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .user-search-result-item .user-info .email {
+      font-size: 11px;
+      color: var(--text-light);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .user-search-empty {
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text-light);
+      text-align: center;
+    }
+    .selected-user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green-light);
+      border: 1px solid var(--green);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green-dark);
+      margin-top: 8px;
+    }
+    .selected-user-chip .remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-light);
+      font-size: 16px;
+      padding: 0 2px;
+      line-height: 1;
+    }
+    .selected-user-chip .remove:hover { color: #d32f2f; }
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .modal-hint {
+      background: #f8f9fa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 16px;
+    }
+    .modal-hint code {
+      background: var(--green-light);
+      color: var(--green-dark);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    /* Mapping table */
+    .mapping-table-scroll {
+      max-height: 300px;
+      overflow-y: auto;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .mapping-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .mapping-table th {
+      text-align: left;
+      padding: 8px 8px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      background: #f8f9fa;
+      z-index: 1;
+    }
+    .mapping-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+    .mapping-table tr:hover td {
+      background: #fafafa;
+    }
+    .mapping-table .regex-col {
+      font-family: monospace;
+      font-size: 11px;
+      background: #f5f5f5;
+      padding: 3px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+    }
+    .mapping-empty {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-light);
+      font-size: 13px;
+    }
+    .modal-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 24px 0 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
   </style>
 </head>
 <body>
@@ -335,6 +665,8 @@
               <th data-col="withdrawal">WITHDRAWAL (DR)<span class="resize-handle" data-col="withdrawal"></span></th>
               <th data-col="deposit">DEPOSIT (CR)<span class="resize-handle" data-col="deposit"></span></th>
               <th data-col="paymentId">PAYMENT ID<span class="resize-handle" data-col="paymentId"></span></th>
+              <th data-col="linkedUser">LINKED USER<span class="resize-handle" data-col="linkedUser"></span></th>
+              <th data-col="actions" style="min-width:90px;">ACTIONS</th>
             </tr>
           </thead>
           <tbody id="txn-tbody"></tbody>
@@ -380,11 +712,85 @@
   </div>
 </div>
 
+<!-- Link User Modal -->
+<div class="modal-overlay" id="link-user-modal" onclick="if(event.target===this)closeLinkModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeLinkModal()">✕</button>
+    <h3 id="link-modal-title">🔗 Link User to Transaction</h3>
+
+    <!-- Existing mapping confirmation -->
+    <div id="existing-mapping-box" style="display:none;" class="modal-hint">
+      <p style="margin:0 0 8px;"><strong>✨ Existing narration pattern found:</strong></p>
+      <p style="margin:0 0 8px;">Narration pattern <code id="existing-pattern-display"></code> is already mapped to user <strong id="existing-user-display"></strong>.</p>
+      <p style="margin:0;font-size:12px;">Do you want to use this mapping?</p>
+      <div style="margin-top:10px;display:flex;gap:8px;">
+        <button class="btn-primary btn-sm" onclick="useExistingMapping()">✅ Yes, Use It</button>
+        <button class="btn-primary btn-sm btn-outline" onclick="dismissExistingMapping()">No, Create New</button>
+      </div>
+    </div>
+
+    <!-- Transaction details -->
+    <div class="form-group">
+      <label>Transaction Narration</label>
+      <textarea id="modal-narration" readonly></textarea>
+    </div>
+
+    <!-- Regex pattern input -->
+    <div class="form-group">
+      <label>Regex Pattern <span class="hint">— must match the narration text</span></label>
+      <input type="text" id="modal-regex" placeholder="e.g. NEFT.*JOHN|UPI.*JOHN" autocomplete="off">
+      <div style="font-size:11px;color:var(--text-light);margin-top:4px;">Tip: use <code>.*</code> as a wildcard. Example: <code>NEFT.*ANBUSIVAM</code></div>
+    </div>
+
+    <!-- User search -->
+    <div class="form-group">
+      <label>Search & Select User <span class="hint">— search by name, email, or phone</span></label>
+      <div class="user-search-box">
+        <input type="text" class="user-search-input" id="user-search-input" placeholder="Type name, email, or phone..." autocomplete="off" oninput="onUserSearchInput()">
+        <button class="user-search-clear" id="user-search-clear" onclick="clearUserSearch()" style="display:none;">✕</button>
+        <div class="user-search-results" id="user-search-results"></div>
+      </div>
+      <div id="selected-user-chip"></div>
+      <input type="hidden" id="selected-user-id">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary btn-outline" onclick="closeLinkModal()">Cancel</button>
+      <button class="btn-primary" id="save-mapping-btn" onclick="saveMappingAndLink()">💾 Save & Link User</button>
+    </div>
+
+    <!-- Narration Pattern → User Mappings table -->
+    <div class="modal-section-title">📋 Narration Pattern → User Mappings</div>
+    <div id="mapping-table-container">
+      <div class="mapping-table-scroll">
+        <table class="mapping-table">
+          <thead>
+            <tr>
+              <th>Narration (Sample)</th>
+              <th>Regex Pattern</th>
+              <th>Linked User</th>
+            </tr>
+          </thead>
+          <tbody id="mapping-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div id="mapping-empty" class="mapping-empty" style="display:none;">No narration pattern mappings saved yet.</div>
+  </div>
+</div>
+
 <script>
 let currentUserEmail = '';
 let currentCSVRows = [];
 let currentCSVHeaders = [];
 let currentCSVText = '';
+
+let currentTxnKey = '';
+let currentTxnNarration = '';
+let existingMappings = [];
+let selectedUserId = '';
+let userSearchResults = [];
+let confirmingExistingMapping = null;
 
 const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
 
@@ -465,11 +871,24 @@ async function loadTransactions() {
 
     for (const txn of transactions) {
       const tr = document.createElement('tr');
+      tr.dataset.key = txn.key || '';
       
       const withdrawal = txn.withdrawal ? '₹' + Number(txn.withdrawal).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
       const deposit = txn.deposit ? '₹' + Number(txn.deposit).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
       
       const paymentIdHtml = txn.paymentId ? `<span style="font-weight:600;color:var(--green-dark);">${escapeHtml(txn.paymentId)}</span>` : '—';
+
+      // Linked user display
+      let linkedUserHtml = '—';
+      if (txn.linkedUserId) {
+        const name = escapeHtml(txn.linkedUserName || '');
+        const email = escapeHtml(txn.linkedUserId);
+        linkedUserHtml = `<span class="linked-user-chip" title="${email}">${name ? name + ' (' + email + ')' : email}</span>`;
+      }
+
+      // Link button
+      const linkBtnClass = txn.linkedUserId ? 'linked' : '';
+      const linkBtnHtml = `<button class="link-btn ${linkBtnClass}" onclick="openLinkModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}')">${txn.linkedUserId ? '✓ Linked' : '🔗 Link User'}</button>`;
       
       tr.innerHTML = `
         <td class="txn-date">${escapeHtml(txn.tranDate || '—')}</td>
@@ -479,6 +898,8 @@ async function loadTransactions() {
         <td class="txn-amount dr">${withdrawal}</td>
         <td class="txn-amount cr">${deposit}</td>
         <td class="txn-payment-id">${paymentIdHtml}</td>
+        <td>${linkedUserHtml}</td>
+        <td>${linkBtnHtml}</td>
       `;
       tbody.appendChild(tr);
     }
@@ -870,12 +1291,411 @@ async function uploadCSV() {
 
 function escapeHtml(str) {
   if (!str) return '';
+  var a = String.fromCharCode(38);
   return String(str)
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
-    .replace(/'/g, '&#039;');
+    .replace(/&/g, a + 'amp;')
+    .replace(/</g, a + 'lt;')
+    .replace(/>/g, a + 'gt;')
+    .replace(/"/g, a + 'quot;')
+    .replace(/'/g, a + '#039;');
+}
+
+function escapeHtmlAttr(str) {
+  if (!str) return '';
+  var a = String.fromCharCode(38);
+  var q = String.fromCharCode(34);
+  return escapeHtml(str).replace(new RegExp(a + 'quot;', 'g'), q);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Link User Modal Logic
+// ════════════════════════════════════════════════════════════════════
+
+/**
+ * Open the Link User modal for a given transaction key.
+ * Loads existing narration mappings and checks if there's a match for this narration.
+ */
+async function openLinkModal(txnKey, narration) {
+  currentTxnKey = txnKey;
+  currentTxnNarration = narration;
+  confirmingExistingMapping = null;
+
+  // Load mappings
+  await loadMappings();
+
+  // Check if any existing mapping pattern matches this narration
+  const match = findExistingMappingForNarration(narration);
+  
+  // Reset modal state
+  document.getElementById('modal-narration').value = narration;
+  document.getElementById('modal-regex').value = '';
+  document.getElementById('modal-regex').classList.remove('input-error');
+  clearUserSearch();
+  selectedUserId = '';
+  document.getElementById('selected-user-chip').innerHTML = '';
+  document.getElementById('selected-user-id').value = '';
+
+  // Show/hide existing mapping confirmation
+  const existingBox = document.getElementById('existing-mapping-box');
+  if (match) {
+    confirmingExistingMapping = match;
+    document.getElementById('existing-pattern-display').textContent = match.regexPattern;
+    document.getElementById('existing-user-display').textContent = match.userName ? match.userName + ' (' + match.userId + ')' : match.userId;
+    existingBox.style.display = 'block';
+  } else {
+    existingBox.style.display = 'none';
+    // Pre-fill the regex with a suggested pattern based on the narration
+    document.getElementById('modal-regex').value = suggestRegexFromNarration(narration);
+  }
+
+  // Open the modal
+  document.getElementById('link-user-modal').classList.add('open');
+
+  // Focus the regex input (or user search if mapping exists)
+  setTimeout(() => {
+    if (match) {
+      document.getElementById('user-search-input').focus();
+    } else {
+      document.getElementById('modal-regex').focus();
+    }
+  }, 100);
+}
+
+function closeLinkModal() {
+  document.getElementById('link-user-modal').classList.remove('open');
+  confirmingExistingMapping = null;
+  clearUserSearch();
+  selectedUserId = '';
+}
+
+/**
+ * Load all narration pattern → user mappings into the modal table.
+ */
+async function loadMappings() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/bank/narration-mapping', { headers });
+    const data = await res.json();
+
+    if (data.error) {
+      console.warn('Failed to load mappings:', data.error);
+      existingMappings = [];
+    } else {
+      existingMappings = data.mappings || [];
+    }
+
+    renderMappingsTable();
+  } catch (err) {
+    console.warn('Error loading mappings:', err.message);
+    existingMappings = [];
+    renderMappingsTable();
+  }
+}
+
+/**
+ * Render the narration → user mappings table in the modal.
+ */
+function renderMappingsTable() {
+  const tbody = document.getElementById('mapping-tbody');
+  const emptyEl = document.getElementById('mapping-empty');
+
+  if (!existingMappings || existingMappings.length === 0) {
+    emptyEl.style.display = 'block';
+    tbody.innerHTML = '';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  tbody.innerHTML = '';
+
+  for (const mapping of existingMappings) {
+    const tr = document.createElement('tr');
+    const userName = mapping.userName ? mapping.userName + ' (' + mapping.userId + ')' : mapping.userId;
+    tr.innerHTML = `
+      <td title="${escapeHtml(mapping.narration || '')}">${escapeHtml(mapping.narration || '—')}</td>
+      <td><span class="regex-col" title="${escapeHtml(mapping.regexPattern || '')}">${escapeHtml(mapping.regexPattern || '—')}</span></td>
+      <td><span class="linked-user-chip">${escapeHtml(userName)}</span></td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+/**
+ * Find an existing mapping whose regex pattern matches the given narration.
+ */
+function findExistingMappingForNarration(narration) {
+  if (!narration || !existingMappings || existingMappings.length === 0) return null;
+  
+  for (const mapping of existingMappings) {
+    try {
+      const regex = new RegExp(mapping.regexPattern);
+      if (regex.test(narration)) {
+        return mapping;
+      }
+    } catch (_) {
+      // Skip invalid regex patterns
+    }
+  }
+  return null;
+}
+
+/**
+ * Suggest a simple regex pattern from a narration string.
+ * Splits by common delimiters and creates a pattern that matches the whole string.
+ */
+function suggestRegexFromNarration(narration) {
+  if (!narration) return '';
+  // Escape regex special characters from the narration, but keep it simple
+  // For the suggestion, just escape the narration so it matches exactly
+  // Better: strip out common bank noise to make a useful pattern
+  const parts = narration.split(/(?:[\/\-_ ]+)/).filter(p => p.length > 0);
+  if (parts.length <= 1) {
+    return escapeRegex(narration);
+  }
+  // Use the first part as a prefix match — common for bank narrations
+  const firstPart = parts[0];
+  if (firstPart.length >= 3) {
+    return escapeRegex(firstPart) + '.*';
+  }
+  return escapeRegex(narration);
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Use the existing mapping to link the transaction.
+ */
+async function useExistingMapping() {
+  if (!confirmingExistingMapping) return;
+
+  const mapping = confirmingExistingMapping;
+  const btn = document.getElementById('save-mapping-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Linking...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/bank/narration-mapping', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        action: 'link',
+        transactionKey: currentTxnKey,
+        userId: mapping.userId,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      txnShowMsg('error', data.error);
+    } else {
+      txnShowMsg('success', data.message);
+      closeLinkModal();
+      loadTransactions();
+    }
+  } catch (err) {
+    txnShowMsg('error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Save & Link User';
+  }
+}
+
+/**
+ * Dismiss the existing mapping suggestion and let the user create a new one.
+ */
+function dismissExistingMapping() {
+  confirmingExistingMapping = null;
+  document.getElementById('existing-mapping-box').style.display = 'none';
+  document.getElementById('modal-regex').value = suggestRegexFromNarration(currentTxnNarration);
+  document.getElementById('modal-regex').focus();
+}
+
+/**
+ * Save a new mapping and link the transaction.
+ */
+async function saveMappingAndLink() {
+  const narration = document.getElementById('modal-narration').value.trim();
+  const regexPattern = document.getElementById('modal-regex').value.trim();
+  const userId = selectedUserId;
+
+  // Validate
+  if (!regexPattern) {
+    showFieldError('modal-regex', 'Regex pattern is required.');
+    return;
+  }
+  if (!userId) {
+    txnShowMsg('error', 'Please search and select a user to link.');
+    return;
+  }
+
+  const btn = document.getElementById('save-mapping-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving & Linking...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/bank/narration-mapping', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        action: 'save',
+        narration,
+        regexPattern,
+        userId,
+        transactionKey: currentTxnKey,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      // Show error in the message area
+      txnShowMsg('error', data.error);
+      // Also show the error near the regex field if it's a regex match error
+      if (data.error.includes('regex') && data.error.includes('does not match')) {
+        showFieldError('modal-regex', data.error);
+      } else if (data.error.includes('does not match')) {
+        showFieldError('modal-regex', data.error);
+      }
+    } else {
+      txnShowMsg('success', data.message);
+      closeLinkModal();
+      loadTransactions();
+    }
+  } catch (err) {
+    txnShowMsg('error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Save & Link User';
+  }
+}
+
+function showFieldError(fieldId, message) {
+  const el = document.getElementById(fieldId);
+  el.classList.add('input-error');
+  txnShowMsg('error', message);
+  el.focus();
+}
+
+// ── User search ──
+
+let userSearchTimeout = null;
+
+/**
+ * Search users on input. Searches by name, email, or phone.
+ */
+function onUserSearchInput() {
+  const query = document.getElementById('user-search-input').value.trim();
+  const clearBtn = document.getElementById('user-search-clear');
+
+  clearBtn.style.display = query ? 'inline-block' : 'none';
+
+  clearTimeout(userSearchTimeout);
+  userSearchTimeout = setTimeout(() => {
+    doUserSearch(query);
+  }, 300);
+}
+
+async function doUserSearch(query) {
+  const resultsEl = document.getElementById('user-search-results');
+
+  if (!query) {
+    resultsEl.classList.remove('open');
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    // Use the auth admin endpoint with search
+    const res = await fetch('/auth/admin?search=' + encodeURIComponent(query) + '&limit=20', { headers });
+    const data = await res.json();
+
+    if (data.error) {
+      resultsEl.innerHTML = '<div class="user-search-empty">Error: ' + escapeHtml(data.error) + '</div>';
+      resultsEl.classList.add('open');
+      return;
+    }
+
+    const users = data.users || [];
+    userSearchResults = users;
+
+    if (users.length === 0) {
+      resultsEl.innerHTML = '<div class="user-search-empty">No users found matching "' + escapeHtml(query) + '"</div>';
+      resultsEl.classList.add('open');
+      return;
+    }
+
+    let html = '';
+    for (const user of users) {
+      const name = user.name || '(no name)';
+      const email = user.email || '';
+      const phone = user.phone || '';
+      const avatarLetter = (name && name[0]) ? name[0].toUpperCase() : '?';
+      html += `<div class="user-search-result-item" onclick="selectUser('${escapeHtmlAttr(email)}')">` +
+        `<div class="avatar">${escapeHtml(avatarLetter)}</div>` +
+        `<div class="user-info">` +
+          `<div class="name">${escapeHtml(name)}</div>` +
+          `<div class="email">${escapeHtml(email)}${phone ? ' • ' + escapeHtml(phone) : ''}</div>` +
+        `</div>` +
+      `</div>`;
+    }
+    resultsEl.innerHTML = html;
+    resultsEl.classList.add('open');
+  } catch (err) {
+    resultsEl.innerHTML = '<div class="user-search-empty">Network error: ' + escapeHtml(err.message) + '</div>';
+    resultsEl.classList.add('open');
+  }
+}
+
+function selectUser(userId) {
+  selectedUserId = userId;
+  const chipEl = document.getElementById('selected-user-chip');
+  const hiddenEl = document.getElementById('selected-user-id');
+  hiddenEl.value = userId;
+
+  // Find the matching user data
+  const user = userSearchResults.find(u => u.email === userId);
+  const name = user && user.name ? user.name : '';
+  const phone = user && user.phone ? user.phone : '';
+
+  chipEl.innerHTML = `<span class="selected-user-chip">` +
+    `<span>👤 ${name ? escapeHtml(name) + ' <span style="font-weight:400;color:var(--text-light);">(' + escapeHtml(userId) + ')</span>' : escapeHtml(userId)}</span>` +
+    `<button class="remove" onclick="clearUserSearch()">✕</button>` +
+  `</span>`;
+
+  // Hide search results
+  document.getElementById('user-search-results').classList.remove('open');
+  document.getElementById('user-search-input').value = '';
+  document.getElementById('user-search-clear').style.display = 'none';
+
+  // Clear error state
+  document.getElementById('modal-regex').classList.remove('input-error');
+}
+
+function clearUserSearch() {
+  selectedUserId = '';
+  document.getElementById('selected-user-id').value = '';
+  document.getElementById('selected-user-chip').innerHTML = '';
+  document.getElementById('user-search-input').value = '';
+  document.getElementById('user-search-clear').style.display = 'none';
+  document.getElementById('user-search-results').classList.remove('open');
+  userSearchResults = [];
 }
 
 async function logout() {
