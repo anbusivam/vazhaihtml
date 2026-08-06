@@ -1281,7 +1281,9 @@ async function loadTransactions() {
       // 4. Narration doesn't contain both "Int:" and "TAX:"
       let createPaymentHtml = '';
       if (shouldShowCreatePayment(txn)) {
-        createPaymentHtml = `<button class="create-payment-btn" onclick="openCreatePaymentModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}', ${Number(txn.deposit) || 0}, '${escapeHtmlAttr(txn.tranDate || '')}', '${escapeHtmlAttr(txn.chqNo || '')}')">💰 Create Payment</button>`;
+        const linkedUserId = txn.linkedUserId ? escapeHtmlAttr(txn.linkedUserId) : '';
+        const linkedUserName = txn.linkedUserName ? escapeHtmlAttr(txn.linkedUserName) : '';
+        createPaymentHtml = `<button class="create-payment-btn" onclick="openCreatePaymentModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}', ${Number(txn.deposit) || 0}, '${escapeHtmlAttr(txn.tranDate || '')}', '${escapeHtmlAttr(txn.chqNo || '')}', '${linkedUserId}', '${linkedUserName}')">💰 Create Payment</button>`;
       }
       
       tr.innerHTML = `
@@ -2497,14 +2499,14 @@ function shouldShowCreatePayment(txn) {
 
   const narration = (txn.narration || '').toUpperCase();
   const startsWithNeft = narration.startsWith('NEFT-AXIS');
-  const endsWithRazorpay = narration.endsWith('RAZORPAY PAYMENTS PVT LTD PA');
-  const containsInt = narration.includes('INT:');
+  const containsRazorpaySettlement = narration.includes('RAZORPAY PAYMENTS PVT LTD PA') || narration.includes('RAZORPAY SOFTWARE PRIVATE');
+  const containsIntOrCharges = narration.includes('INT:') || narration.includes('CHARGES FOR :');
   const containsTax = narration.includes('TAX:');
 
   // Hide if it's a Razorpay NEFT pattern
-  if (startsWithNeft && endsWithRazorpay) return false;
-  // Hide if it contains both Int: and TAX: (Razorpay fee/tax entries)
-  if (containsInt && containsTax) return false;
+  if (startsWithNeft && containsRazorpaySettlement) return false;
+  // Hide if it contains both Int: and TAX: or CHARGES FOR : (Razorpay fee/tax entries)
+  if (containsIntOrCharges && containsTax) return false;
 
   return true;
 }
@@ -2512,8 +2514,9 @@ function shouldShowCreatePayment(txn) {
 /**
  * Open the Create Payment modal.
  * Calls the backend to suggest a payment ID (from narration) and receipt number.
+ * If a linked user exists on the transaction, auto-populates donor details from that user.
  */
-async function openCreatePaymentModal(txnKey, narration, amount, tranDate, chqNo) {
+async function openCreatePaymentModal(txnKey, narration, amount, tranDate, chqNo, linkedUserId, linkedUserName) {
   cpCurrentTxnKey = txnKey;
   cpCurrentNarration = narration || '';
   cpCurrentAmount = Number(amount) || 0;
@@ -2546,6 +2549,43 @@ async function openCreatePaymentModal(txnKey, narration, amount, tranDate, chqNo
 
   // Open modal
   document.getElementById('create-payment-modal').classList.add('open');
+
+  // If a linked user exists, fetch their full profile and auto-populate donor fields
+  if (linkedUserId) {
+    try {
+      const token = localStorage.getItem('vazhai_session');
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch('/auth/admin?email=' + encodeURIComponent(linkedUserId), { headers });
+      const data = await res.json();
+
+      if (data.users && data.users.length > 0) {
+        const user = data.users[0];
+        // Set the selected user
+        cpSelectedUserId = linkedUserId;
+        document.getElementById('cp-selected-user-id').value = linkedUserId;
+
+        // Show the user chip
+        const name = user.name || linkedUserName || '';
+        const email = user.email || linkedUserId;
+        const chipEl = document.getElementById('cp-selected-user-chip');
+        chipEl.innerHTML = `<span class="selected-user-chip">` +
+          `<span>👤 ${name ? escapeHtml(name) + ' <span style="font-weight:400;color:var(--text-light);">(' + escapeHtml(email) + ')</span>' : escapeHtml(email)}</span>` +
+          `<button class="remove" onclick="clearCreatePaymentUserSearch()">✕</button>` +
+        `</span>`;
+
+        // Auto-populate donor fields from the linked user's profile
+        if (user.name) document.getElementById('cp-donor-name').value = user.name;
+        if (user.email) document.getElementById('cp-donor-email').value = user.email;
+        if (user.phone) document.getElementById('cp-donor-phone').value = user.phone;
+        if (user.pan) document.getElementById('cp-donor-pan').value = user.pan;
+        if (user.address) document.getElementById('cp-donor-address').value = user.address;
+      }
+    } catch (err) {
+      console.warn('Failed to load linked user profile:', err.message);
+    }
+  }
 
   // Call the suggest endpoint to pre-fill payment ID and receipt number
   try {
