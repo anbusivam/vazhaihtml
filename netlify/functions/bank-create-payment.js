@@ -86,12 +86,10 @@ exports.handler = async function (event, context) {
       if (!txn) return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Bank transaction not found.' }) };
       if (txn.paymentId) return { statusCode: 409, headers: CORS_HEADERS, body: JSON.stringify({ error: `This transaction already has a payment ID: ${txn.paymentId}` }) };
 
-      // Suggest a payment ID from the narration — extract a meaningful token from the narration
+      // Suggest a payment ID from the narration — use the narration as-is
       const narration = txn.narration || '';
-      // Clean the narration to create a suggested payment ID
+      // Use the narration exactly as it appears, keeping all characters (including /, spaces, etc.)
       let suggestedPaymentId = narration.trim();
-      // Replace spaces and special chars with hyphens, keep alphanumeric
-      suggestedPaymentId = suggestedPaymentId.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '');
       // Limit length
       if (suggestedPaymentId.length > 60) suggestedPaymentId = suggestedPaymentId.substring(0, 60);
       if (!suggestedPaymentId) suggestedPaymentId = 'BANK-TXN';
