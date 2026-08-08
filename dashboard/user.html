@@ -178,6 +178,38 @@
       font-weight: 500;
     }
     .back-link:hover { text-decoration: underline; }
+    .home-link {
+      display: inline-block;
+      margin-top: 16px;
+      margin-left: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .home-link:hover { text-decoration: underline; }
+    .dashboard-topnav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 10px 20px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+    .dashboard-topnav a {
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--green-light);
+      transition: background 0.2s;
+    }
+    .dashboard-topnav a:hover {
+      background: #c8e6c9;
+    }
     .admin-link {
       display: inline-block;
       padding: 10px 20px;
@@ -394,6 +426,11 @@
   </div>
 </div>
 
+<div class="dashboard-topnav">
+  <a href="/">🏠 Home</a>
+  <a href="/dashboard/manage">⚙️ Admin Dashboard</a>
+</div>
+
 <div class="dashboard-container">
 
   <!-- ======== Account Details ======== -->
@@ -559,14 +596,20 @@
         <a href="/dashboard/manage" class="admin-link" style="margin-bottom:8px;">⚙️ Go to Admin Dashboard →</a>
         <a href="/dashboard/manage-users" class="admin-link" style="background:var(--green-light);color:var(--green-dark);">👥 Manage Users</a>
         <a href="/dashboard/manage-payments" class="admin-link" style="background:var(--green-light);color:var(--green-dark);">📋 Payment History</a>
+        <a href="/dashboard/manage-bank-transactions" class="admin-link" style="background:var(--green-light);color:var(--green-dark);">🏦 Bank Transactions</a>
         <a href="/dashboard/manage-razorpay" class="admin-link" id="user-link-razorpay" style="display:none;background:var(--green-light);color:var(--green-dark);">💳 Razorpay Payments & Sync</a>
         <a href="/dashboard/manage-thankletter" class="admin-link" style="background:var(--green-light);color:var(--green-dark);">📝 Thank You Letter Template</a>
+        <a href="/dashboard/manage-donor-wall" class="admin-link" id="user-link-donor-wall" style="display:none;background:var(--green-light);color:var(--green-dark);">💛 Donor Wall</a>
         <a href="/dashboard/manage-backup" class="admin-link" id="user-link-backup" style="display:none;background:var(--green-light);color:var(--green-dark);">💾 Backup & Restore</a>
+        <a href="/dashboard/blog-editor" class="admin-link" style="background:var(--green-light);color:var(--green-dark);">✍️ Blog Editor</a>
       </div>
     </div>
   </div>
 
-  <a href="javascript:void(0)" onclick="window.history.back()" class="back-link">← Back</a>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+    <a href="/" class="home-link">🏠 Home</a>
+    <a href="/dashboard/manage" class="home-link">⚙️ Admin Dashboard</a>
+  </div>
 </div>
 
 <script>
@@ -646,10 +689,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (userRoles.includes('admin')) {
     document.getElementById('admin-link-card').style.display = 'block';
     
-    // Show Razorpay and Backup links only for hardcoded system admins
+    // Show Razorpay, Donor Wall, and Backup links only for hardcoded system admins
     const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
     if (SYSTEM_ADMINS.includes(data.email)) {
       document.getElementById('user-link-razorpay').style.display = 'block';
+      document.getElementById('user-link-donor-wall').style.display = 'block';
       document.getElementById('user-link-backup').style.display = 'block';
     }
   }

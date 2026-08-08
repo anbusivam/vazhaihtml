@@ -73,6 +73,9 @@
     .back-link:hover { text-decoration: underline; }
     .home-link { display: inline-block; margin-top: 16px; margin-left: 16px; color: var(--green-dark); text-decoration: none; font-size: 14px; font-weight: 500; }
     .home-link:hover { text-decoration: underline; }
+    .dashboard-topnav { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 20px; background: white; border-bottom: 1px solid var(--border); align-items: center; }
+    .dashboard-topnav a { color: var(--green-dark); text-decoration: none; font-size: 14px; font-weight: 500; padding: 6px 12px; border-radius: 6px; background: var(--green-light); transition: background 0.2s; }
+    .dashboard-topnav a:hover { background: #c8e6c9; }
     .placeholders-info { background: #f7fafc; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; border: 1px solid #e2e8f0; }
     .placeholders-info table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .placeholders-info th { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: var(--text); }
@@ -108,6 +111,12 @@
     <span>Signed in as <span class="email" id="admin-email"></span></span>
     <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
   </div>
+</div>
+
+<div class="dashboard-topnav">
+  <a href="/">🏠 Home</a>
+  <a href="/dashboard/manage">⚙️ Admin Dashboard</a>
+  <a href="/dashboard/user">👤 My Dashboard</a>
 </div>
 
 <div class="dashboard-container">
@@ -149,8 +158,9 @@
   </div>
 
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-    <a href="/dashboard/manage" class="back-link">← Back to Admin Dashboard</a>
-    <a href="/dashboard/user" class="home-link">🏠 My Dashboard</a>
+    <a href="/" class="home-link">🏠 Home</a>
+    <a href="/dashboard/manage" class="home-link">⚙️ Admin Dashboard</a>
+    <a href="/dashboard/user" class="home-link">👤 My Dashboard</a>
   </div>
 </div>
 

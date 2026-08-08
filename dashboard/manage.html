@@ -149,6 +149,28 @@
       font-weight: 500;
     }
     .home-link:hover { text-decoration: underline; }
+    .dashboard-topnav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 10px 20px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+    .dashboard-topnav a {
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--green-light);
+      transition: background 0.2s;
+    }
+    .dashboard-topnav a:hover {
+      background: #c8e6c9;
+    }
     .section-hidden {
       display: none;
     }
@@ -175,6 +197,11 @@
     <span>Signed in as <span class="email" id="admin-email"></span></span>
     <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
   </div>
+</div>
+
+<div class="dashboard-topnav">
+  <a href="/">🏠 Home</a>
+  <a href="/dashboard/user">👤 My Dashboard</a>
 </div>
 
 <div class="dashboard-container">
@@ -221,11 +248,17 @@
         <div class="nav-title">Backup & Restore</div>
         <div class="nav-desc">Export all data as JSON backup or restore from a previously saved backup file</div>
       </a>
+      <a href="/dashboard/blog-editor" class="nav-item" id="nav-blog-editor">
+        <div class="nav-icon">✍️</div>
+        <div class="nav-title">Blog Editor</div>
+        <div class="nav-desc">Write and publish new blog posts, manage drafts and content</div>
+      </a>
     </div>
   </div>
 
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-    <a href="/dashboard/user" class="home-link">🏠 My Dashboard</a>
+    <a href="/" class="home-link">🏠 Home</a>
+    <a href="/dashboard/user" class="home-link">👤 My Dashboard</a>
   </div>
 </div>
 

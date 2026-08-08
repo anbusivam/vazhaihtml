@@ -474,6 +474,38 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    .dashboard-topnav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 10px 20px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+    .dashboard-topnav a {
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--green-light);
+      transition: background 0.2s;
+    }
+    .dashboard-topnav a:hover {
+      background: #c8e6c9;
+    }
+    .home-link {
+      display: inline-block;
+      margin-top: 16px;
+      margin-left: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .home-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -484,6 +516,12 @@
     <span id="user-email-display"></span>
     <button class="btn-outline" onclick="logout()">Sign Out</button>
   </div>
+</div>
+
+<div class="dashboard-topnav">
+  <a href="/">🏠 Home</a>
+  <a href="/dashboard/manage">⚙️ Admin Dashboard</a>
+  <a href="/dashboard/user">👤 My Dashboard</a>
 </div>
 
 <div class="dashboard-container">
@@ -567,7 +605,11 @@
       </div>
     </div>
 
-    <a href="javascript:void(0)" onclick="goBack()" class="back-link">← Back</a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+      <a href="/" class="home-link">🏠 Home</a>
+      <a href="/dashboard/manage" class="home-link">⚙️ Admin Dashboard</a>
+      <a href="/dashboard/user" class="home-link">👤 My Dashboard</a>
+    </div>
   </div>
 </div>
 

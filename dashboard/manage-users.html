@@ -266,6 +266,28 @@
       font-weight: 500;
     }
     .home-link:hover { text-decoration: underline; }
+    .dashboard-topnav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 10px 20px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+    .dashboard-topnav a {
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--green-light);
+      transition: background 0.2s;
+    }
+    .dashboard-topnav a:hover {
+      background: #c8e6c9;
+    }
     .user-status {
       font-size: 11px;
       color: var(--text-light);
@@ -495,6 +517,12 @@
   </div>
 </div>
 
+<div class="dashboard-topnav">
+  <a href="/">🏠 Home</a>
+  <a href="/dashboard/manage">⚙️ Admin Dashboard</a>
+  <a href="/dashboard/user">👤 My Dashboard</a>
+</div>
+
 <div class="dashboard-container">
 
   <!-- Messages -->
@@ -552,8 +580,9 @@
   </div>
 
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-    <a href="/dashboard/manage" class="back-link">← Back to Admin Dashboard</a>
-    <a href="/dashboard/user" class="home-link">🏠 My Dashboard</a>
+    <a href="/" class="home-link">🏠 Home</a>
+    <a href="/dashboard/manage" class="home-link">⚙️ Admin Dashboard</a>
+    <a href="/dashboard/user" class="home-link">👤 My Dashboard</a>
   </div>
 </div>
 
