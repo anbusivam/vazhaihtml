@@ -84,7 +84,16 @@ exports.handler = async function (event, context) {
       const bankStore = await getBankStore(event);
       const txn = await bankStore.get(`transaction:${transactionKey}`, { type: 'json' });
       if (!txn) return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Bank transaction not found.' }) };
-      if (txn.paymentId) return { statusCode: 409, headers: CORS_HEADERS, body: JSON.stringify({ error: `This transaction already has a payment ID: ${txn.paymentId}` }) };
+
+      // If the transaction has a payment ID, check if it actually exists in the auth store.
+      // If it's an orphan (doesn't exist), allow suggesting a new payment ID.
+      if (txn.paymentId) {
+        const paymentsList = await store.get('payments:list', { type: 'json' }) || [];
+        const isOrphan = !paymentsList.includes(txn.paymentId);
+        if (!isOrphan) {
+          return { statusCode: 409, headers: CORS_HEADERS, body: JSON.stringify({ error: `This transaction already has a payment ID: ${txn.paymentId}` }) };
+        }
+      }
 
       // Suggest a payment ID from the narration — use the narration as-is
       const narration = txn.narration || '';
@@ -120,7 +129,17 @@ exports.handler = async function (event, context) {
       const bankStore = await getBankStore(event);
       const txn = await bankStore.get(`transaction:${transactionKey}`, { type: 'json' });
       if (!txn) return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Bank transaction not found.' }) };
-      if (txn.paymentId) return { statusCode: 409, headers: CORS_HEADERS, body: JSON.stringify({ error: `This transaction already has a payment ID: ${txn.paymentId}` }) };
+
+      // If the transaction has a payment ID, check if it actually exists in the auth store.
+      // If it's an orphan (doesn't exist), allow creating a new payment record
+      // which will replace the orphan payment ID on the transaction.
+      if (txn.paymentId) {
+        const paymentsList = await store.get('payments:list', { type: 'json' }) || [];
+        const isOrphan = !paymentsList.includes(txn.paymentId);
+        if (!isOrphan) {
+          return { statusCode: 409, headers: CORS_HEADERS, body: JSON.stringify({ error: `This transaction already has a payment ID: ${txn.paymentId}` }) };
+        }
+      }
 
       const amount = parseFloat(txn.deposit);
       if (!amount || amount <= 0) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'This transaction is not a deposit (CR). Cannot create a payment record.' }) };

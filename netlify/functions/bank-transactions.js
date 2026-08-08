@@ -9,7 +9,8 @@
 //   Uses NARRATION as the unique key for each transaction.
 //
 // GET /bank/transactions — List all imported bank transactions.
-//   Returns array of transaction objects.
+//   Returns array of transaction objects, plus existingPaymentIds array
+//   so the client can verify whether a payment ID actually exists in the blob store.
 
 const { getStore, ADMIN_EMAILS } = require('./auth-store');
 const { getBankStore } = require('./bank-store');
@@ -210,6 +211,10 @@ exports.handler = async function (event, context) {
         return dateB - dateA;
       });
 
+      // Fetch the list of existing payment IDs from the auth store
+      // so the client can detect orphan payment IDs
+      const existingPaymentIds = await store.get('payments:list', { type: 'json' }) || [];
+
       return {
         statusCode: 200,
         headers: CORS_HEADERS,
@@ -217,6 +222,7 @@ exports.handler = async function (event, context) {
           success: true,
           transactions,
           count: transactions.length,
+          existingPaymentIds,
         }),
       };
     }

@@ -738,6 +738,19 @@
       background: #f59e0b;
       color: white;
     }
+    .orphan-payment-id {
+      font-weight: 600;
+      color: #d32f2f;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 4px;
+      padding: 2px 6px;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .orphan-payment-id .warn-icon {
+      cursor: help;
+    }
     .action-btns {
       display: flex;
       gap: 6px;
@@ -1146,6 +1159,7 @@ let matchingMappings = [];
 let selectedUserId = '';
 let userSearchResults = [];
 let confirmingExistingMapping = null;
+let existingPaymentIds = [];
 
 // For the standalone mapping modal
 let editingMappingKey = '';
@@ -1243,6 +1257,9 @@ async function loadTransactions() {
     const transactions = data.transactions || [];
     document.getElementById('txn-count').textContent = transactions.length;
 
+    // Store the list of existing payment IDs from the auth store (blob store)
+    existingPaymentIds = data.existingPaymentIds || [];
+
     if (transactions.length === 0) {
       document.getElementById('txn-empty').style.display = 'block';
       return;
@@ -1260,7 +1277,21 @@ async function loadTransactions() {
       const withdrawal = txn.withdrawal ? '₹' + Number(txn.withdrawal).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
       const deposit = txn.deposit ? '₹' + Number(txn.deposit).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
       
-      const paymentIdHtml = txn.paymentId ? `<span style="font-weight:600;color:var(--green-dark);">${escapeHtml(txn.paymentId)}</span>` : '—';
+      // Check if the payment ID actually exists in the blob store
+      // If the transaction has a paymentId but it's NOT in the existingPaymentIds list,
+      // it's an orphan — render it red and enable Create Payment
+      let paymentIdHtml = '—';
+      let isOrphan = false;
+      if (txn.paymentId) {
+        if (existingPaymentIds.includes(txn.paymentId)) {
+          // Payment ID exists in blob store — render green
+          paymentIdHtml = `<span style="font-weight:600;color:var(--green-dark);">${escapeHtml(txn.paymentId)}</span>`;
+        } else {
+          // Payment ID is orphan — render red with warning
+          isOrphan = true;
+          paymentIdHtml = `<span class="orphan-payment-id" title="⚠️ This payment ID does not exist in the payment records. It may be orphaned.">${escapeHtml(txn.paymentId)} <span class="warn-icon">⚠️</span></span>`;
+        }
+      }
 
       // Linked user display
       let linkedUserHtml = '—';
@@ -1275,12 +1306,12 @@ async function loadTransactions() {
       const linkBtnHtml = `<button class="link-btn ${linkBtnClass}" onclick="openLinkModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}')">${txn.linkedUserId ? '✓ Linked' : '🔗 Link User'}</button>`;
 
       // Create Payment button — show when:
-      // 1. Payment ID is missing
+      // 1. Payment ID is missing (orphan) OR payment ID is orphaned
       // 2. It's a deposit (CR)
       // 3. Narration doesn't start with "NEFT-AXIS" and end with "RAZORPAY PAYMENTS PVT LTD PA"
       // 4. Narration doesn't contain both "Int:" and "TAX:"
       let createPaymentHtml = '';
-      if (shouldShowCreatePayment(txn)) {
+      if (shouldShowCreatePayment(txn) || isOrphan) {
         const linkedUserId = txn.linkedUserId ? escapeHtmlAttr(txn.linkedUserId) : '';
         const linkedUserName = txn.linkedUserName ? escapeHtmlAttr(txn.linkedUserName) : '';
         createPaymentHtml = `<button class="create-payment-btn" onclick="openCreatePaymentModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}', ${Number(txn.deposit) || 0}, '${escapeHtmlAttr(txn.tranDate || '')}', '${escapeHtmlAttr(txn.chqNo || '')}', '${linkedUserId}', '${linkedUserName}')">💰 Create Payment</button>`;
