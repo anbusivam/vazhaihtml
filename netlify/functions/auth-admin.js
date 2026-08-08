@@ -78,6 +78,13 @@ exports.handler = async function (event, context) {
       const limit = Math.min(500, Math.max(1, parseInt(queryParams.get('limit') || '50', 10) || 50));
       const search = (queryParams.get('search') || '').trim().toLowerCase();
 
+      // Donor filter: when donors=1, only return users who have at least one
+      // payment within the optional date range (from/to in YYYY-MM-DD).
+      // If no from/to provided, the period is "all time".
+      const donorsFilter = queryParams.get('donors') === '1' || queryParams.get('donors') === 'true';
+      const fromDate = queryParams.get('from') || '';
+      const toDate = queryParams.get('to') || '';
+
       const usersList = await store.get('users:list', { type: 'json' }) || [];
       let users = [];
 
@@ -86,6 +93,24 @@ exports.handler = async function (event, context) {
         if (userData) {
           users.push(userData);
         }
+      }
+
+      // If donor filter is active, compute the set of donor emails that have
+      // at least one payment within the selected period, then keep only those users.
+      if (donorsFilter) {
+        const donorEmails = new Set();
+        const paymentsList = await store.get('payments:list', { type: 'json' }) || [];
+        for (const pid of paymentsList) {
+          const payment = await store.get(`payment:${pid}`, { type: 'json' });
+          if (!payment) continue;
+          // Match on the date portion of createdAtDate (YYYY-MM-DD)
+          const d = (payment.createdAtDate || '').substring(0, 10);
+          if (fromDate && d < fromDate) continue;
+          if (toDate && d > toDate) continue;
+          const donorEmail = (payment.email || '').toLowerCase().trim();
+          if (donorEmail) donorEmails.add(donorEmail);
+        }
+        users = users.filter(u => donorEmails.has((u.email || '').toLowerCase()));
       }
 
       // Apply search filter across all fields

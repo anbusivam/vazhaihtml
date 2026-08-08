@@ -543,6 +543,21 @@
     <h2>👥 Registered Users</h2>
     <div class="bulk-actions">
       <button class="btn-primary" id="fetch-users-btn" onclick="loadUsers()">📥 Fetch Users</button>
+      <button class="btn-primary" id="fetch-donors-btn" onclick="fetchDonors()">💝 Fetch Donors</button>
+      <select id="donor-duration" onchange="onDurationChange()" title="Select duration for donor fetch">
+        <option value="all">🗓️ All time</option>
+        <option value="30d">Last 30 days</option>
+        <option value="90d">Last 3 months</option>
+        <option value="180d">Last 6 months</option>
+        <option value="365d">Last 12 months</option>
+        <option value="ytd">This year</option>
+        <option value="custom">Custom range…</option>
+      </select>
+      <span id="custom-range" style="display:none;align-items:center;gap:6px;">
+        <input type="date" id="donor-from" onchange="onCustomRangeChange()">
+        <span style="color:var(--text-light);font-size:13px;">to</span>
+        <input type="date" id="donor-to" onchange="onCustomRangeChange()">
+      </span>
       <button class="btn-primary btn-outline" id="save-all-btn" onclick="saveAllChanges()" disabled>💾 Save All Changes</button>
       <span class="save-status" id="dirty-count"></span>
       <div class="search-bar">
@@ -981,6 +996,145 @@ async function loadUsers() {
   
   renderUsers(data.users);
   renderPagination();
+}
+
+/**
+ * Compute the from/to date range (YYYY-MM-DD) for the selected donor duration.
+ * Returns { from, to } where from/to may be empty strings for "all time".
+ */
+function getDonorDateRange() {
+  const duration = document.getElementById('donor-duration').value;
+  const today = new Date();
+  const to = today.toISOString().substring(0, 10);
+  
+  if (duration === 'all') {
+    return { from: '', to: '' };
+  }
+  
+  if (duration === 'custom') {
+    const from = document.getElementById('donor-from').value;
+    const toVal = document.getElementById('donor-to').value;
+    return { from: from || '', to: toVal || '' };
+  }
+  
+  const from = new Date(today);
+  if (duration === '30d') from.setDate(from.getDate() - 30);
+  else if (duration === '90d') from.setDate(from.getDate() - 90);
+  else if (duration === '180d') from.setDate(from.getDate() - 180);
+  else if (duration === '365d') from.setDate(from.getDate() - 365);
+  else if (duration === 'ytd') from.setMonth(0, 1); // Jan 1 of this year
+  
+  return { from: from.toISOString().substring(0, 10), to };
+}
+
+/**
+ * Fetch only users who have at least one payment (donation) within the
+ * selected duration. Default duration is "all time".
+ */
+async function fetchDonors() {
+  const { from, to } = getDonorDateRange();
+  
+  // Validate custom range
+  if (document.getElementById('donor-duration').value === 'custom') {
+    if (!from || !to) {
+      showMsg('error', 'Please select both "From" and "To" dates for the custom range.');
+      return;
+    }
+    if (from > to) {
+      showMsg('error', '"From" date must be before or equal to "To" date.');
+      return;
+    }
+  }
+  
+  document.getElementById('users-loading').style.display = 'block';
+  document.getElementById('users-empty').style.display = 'none';
+  document.getElementById('users-table-wrap').style.display = 'none';
+  document.getElementById('pagination').style.display = 'none';
+  document.getElementById('fetch-donors-btn').disabled = true;
+  document.getElementById('fetch-donors-btn').innerHTML = '<span class="spinner"></span>Loading...';
+  
+  // Build query string with donor filter, date range, pagination and search
+  const params = new URLSearchParams();
+  params.set('page', currentPage);
+  params.set('limit', PAGE_SIZE);
+  params.set('donors', '1');
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  if (searchQuery) {
+    params.set('search', searchQuery);
+  }
+  
+  const token = localStorage.getItem('vazhai_session');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  
+  try {
+    const res = await fetch('/auth/admin?' + params.toString(), { headers });
+    const data = await res.json();
+    
+    document.getElementById('users-loading').style.display = 'none';
+    document.getElementById('fetch-donors-btn').disabled = false;
+    document.getElementById('fetch-donors-btn').innerHTML = '💝 Fetch Donors';
+    
+    if (data.error) {
+      showMsg('error', data.error);
+      return;
+    }
+    
+    if (!data.users || data.users.length === 0) {
+      document.getElementById('users-empty').style.display = 'block';
+      document.getElementById('users-empty').textContent = 'No donors found for the selected period.';
+      document.getElementById('pagination').style.display = 'none';
+      return;
+    }
+    
+    // Update pagination state from response
+    if (data.pagination) {
+      currentPage = data.pagination.page;
+      totalPages = data.pagination.totalPages;
+      totalUsers = data.pagination.total;
+    }
+    
+    renderUsers(data.users);
+    renderPagination();
+    
+    const rangeLabel = from && to ? ` (${from} to ${to})` : ' (all time)';
+    showMsg('success', `✅ Found ${totalUsers} donor(s)${rangeLabel}`);
+  } catch (err) {
+    document.getElementById('users-loading').style.display = 'none';
+    document.getElementById('fetch-donors-btn').disabled = false;
+    document.getElementById('fetch-donors-btn').innerHTML = '💝 Fetch Donors';
+    showMsg('error', 'Network error fetching donors.');
+    console.error('[fetchDonors]', err);
+  }
+}
+
+/**
+ * Show/hide the custom date range inputs when the duration selector changes.
+ */
+function onDurationChange() {
+  const isCustom = document.getElementById('donor-duration').value === 'custom';
+  const customRange = document.getElementById('custom-range');
+  customRange.style.display = isCustom ? 'flex' : 'none';
+  
+  // If switching away from custom, clear the custom date inputs
+  if (!isCustom) {
+    document.getElementById('donor-from').value = '';
+    document.getElementById('donor-to').value = '';
+  }
+}
+
+/**
+ * When a custom range date changes, validate that from <= to.
+ */
+function onCustomRangeChange() {
+  const from = document.getElementById('donor-from').value;
+  const to = document.getElementById('donor-to').value;
+  if (from && to && from > to) {
+    showMsg('error', '"From" date must be before or equal to "To" date.');
+  } else {
+    showMsg('', '');
+  }
 }
 
 function doSearch() {
