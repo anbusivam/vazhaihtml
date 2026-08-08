@@ -259,7 +259,7 @@
     }
     .manual-form {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
       gap: 12px;
       margin-bottom: 16px;
     }
@@ -317,6 +317,11 @@
       font-weight: 700;
       color: var(--green-dark);
     }
+    .manual-item .actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
     .manual-empty {
       font-size: 13px;
       color: var(--text-light);
@@ -324,6 +329,87 @@
       background: var(--green-bg);
       border-radius: 8px;
     }
+    .email-link {
+      color: #1565c0;
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px dashed #90caf9;
+    }
+    .email-link:hover {
+      color: #0d47a1;
+      border-bottom-style: solid;
+    }
+    .email-link .link-icon {
+      font-size: 10px;
+      margin-left: 2px;
+      opacity: 0.7;
+    }
+    /* ── Edit Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+      max-width: 520px;
+      width: 100%;
+      padding: 24px;
+      position: relative;
+    }
+    .modal h3 {
+      margin: 0 0 16px;
+      font-size: 16px;
+      color: var(--green-dark);
+    }
+    .modal .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .modal label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+    .modal input {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal input:focus {
+      border-color: var(--green);
+    }
+    .modal .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+    .modal .modal-msg {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .modal .modal-msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .modal .modal-msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
     @media (max-width: 768px) {
       .manual-form { grid-template-columns: 1fr; }
     }
@@ -378,6 +464,7 @@
     <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">
       Amounts shown here are <strong>admin-only</strong> — they are never exposed on the public website.
       Check a row to exclude that donor permanently (future donations also excluded).
+      Click an email to view the linked user profile.
     </p>
     <div id="preview-loading" class="loading-state" style="display:none;">Loading donor list...</div>
     <div id="preview-empty" class="empty-state" style="display:none;">No donor wall built yet. Click "Build Donor Wall" above.</div>
@@ -428,11 +515,16 @@
     <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">
       Add a donor's name manually. These entries are <strong>permanent</strong> — they appear on the public
       donor wall alongside payment-based donors until you remove them.
+      Optionally link an email to connect the donor to a registered user profile.
     </p>
     <div class="manual-form">
       <div class="form-field">
         <label for="manual-name">Name *</label>
         <input type="text" id="manual-name" placeholder="e.g. Priya R.">
+      </div>
+      <div class="form-field">
+        <label for="manual-email">Email (optional)</label>
+        <input type="email" id="manual-email" placeholder="e.g. priya@example.com">
       </div>
       <div class="form-field">
         <label for="manual-message">Message (optional)</label>
@@ -463,10 +555,43 @@
   </div>
 </div>
 
+<!-- Edit Manual Donor Modal -->
+<div id="edit-manual-overlay" class="modal-overlay" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal">
+    <h3>✏️ Edit Manual Donor</h3>
+    <div id="edit-manual-msg" class="modal-msg"></div>
+    <div class="form-field">
+      <label for="edit-manual-name">Name *</label>
+      <input type="text" id="edit-manual-name" placeholder="e.g. Priya R.">
+    </div>
+    <div class="form-field">
+      <label for="edit-manual-email">Email (optional)</label>
+      <input type="email" id="edit-manual-email" placeholder="e.g. priya@example.com">
+    </div>
+    <div class="form-field">
+      <label for="edit-manual-message">Message (optional)</label>
+      <input type="text" id="edit-manual-message" placeholder="e.g. Keep up the great work!">
+    </div>
+    <div class="form-field">
+      <label for="edit-manual-month">Month (optional)</label>
+      <input type="text" id="edit-manual-month" placeholder="e.g. Jan 2026">
+    </div>
+    <div class="form-field">
+      <label for="edit-manual-amount">Amount (₹)</label>
+      <input type="number" id="edit-manual-amount" placeholder="e.g. 5000" min="0" step="0.01">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary btn-outline" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-primary" id="save-edit-manual-btn" onclick="saveEditManualDonor()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let excludedEmails = new Set();
 let currentDonors = [];
 let manualDonors = [];
+let editingManualId = null;
 
 document.addEventListener('DOMContentLoaded', async function() {
   const res = await fetch('/auth/check');
@@ -494,6 +619,13 @@ function showMsg(type, text) {
   el.textContent = text;
   if (text) el.style.display = 'block';
   else el.style.display = 'none';
+}
+
+// Build a link to the user management page for a given email
+function userLink(email) {
+  if (!email) return '—';
+  const safeEmail = escapeHtml(email);
+  return `<a class="email-link" href="/dashboard/manage-users.html?email=${encodeURIComponent(email)}&action=fetch" title="View user profile">${safeEmail}<span class="link-icon">↗</span></a>`;
 }
 
 async function loadDonorWall() {
@@ -573,7 +705,7 @@ async function loadDonorWall() {
             <input type="checkbox" ${isExcluded ? 'checked' : ''} onchange="toggleExclusion('${escapeHtml(email)}', '${escapeHtml(d.name || '')}', this.checked)" title="Exclude from donor wall">
           </td>
           <td><strong>${escapeHtml(d.name || '—')}</strong></td>
-          <td style="font-size:12px;">${escapeHtml(email || '—')}</td>
+          <td style="font-size:12px;">${email ? userLink(email) : '—'}</td>
           <td style="font-weight:600;">${amountStr}</td>
           <td style="text-align:center;">${d.count || 0}</td>
           <td style="font-size:12px;">${lastActive}</td>
@@ -596,7 +728,7 @@ async function loadDonorWall() {
         div.className = 'exclusion-item';
         div.innerHTML = `
           <div>
-            <div class="email">${escapeHtml(e.email)}</div>
+            <div class="email">${userLink(e.email)}</div>
             <div class="meta">${e.name ? escapeHtml(e.name) + ' · ' : ''}Excluded ${new Date(e.excludedAt).toLocaleDateString('en-IN')} by ${escapeHtml(e.excludedBy || '')}</div>
           </div>
           <button class="btn-primary btn-sm btn-outline" onclick="unexcludeUser('${escapeHtml(e.email)}')">↩ Restore</button>
@@ -637,13 +769,19 @@ function renderManualDonors() {
     const amountHtml = d.totalAmount > 0
       ? `<span class="amount">₹${Number(d.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span> · `
       : '';
+    const emailHtml = d.email
+      ? userLink(d.email) + ' · '
+      : '';
     const msgHtml = d.message ? escapeHtml(d.message) + ' · ' : '';
     div.innerHTML = `
       <div>
         <div class="name">${escapeHtml(d.name)}</div>
-        <div class="meta">${amountHtml}${msgHtml}${escapeHtml(metaParts.join(' · '))}</div>
+        <div class="meta">${amountHtml}${emailHtml}${msgHtml}${escapeHtml(metaParts.join(' · '))}</div>
       </div>
-      <button class="btn-primary btn-sm btn-outline" onclick="removeManualDonor('${escapeHtml(d.id)}')">🗑 Remove</button>
+      <div class="actions">
+        <button class="btn-primary btn-sm btn-outline" onclick="openEditModal('${escapeHtml(d.id)}')">✏️ Edit</button>
+        <button class="btn-primary btn-sm btn-outline" onclick="removeManualDonor('${escapeHtml(d.id)}')">🗑 Remove</button>
+      </div>
     `;
     listEl.appendChild(div);
   }
@@ -651,6 +789,7 @@ function renderManualDonors() {
 
 async function addManualDonor() {
   const nameEl = document.getElementById('manual-name');
+  const emailEl = document.getElementById('manual-email');
   const messageEl = document.getElementById('manual-message');
   const monthEl = document.getElementById('manual-month');
   const amountEl = document.getElementById('manual-amount');
@@ -658,6 +797,7 @@ async function addManualDonor() {
   const btn = document.getElementById('add-manual-btn');
 
   const name = nameEl.value.trim();
+  const email = emailEl.value.trim();
   const message = messageEl.value.trim();
   const month = monthEl.value.trim();
   const amount = amountEl.value.trim();
@@ -665,6 +805,13 @@ async function addManualDonor() {
   if (!name) {
     msgEl.className = 'msg error';
     msgEl.textContent = 'Name is required.';
+    msgEl.style.display = 'block';
+    return;
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msgEl.className = 'msg error';
+    msgEl.textContent = 'Please enter a valid email address.';
     msgEl.style.display = 'block';
     return;
   }
@@ -681,7 +828,7 @@ async function addManualDonor() {
     const res = await fetch('/donor-wall/manage', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ action: 'add-manual', name, message, month, amount }),
+      body: JSON.stringify({ action: 'add-manual', name, email, message, month, amount }),
     });
     const data = await res.json();
 
@@ -689,6 +836,7 @@ async function addManualDonor() {
 
     if (data.success) {
       nameEl.value = '';
+      emailEl.value = '';
       messageEl.value = '';
       monthEl.value = '';
       amountEl.value = '';
@@ -704,6 +852,94 @@ async function addManualDonor() {
   } catch (err) {
     btn.disabled = false;
     msgEl.className = 'msg error';
+    msgEl.textContent = 'Network error: ' + err.message;
+    msgEl.style.display = 'block';
+  }
+}
+
+// ── Edit Manual Donor Modal ──
+function openEditModal(id) {
+  const donor = manualDonors.find(d => d.id === id);
+  if (!donor) return;
+
+  editingManualId = id;
+  document.getElementById('edit-manual-name').value = donor.name || '';
+  document.getElementById('edit-manual-email').value = donor.email || '';
+  document.getElementById('edit-manual-message').value = donor.message || '';
+  document.getElementById('edit-manual-month').value = donor.month || '';
+  document.getElementById('edit-manual-amount').value = donor.totalAmount > 0 ? donor.totalAmount : '';
+
+  const msgEl = document.getElementById('edit-manual-msg');
+  msgEl.className = 'modal-msg';
+  msgEl.style.display = 'none';
+
+  document.getElementById('edit-manual-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('edit-manual-name').focus(), 100);
+}
+
+function closeEditModal() {
+  document.getElementById('edit-manual-overlay').classList.remove('open');
+  editingManualId = null;
+}
+
+async function saveEditManualDonor() {
+  if (!editingManualId) return;
+
+  const name = document.getElementById('edit-manual-name').value.trim();
+  const email = document.getElementById('edit-manual-email').value.trim();
+  const message = document.getElementById('edit-manual-message').value.trim();
+  const month = document.getElementById('edit-manual-month').value.trim();
+  const amount = document.getElementById('edit-manual-amount').value.trim();
+  const msgEl = document.getElementById('edit-manual-msg');
+  const btn = document.getElementById('save-edit-manual-btn');
+
+  if (!name) {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = 'Name is required.';
+    msgEl.style.display = 'block';
+    return;
+  }
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = 'Please enter a valid email address.';
+    msgEl.style.display = 'block';
+    return;
+  }
+
+  msgEl.className = 'modal-msg';
+  msgEl.style.display = 'none';
+  btn.disabled = true;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/donor-wall/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action: 'edit-manual', id: editingManualId, name, email, message, month, amount }),
+    });
+    const data = await res.json();
+
+    btn.disabled = false;
+
+    if (data.success) {
+      closeEditModal();
+      await loadDonorWall();
+      const manualMsg = document.getElementById('manual-msg');
+      manualMsg.className = 'msg success';
+      manualMsg.textContent = `✅ ${name} updated.`;
+      manualMsg.style.display = 'block';
+    } else {
+      msgEl.className = 'modal-msg error';
+      msgEl.textContent = data.error || 'Failed to update donor.';
+      msgEl.style.display = 'block';
+    }
+  } catch (err) {
+    btn.disabled = false;
+    msgEl.className = 'modal-msg error';
     msgEl.textContent = 'Network error: ' + err.message;
     msgEl.style.display = 'block';
   }
@@ -889,11 +1125,11 @@ function sanitizePublicName(rawName) {
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
-    .replace(/'/g, '&#039;');
+    .replace(/&/g, '\u0026amp;')
+    .replace(/</g, '\u0026lt;')
+    .replace(/>/g, '\u0026gt;')
+    .replace(/"/g, '\u0026quot;')
+    .replace(/'/g, '\u0026#039;');
 }
 
 async function logout() {

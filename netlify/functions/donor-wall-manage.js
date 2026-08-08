@@ -1,7 +1,7 @@
 // Netlify Function: GET/POST /donor-wall/manage
 // Admin only: Preview donors with amounts (from the built wall) and manage
 // the permanent exclusion list. Exclusions persist across the 1-year window.
-// Also supports manually adding/removing permanent donor entries.
+// Also supports manually adding/editing/removing permanent donor entries.
 const { getStore, ADMIN_EMAILS } = require('./auth-store');
 
 const CORS_HEADERS = {
@@ -86,7 +86,7 @@ exports.handler = async function (event, context) {
 
       // ── Manual donor actions ──
       if (action === 'add-manual') {
-        const { name, message, month, amount } = body;
+        const { name, email, message, month, amount } = body;
         if (!name || !name.trim()) {
           return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Name is required.' }) };
         }
@@ -96,6 +96,7 @@ exports.handler = async function (event, context) {
         const newDonor = {
           id: 'manual_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
           name: name.trim(),
+          email: (email || '').trim().toLowerCase(),
           message: (message || '').trim(),
           month: (month || '').trim(),
           totalAmount: isNaN(manualAmount) || manualAmount <= 0 ? 0 : Math.round(manualAmount * 100) / 100,
@@ -109,6 +110,41 @@ exports.handler = async function (event, context) {
           statusCode: 200,
           headers: CORS_HEADERS,
           body: JSON.stringify({ success: true, action: 'added-manual', donor: newDonor }),
+        };
+      }
+
+      if (action === 'edit-manual') {
+        const { id, name, email, message, month, amount } = body;
+        if (!id) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Donor ID is required.' }) };
+        }
+        if (!name || !name.trim()) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Name is required.' }) };
+        }
+
+        const manualDonors = await loadManualDonors(store);
+        const idx = manualDonors.findIndex(d => d.id === id);
+        if (idx === -1) {
+          return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Donor not found.' }) };
+        }
+
+        const manualAmount = parseFloat(amount);
+        manualDonors[idx] = {
+          ...manualDonors[idx],
+          name: name.trim(),
+          email: (email || '').trim().toLowerCase(),
+          message: (message || '').trim(),
+          month: (month || '').trim(),
+          totalAmount: isNaN(manualAmount) || manualAmount <= 0 ? 0 : Math.round(manualAmount * 100) / 100,
+          updatedAt: new Date().toISOString(),
+          updatedBy: session.email,
+        };
+        await saveManualDonors(store, manualDonors);
+
+        return {
+          statusCode: 200,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({ success: true, action: 'edited-manual', donor: manualDonors[idx] }),
         };
       }
 
@@ -166,7 +202,7 @@ exports.handler = async function (event, context) {
         };
       }
 
-      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Action must be "exclude", "unexclude", "add-manual", or "remove-manual".' }) };
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Action must be "exclude", "unexclude", "add-manual", "edit-manual", or "remove-manual".' }) };
     }
 
     return { statusCode: 405, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
