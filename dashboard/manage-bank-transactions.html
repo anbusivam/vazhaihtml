@@ -323,6 +323,94 @@
     .csv-errors .error-item {
       padding: 2px 0;
     }
+
+    /* ── Fetch Filter Bar ── */
+    .filter-bar {
+      background: #f8f9fa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .filter-row:last-child {
+      margin-bottom: 0;
+    }
+    .filter-group {
+      flex: 1;
+      min-width: 160px;
+    }
+    .filter-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+    }
+    .filter-group input[type="text"],
+    .filter-group input[type="date"],
+    .filter-group select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      background: white;
+      transition: border-color 0.15s;
+    }
+    .filter-group input:focus,
+    .filter-group select:focus {
+      border-color: var(--green);
+    }
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    /* ── Pagination Bar ── */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    .pagination-bar select {
+      padding: 6px 10px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      background: white;
+      outline: none;
+    }
+    .pagination-bar select:focus {
+      border-color: var(--green);
+    }
+    .pagination-bar .page-info {
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .pagination-bar .showing-info {
+      white-space: nowrap;
+    }
     @media (max-width: 768px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; }
     }
@@ -901,9 +989,63 @@
       <button class="btn-primary" id="txn-refresh-btn" onclick="loadTransactions()">🔄 Refresh</button>
       <button class="btn-primary" id="txn-match-btn" onclick="matchPayments()">🔗 Match Payments</button>
     </div>
+
+    <!-- Fetch Filter Bar -->
+    <div class="filter-bar" id="txn-filter-bar">
+      <div class="filter-row">
+        <div class="filter-group" style="flex:2;">
+          <label for="filter-search">Search Narration</label>
+          <input type="text" id="filter-search" placeholder="Search by narration text..." autocomplete="off">
+        </div>
+        <div class="filter-group">
+          <label for="filter-type">Type</label>
+          <select id="filter-type">
+            <option value="">All</option>
+            <option value="deposit">Deposit (CR)</option>
+            <option value="withdrawal">Withdrawal (DR)</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-period">Date Range</label>
+          <select id="filter-period">
+            <option value="all">All Dates</option>
+            <option value="last1month">Last 1 Month</option>
+            <option value="last3months">Last 3 Months</option>
+            <option value="last6months">Last 6 Months</option>
+            <option value="thisyear">This Year</option>
+            <option value="custom">Custom Range…</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-row" id="custom-date-row" style="display:none;">
+        <div class="filter-group">
+          <label for="filter-date-from">From Date</label>
+          <input type="date" id="filter-date-from">
+        </div>
+        <div class="filter-group">
+          <label for="filter-date-to">To Date</label>
+          <input type="date" id="filter-date-to">
+        </div>
+        <div class="filter-group" style="flex:0 0 auto;display:flex;align-items:flex-end;">
+          <div class="filter-actions">
+            <button class="btn-primary btn-sm" onclick="applyFilters()">🔍 Fetch</button>
+            <button class="btn-primary btn-sm btn-outline" onclick="resetFilters()">✕ Clear</button>
+          </div>
+        </div>
+      </div>
+      <div class="filter-row" id="filter-actions-row">
+        <div class="filter-group" style="flex:0 0 auto;display:flex;align-items:flex-end;">
+          <div class="filter-actions">
+            <button class="btn-primary btn-sm" onclick="applyFilters()">🔍 Fetch</button>
+            <button class="btn-primary btn-sm btn-outline" onclick="resetFilters()">✕ Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="txn-msg" class="msg"></div>
     <div id="txn-loading" class="loading-state" style="display:none;">Loading transactions...</div>
-    <div id="txn-empty" class="empty-state" style="display:none;">No bank transactions imported yet. Upload a CSV file above to get started.</div>
+    <div id="txn-empty" class="empty-state" style="display:none;">No bank transactions found matching the current filters. Adjust the filters above or upload a CSV file to get started.</div>
     <div id="txn-table-wrap" style="display:none;">
       <div class="txn-table-scroll">
         <table class="txn-table" id="txn-table" style="min-width:800px;">
@@ -922,6 +1064,19 @@
           </thead>
           <tbody id="txn-tbody"></tbody>
         </table>
+      </div>
+      <!-- Pagination Bar -->
+      <div class="pagination-bar" id="txn-pagination">
+        <span class="showing-info" id="pagination-showing">Showing 0–0 of 0</span>
+        <button class="btn-primary btn-sm btn-outline" id="pagination-prev" onclick="goToPage(currentPage - 1)">← Prev</button>
+        <span class="page-info" id="pagination-page-info">Page 1 of 1</span>
+        <button class="btn-primary btn-sm btn-outline" id="pagination-next" onclick="goToPage(currentPage + 1)">Next →</button>
+        <select id="pagination-per-page" onchange="changePerPage(this.value)">
+          <option value="25">25 / page</option>
+          <option value="50" selected>50 / page</option>
+          <option value="100">100 / page</option>
+          <option value="200">200 / page</option>
+        </select>
       </div>
     </div>
   </div>
@@ -1190,6 +1345,19 @@ let userSearchResults = [];
 let confirmingExistingMapping = null;
 let existingPaymentIds = [];
 
+// Pagination & filter state
+let currentPage = 1;
+let currentPerPage = 50;
+let currentTotal = 0;
+let currentTotalPages = 1;
+let currentFilters = {
+  search: '',
+  type: '',
+  period: 'all',
+  dateFrom: '',
+  dateTo: '',
+};
+
 // For the standalone mapping modal
 let editingMappingKey = '';
 let mappingModalSelectedUserId = '';
@@ -1216,9 +1384,18 @@ document.addEventListener('DOMContentLoaded', async function() {
   currentUserEmail = data.email;
   document.getElementById('admin-email').textContent = data.email;
 
-  // Auto-load transactions and mappings on page load
-  loadTransactions();
+  // Do NOT auto-load transactions on page load — user must click "Fetch"
+  // Only load mappings (lightweight) for the mapping card
   loadMappings();
+
+  // Wire up filter bar events
+  document.getElementById('filter-period').addEventListener('change', onPeriodChange);
+  document.getElementById('filter-search').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyFilters();
+    }
+  });
 
   // Close modals on Escape key press
   document.addEventListener('keydown', function(e) {
@@ -1235,6 +1412,103 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   });
 });
+
+/**
+ * Show/hide the custom date range row based on the selected period.
+ */
+function onPeriodChange() {
+  const period = document.getElementById('filter-period').value;
+  const customRow = document.getElementById('custom-date-row');
+  const actionsRow = document.getElementById('filter-actions-row');
+  if (period === 'custom') {
+    customRow.style.display = 'flex';
+    actionsRow.style.display = 'none';
+  } else {
+    customRow.style.display = 'none';
+    actionsRow.style.display = 'flex';
+  }
+}
+
+/**
+ * Read the current filter values from the form and fetch page 1.
+ */
+function applyFilters() {
+  currentFilters.search = document.getElementById('filter-search').value.trim();
+  currentFilters.type = document.getElementById('filter-type').value;
+  currentFilters.period = document.getElementById('filter-period').value;
+  currentFilters.dateFrom = document.getElementById('filter-date-from').value;
+  currentFilters.dateTo = document.getElementById('filter-date-to').value;
+  currentPage = 1;
+  loadTransactions();
+}
+
+/**
+ * Reset all filters to defaults and fetch all transactions.
+ */
+function resetFilters() {
+  document.getElementById('filter-search').value = '';
+  document.getElementById('filter-type').value = '';
+  document.getElementById('filter-period').value = 'all';
+  document.getElementById('filter-date-from').value = '';
+  document.getElementById('filter-date-to').value = '';
+  onPeriodChange();
+  currentFilters = { search: '', type: '', period: 'all', dateFrom: '', dateTo: '' };
+  currentPage = 1;
+  loadTransactions();
+}
+
+/**
+ * Go to a specific page.
+ */
+function goToPage(page) {
+  if (page < 1 || page > currentTotalPages) return;
+  currentPage = page;
+  loadTransactions();
+}
+
+/**
+ * Change the number of rows per page.
+ */
+function changePerPage(perPage) {
+  currentPerPage = parseInt(perPage, 10) || 50;
+  currentPage = 1;
+  loadTransactions();
+}
+
+/**
+ * Build the query string for the /bank/transactions GET request.
+ */
+function buildTransactionsQuery() {
+  const params = new URLSearchParams();
+  params.set('page', String(currentPage));
+  params.set('perPage', String(currentPerPage));
+  if (currentFilters.search) params.set('search', currentFilters.search);
+  if (currentFilters.type) params.set('type', currentFilters.type);
+  if (currentFilters.period) params.set('period', currentFilters.period);
+  if (currentFilters.period === 'custom') {
+    if (currentFilters.dateFrom) params.set('dateFrom', currentFilters.dateFrom);
+    if (currentFilters.dateTo) params.set('dateTo', currentFilters.dateTo);
+  }
+  return params.toString();
+}
+
+/**
+ * Update the pagination bar UI.
+ */
+function updatePaginationUI() {
+  const showingEl = document.getElementById('pagination-showing');
+  const pageInfoEl = document.getElementById('pagination-page-info');
+  const prevBtn = document.getElementById('pagination-prev');
+  const nextBtn = document.getElementById('pagination-next');
+
+  const start = currentTotal === 0 ? 0 : ((currentPage - 1) * currentPerPage) + 1;
+  const end = Math.min(currentPage * currentPerPage, currentTotal);
+
+  showingEl.textContent = `Showing ${start}–${end} of ${currentTotal}`;
+  pageInfoEl.textContent = `Page ${currentPage} of ${currentTotalPages}`;
+  prevBtn.disabled = currentPage <= 1;
+  nextBtn.disabled = currentPage >= currentTotalPages;
+}
 
 function showMsg(type, text) {
   const el = document.getElementById('msg-area');
@@ -1272,7 +1546,8 @@ async function loadTransactions() {
     const headers = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const res = await fetch('/bank/transactions', { headers });
+    const query = buildTransactionsQuery();
+    const res = await fetch('/bank/transactions?' + query, { headers });
     const data = await res.json();
 
     document.getElementById('txn-loading').style.display = 'none';
@@ -1284,13 +1559,19 @@ async function loadTransactions() {
     }
 
     const transactions = data.transactions || [];
-    document.getElementById('txn-count').textContent = transactions.length;
+    currentTotal = data.total || 0;
+    currentTotalPages = data.totalPages || 1;
+    currentPage = data.page || 1;
+
+    // Show total count in the badge (not just the current page count)
+    document.getElementById('txn-count').textContent = currentTotal;
 
     // Store the list of existing payment IDs from the auth store (blob store)
     existingPaymentIds = data.existingPaymentIds || [];
 
     if (transactions.length === 0) {
       document.getElementById('txn-empty').style.display = 'block';
+      updatePaginationUI();
       return;
     }
 
@@ -1360,8 +1641,25 @@ async function loadTransactions() {
       tbody.appendChild(tr);
     }
 
+    // Update pagination UI
+    updatePaginationUI();
+
     // Initialize column resize after table is populated
     initColumnResize();
+
+    // Return focus/scroll to the beginning of the table
+    const txnScroll = document.querySelector('.txn-table-scroll');
+    if (txnScroll) {
+      txnScroll.scrollTop = 0;
+      txnScroll.scrollLeft = 0;
+    }
+
+    // Scroll the transactions card into view so the user sees the top of the table
+    // (not the "Template Narrations & User Mappings" table below)
+    const txnCard = document.getElementById('transactions-card');
+    if (txnCard) {
+      txnCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   } catch (err) {
     document.getElementById('txn-loading').style.display = 'none';
     document.getElementById('txn-refresh-btn').disabled = false;

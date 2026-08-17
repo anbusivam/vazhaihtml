@@ -187,29 +187,126 @@ exports.handler = async function (event, context) {
 
     const bankStore = await getBankStore(event);
 
-    // ─── GET: List all bank transactions ───
+    // ─── GET: List bank transactions (paginated & filterable) ───
     if (event.httpMethod === 'GET') {
+      const params = event.queryStringParameters || {};
+
+      // ── Parse filter params ──
+      const search = (params.search || '').trim().toLowerCase();
+      const type = (params.type || '').trim().toLowerCase(); // 'deposit' | 'withdrawal' | ''
+      const period = (params.period || 'all').trim().toLowerCase(); // 'last1month' | 'last3months' | 'last6months' | 'thisyear' | 'custom' | 'all'
+      const dateFromRaw = (params.dateFrom || '').trim(); // yyyy-mm-dd
+      const dateToRaw = (params.dateTo || '').trim(); // yyyy-mm-dd
+
+      // Pagination
+      let page = parseInt(params.page, 10);
+      if (!Number.isFinite(page) || page < 1) page = 1;
+
+      let perPage = parseInt(params.perPage, 10);
+      if (!Number.isFinite(perPage) || perPage < 1) perPage = 50;
+      if (perPage > 200) perPage = 200;
+
+      // ── Resolve date range from period preset ──
+      let dateFrom = null;
+      let dateTo = null;
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      if (period === 'custom') {
+        if (dateFromRaw) dateFrom = new Date(dateFromRaw + 'T00:00:00');
+        if (dateToRaw) dateTo = new Date(dateToRaw + 'T23:59:59.999');
+      } else if (period === 'last1month') {
+        dateFrom = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+        dateTo = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      } else if (period === 'last3months') {
+        dateFrom = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
+        dateTo = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      } else if (period === 'last6months') {
+        dateFrom = new Date(today.getFullYear(), today.getMonth() - 6, today.getDate());
+        dateTo = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      } else if (period === 'thisyear') {
+        dateFrom = new Date(today.getFullYear(), 0, 1);
+        dateTo = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      }
+      // 'all' → no date filter
+
+      // ── Load all transaction records ──
       const transactionsList = await bankStore.get('transactions:list', { type: 'json' }) || [];
       
-      // Fetch each transaction record
-      const transactions = [];
+      const allTransactions = [];
       for (const key of transactionsList) {
         try {
           const txn = await bankStore.get(`transaction:${key}`, { type: 'json' });
           if (txn) {
-            transactions.push(txn);
+            allTransactions.push(txn);
           }
         } catch (_) {
           // Skip corrupt records
         }
       }
 
-      // Sort by tranDate descending (newest first)
-      transactions.sort((a, b) => {
-        const dateA = new Date(a.tranDate.split('/').reverse().join('-'));
-        const dateB = new Date(b.tranDate.split('/').reverse().join('-'));
-        return dateB - dateA;
+      // ── Parse tranDate dd/mm/yyyy → Date (invalid dates → null) ──
+      function parseTranDate(tranDate) {
+        if (!tranDate) return null;
+        const m = String(tranDate).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (!m) return null;
+        const d = parseInt(m[1], 10);
+        const mo = parseInt(m[2], 10) - 1;
+        const y = parseInt(m[3], 10);
+        const date = new Date(y, mo, d);
+        // Validate the date is real (e.g. not 31/02/2026)
+        if (date.getFullYear() !== y || date.getMonth() !== mo || date.getDate() !== d) return null;
+        return date;
+      }
+
+      // ── Apply filters ──
+      let filtered = allTransactions.filter(txn => {
+        // Search on narration
+        if (search) {
+          const narration = (txn.narration || '').toLowerCase();
+          if (!narration.includes(search)) return false;
+        }
+
+        // Type filter (withdrawal vs deposit)
+        if (type === 'deposit') {
+          const deposit = Number(txn.deposit);
+          if (!deposit || deposit <= 0) return false;
+        } else if (type === 'withdrawal') {
+          const withdrawal = Number(txn.withdrawal);
+          if (!withdrawal || withdrawal <= 0) return false;
+        }
+
+        // Date range filter
+        if (dateFrom || dateTo) {
+          const txnDate = parseTranDate(txn.tranDate);
+          if (!txnDate) return false;
+          if (dateFrom && txnDate < dateFrom) return false;
+          if (dateTo && txnDate > dateTo) return false;
+        }
+
+        return true;
       });
+
+      // ── Sort by tranDate descending (newest first) ──
+      filtered.sort((a, b) => {
+        const dateA = parseTranDate(a.tranDate);
+        const dateB = parseTranDate(b.tranDate);
+        const tA = dateA ? dateA.getTime() : 0;
+        const tB = dateB ? dateB.getTime() : 0;
+        if (tB !== tA) return tB - tA;
+        // Secondary: importedAt descending
+        const ia = a.importedAt || '';
+        const ib = b.importedAt || '';
+        return String(ib).localeCompare(String(ia));
+      });
+
+      // ── Paginate ──
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / perPage));
+      if (page > totalPages) page = totalPages;
+
+      const startIdx = (page - 1) * perPage;
+      const transactions = filtered.slice(startIdx, startIdx + perPage);
 
       // Fetch the list of existing payment IDs from the auth store
       // so the client can detect orphan payment IDs
@@ -221,7 +318,10 @@ exports.handler = async function (event, context) {
         body: JSON.stringify({
           success: true,
           transactions,
-          count: transactions.length,
+          total,
+          page,
+          perPage,
+          totalPages,
           existingPaymentIds,
         }),
       };
