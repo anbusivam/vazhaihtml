@@ -42,10 +42,13 @@ async function getUserProfile(store, email) {
 }
 
 /**
- * Format a number as Indian currency string (₹)
+ * Format a number as Indian currency string.
+ * Uses "Rs." instead of the ₹ symbol because the PDF's Helvetica font
+ * does not include the ₹ glyph (U+20B9), which would render as a
+ * garbled superscript-like character (e.g. "¹24,000.00").
  */
 function formatINR(amount) {
-  return '₹' + Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return 'Rs. ' + Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /**
