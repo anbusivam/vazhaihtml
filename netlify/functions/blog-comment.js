@@ -37,7 +37,35 @@ exports.handler = async function (event, context) {
         };
       }
 
-      const comments = await getComments(store, slug);
+      // Determine requester's access level for comment filtering
+      const authStore = require('./auth-store').getStore;
+      const aStore = await authStore(event);
+      const session = await getSession(aStore, event);
+
+      let isAuthorOrAdmin = false;
+      let currentUserEmail = '';
+
+      if (session) {
+        currentUserEmail = session.email;
+        const roles = await getUserRoles(aStore, session.email);
+        const isAdmin = roles.includes('admin');
+        const post = await store.get(`blog:post:${slug}`, { type: 'json' });
+        const isAuthor = post && post.author === session.email;
+        isAuthorOrAdmin = isAdmin || isAuthor;
+      }
+
+      const allComments = await getComments(store, slug);
+
+      // Filter comments based on access level:
+      // - Post author or admin: see all comments (including pending)
+      // - Everyone else: see only approved comments + their own pending comments
+      let comments;
+      if (isAuthorOrAdmin) {
+        comments = allComments;
+      } else {
+        comments = allComments.filter(c => c.approved || c.email === currentUserEmail);
+      }
+
       return {
         statusCode: 200,
         headers: CORS_HEADERS,

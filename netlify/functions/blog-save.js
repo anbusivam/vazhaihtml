@@ -1,5 +1,6 @@
 // Netlify Function: POST /blog/save
-// Creates or updates a blog post. Requires blogger or admin role.
+// Creates or updates a blog post. Requires authentication.
+// Bloggers & admins can publish directly. Regular users' posts go to 'pending' for admin approval.
 // Bloggers can only edit their own posts. Admins can edit any post.
 const { getBlogStore } = require('./blog-store');
 const { requireAnyAuthenticated, handleOptions, CORS_HEADERS } = require('./blog-auth');
@@ -153,6 +154,7 @@ exports.handler = async function (event, context) {
       body: JSON.stringify({
         success: true,
         slug: post.slug,
+        status: post.status,
         message: isNew ? 'Post created.' : 'Post updated.',
         post: { ...post, content: undefined }, // Don't return full content in response
       }),

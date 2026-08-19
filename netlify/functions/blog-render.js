@@ -460,6 +460,7 @@ exports.handler = async function (event, context) {
     const tooLong = isTamil ? 'கருத்து மிக நீளமாக உள்ளது (அதிகபட்சம் 2000 எழுத்துகள்).' : 'Comment is too long (max 2000 characters).';
     const posting = isTamil ? 'இடுகையிடுகிறது...' : 'Posting...';
     const commentSubmitted = isTamil ? '✅ கருத்து சமர்ப்பிக்கப்பட்டது! பதிவின் ஆசிரியர் அல்லது நிர்வாகியால் ஒப்புதல் அளிக்கப்பட்டதும் தோன்றும்.' : '✅ Comment submitted! It will appear once approved by the post author or admin.';
+    const commentSubmittedAuto = isTamil ? '✅ கருத்து வெளியிடப்பட்டது!' : '✅ Comment posted!';
     const failedComment = isTamil ? 'கருத்தை இடுகையிட முடியவில்லை.' : 'Failed to post comment.';
     const networkError = isTamil ? 'நெட்வொர்க் பிழை. மீண்டும் முயற்சிக்கவும்.' : 'Network error. Please try again.';
     const editedLabel = isTamil ? ' (திருத்தப்பட்டது)' : ' (edited)';
@@ -717,7 +718,12 @@ exports.handler = async function (event, context) {
                 if (data.ok && data.comment) {
                   inputEl.value = '';
                   loadComments();
-                  if (!data.approved) {
+                  if (data.approved) {
+                    errorEl.style.color = '#2e7d32';
+                    errorEl.textContent = '${commentSubmittedAuto}';
+                    errorEl.style.display = 'block';
+                    setTimeout(function() { errorEl.style.display = 'none'; }, 5000);
+                  } else {
                     errorEl.style.color = '#ffa000';
                     errorEl.textContent = '${commentSubmitted}';
                     errorEl.style.display = 'block';
