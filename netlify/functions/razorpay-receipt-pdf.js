@@ -3,7 +3,7 @@
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const https = require('https');
-const { getStore } = require('./auth-store');
+const { getStore, ADMIN_EMAILS } = require('./auth-store');
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -371,29 +371,48 @@ exports.handler = async function (event, context) {
       return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Payment record not found.' }) };
     }
 
-    // Verify the payment belongs to this user
+    // Determine if the session user is an admin
     const userEmail = session.email.toLowerCase().trim();
+    const isAdmin = ADMIN_EMAILS.includes(session.email);
+
+    // Verify the payment belongs to this user (unless admin)
     const paymentEmail = (payment.email || payment.donorEmail || '').toLowerCase().trim();
-    if (paymentEmail && paymentEmail !== userEmail) {
+    if (!isAdmin && paymentEmail && paymentEmail !== userEmail) {
       return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'This payment does not belong to your account.' }) };
     }
 
     // Get user profile for name etc.
-    const userProfile = await getUserProfile(store, userEmail);
-    const userName = userProfile.name || session.name || payment.donorName || paymentEmail.split('@')[0] || 'Donor';
-    const userAddress = userProfile.address || payment.donorAddress || '';
-    const userPan = userProfile.pan || payment.donorPan || '';
+    // For admins downloading another donor's receipt, use the donor's info from the payment record.
+    // For regular users, use their own profile info.
+    let userName, userAddress, userPan, receiptEmail;
 
-    // If user has no name set in profile, they need to update it first
-    if (!userProfile.name || userProfile.name.trim() === '') {
-      return {
-        statusCode: 400,
-        headers: CORS_HEADERS,
-        body: JSON.stringify({
-          error: 'Please update your name in your profile before downloading a receipt.',
-          needsProfileUpdate: true,
-        }),
-      };
+    if (isAdmin) {
+      // Admin: use donor info from the payment record
+      const donorEmail = paymentEmail || userEmail;
+      const donorProfile = await getUserProfile(store, donorEmail);
+      userName = donorProfile.name || payment.donorName || donorEmail.split('@')[0] || 'Donor';
+      userAddress = donorProfile.address || payment.donorAddress || '';
+      userPan = donorProfile.pan || payment.donorPan || '';
+      receiptEmail = donorEmail;
+    } else {
+      // Regular user: use their own profile
+      const userProfile = await getUserProfile(store, userEmail);
+      userName = userProfile.name || session.name || payment.donorName || paymentEmail.split('@')[0] || 'Donor';
+      userAddress = userProfile.address || payment.donorAddress || '';
+      userPan = userProfile.pan || payment.donorPan || '';
+      receiptEmail = userEmail;
+
+      // If user has no name set in profile, they need to update it first
+      if (!userProfile.name || userProfile.name.trim() === '') {
+        return {
+          statusCode: 400,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({
+            error: 'Please update your name in your profile before downloading a receipt.',
+            needsProfileUpdate: true,
+          }),
+        };
+      }
     }
 
     // Pre-fetch logo buffer (filesystem or HTTPS fallback)
@@ -402,7 +421,7 @@ exports.handler = async function (event, context) {
     // Generate PDF
     const pdfBuffer = await generateReceiptPDF({
       userName,
-      userEmail: userEmail,
+      userEmail: receiptEmail,
       userAddress,
       userPan,
       payment,

@@ -233,6 +233,26 @@
       border-color: var(--green-dark);
       color: white;
     }
+    .btn-receipt {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #e8f5e9;
+      color: var(--green-dark);
+      border: 1px solid #a5d6a7;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn-receipt:hover {
+      background: var(--green-dark);
+      color: white;
+      border-color: var(--green-dark);
+    }
     .ph-readonly { display: block; }
     .ph-edit-field { display: none; width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:4px; font-size:12px; font-family:inherit; outline:none; background:#f9f9f9; }
     .ph-edit-field:focus { border-color:var(--green); background:white; }
@@ -360,6 +380,7 @@
               <th>Address</th>
               <th>Notes</th>
               <th>Status</th>
+              <th>Receipt</th>
               <th>Thank Letter</th>
             </tr>
           </thead>
@@ -557,6 +578,11 @@ async function loadPaymentHistory(page) {
         thankLetterHtml = `<button class="btn-primary btn-sm" style="font-size:10px;padding:4px 10px;" onclick="sendThankLetter('${paymentId}', this, false)">✉️ Send</button>`;
       }
 
+      // Receipt PDF download button (only for successful payments)
+      const receiptButtonHtml = p.status === 'captured'
+        ? `<button class="btn-receipt" onclick="downloadReceipt('${paymentId}')" title="Download PDF Receipt">📄 PDF</button>`
+        : `<span style="font-size:11px;color:#999;">—</span>`;
+
       const editBtnHtml = `<button class="ph-edit-btn" onclick="togglePHEditRow('${paymentId}', this)" title="Edit this row">✏️</button>`;
 
       tr.dataset.paymentId = paymentId;
@@ -658,6 +684,7 @@ async function loadPaymentHistory(page) {
         <td style="font-size:12px;max-width:200px;">${addressCellHtml}</td>
         <td style="font-size:12px;">${notesCellHtml}</td>
         <td>${statusBadge}</td>
+        <td style="white-space:nowrap;text-align:center;">${receiptButtonHtml}</td>
         <td style="white-space:nowrap;text-align:center;">${thankLetterHtml}</td>
       `;
       tbody.appendChild(tr);
@@ -739,6 +766,46 @@ async function savePHEdit(paymentId, tr, btn) {
     btn.disabled = false;
     btn.textContent = '✏️';
     tr.classList.remove('ph-editing');
+  }
+}
+
+// ── Download Receipt PDF ──
+async function downloadReceipt(paymentId) {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`/razorpay/receipt-pdf?paymentId=${encodeURIComponent(paymentId)}`, { headers });
+
+    if (res.status === 400) {
+      const data = await res.json();
+      if (data.needsProfileUpdate) {
+        alert('Please update the donor\'s name in their profile before downloading a receipt.');
+        return;
+      }
+      alert(data.error || 'Failed to generate receipt.');
+      return;
+    }
+
+    if (!res.ok) {
+      const data = await res.json();
+      alert(data.error || 'Failed to download receipt.');
+      return;
+    }
+
+    // Get the blob and trigger download
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Vazhai_Receipt_${paymentId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Network error: ' + err.message);
   }
 }
 
