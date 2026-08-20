@@ -27,7 +27,7 @@ exports.handler = async function (event, context) {
       return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Unauthorized' }) };
     }
 
-    const { name, phone, pan, address } = JSON.parse(event.body || '{}');
+    const { name, phone, pan, address, additionalEmails } = JSON.parse(event.body || '{}');
 
     // Name is mandatory
     if (!name || !name.trim()) {
@@ -52,6 +52,19 @@ exports.handler = async function (event, context) {
     if (address !== undefined) {
       userData.address = address.trim();
     }
+    // additionalEmails: comma-separated list stored as an array of trimmed, lowercased emails
+    if (additionalEmails !== undefined) {
+      if (Array.isArray(additionalEmails)) {
+        userData.additionalEmails = additionalEmails
+          .map(e => String(e).trim().toLowerCase())
+          .filter(e => e.length > 0);
+      } else {
+        userData.additionalEmails = String(additionalEmails)
+          .split(',')
+          .map(e => e.trim().toLowerCase())
+          .filter(e => e.length > 0);
+      }
+    }
     userData.lastUpdated = new Date().toISOString();
 
     await store.setJSON(`user:${normalizedEmail}`, userData);
@@ -66,6 +79,7 @@ exports.handler = async function (event, context) {
         phone: userData.phone,
         pan: userData.pan || '',
         address: userData.address || '',
+        additionalEmails: userData.additionalEmails || [],
       }),
     };
   } catch (err) {

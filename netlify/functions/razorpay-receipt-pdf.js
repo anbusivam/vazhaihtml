@@ -347,6 +347,33 @@ function generateReceiptPDF({ userName, userEmail, userAddress, userPan, payment
   });
 }
 
+/**
+ * Generate a receipt PDF buffer for a given payment + donor info.
+ * Thin wrapper around generateReceiptPDF that also fetches the logo.
+ * Used by both the receipt-pdf endpoint and the send-thank-letter function.
+ */
+async function generateReceiptPDFForPayment(store, { userName, userEmail, userAddress, userPan, payment }) {
+  const logoBuffer = await fetchLogoBuffer();
+  return await generateReceiptPDF({
+    userName,
+    userEmail,
+    userAddress,
+    userPan,
+    payment,
+    logoBuffer,
+  });
+}
+
+// Export helpers so other functions (e.g. send-thank-letter) can reuse them.
+// The Netlify runtime only requires `handler`; additional named exports are ignored.
+module.exports.getUserProfile = getUserProfile;
+module.exports.generateReceiptPDF = generateReceiptPDF;
+module.exports.generateReceiptPDFForPayment = generateReceiptPDFForPayment;
+module.exports.fetchLogoBuffer = fetchLogoBuffer;
+module.exports.formatINR = formatINR;
+module.exports.formatDate = formatDate;
+module.exports.statusLabel = statusLabel;
+
 exports.handler = async function (event, context) {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };

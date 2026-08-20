@@ -123,10 +123,11 @@ exports.handler = async function (event, context) {
           const address = (u.address || '').toLowerCase();
           const tamilName = (u.tamilName || '').toLowerCase();
           const notes = (u.notes || '').toLowerCase();
+          const additionalEmails = (Array.isArray(u.additionalEmails) ? u.additionalEmails.join(' ') : u.additionalEmails || '').toLowerCase();
           const roles = (Array.isArray(u.roles) ? u.roles.join(' ') : u.role || '').toLowerCase();
           return email.includes(search) || name.includes(search) || phone.includes(search) ||
                  pan.includes(search) || address.includes(search) || tamilName.includes(search) ||
-                 notes.includes(search) || roles.includes(search);
+                 notes.includes(search) || additionalEmails.includes(search) || roles.includes(search);
         });
       }
 
@@ -263,6 +264,19 @@ exports.handler = async function (event, context) {
           if (u.address !== undefined) userData.address = u.address.trim();
           if (u.tamilName !== undefined) userData.tamilName = u.tamilName.trim();
           if (u.notes !== undefined) userData.notes = u.notes.trim();
+          // additionalEmails: comma-separated list stored as an array of trimmed, lowercased emails
+          if (u.additionalEmails !== undefined) {
+            if (Array.isArray(u.additionalEmails)) {
+              userData.additionalEmails = u.additionalEmails
+                .map(e => String(e).trim().toLowerCase())
+                .filter(e => e.length > 0);
+            } else {
+              userData.additionalEmails = String(u.additionalEmails)
+                .split(',')
+                .map(e => e.trim().toLowerCase())
+                .filter(e => e.length > 0);
+            }
+          }
 
           // Apply roles ONLY if the target user is NOT a system admin
           // (system admin roles are hardcoded and cannot be changed)

@@ -475,6 +475,10 @@
               <span class="profile-value" id="profile-address"></span>
             </div>
             <div class="profile-row">
+              <span class="profile-label">Additional Emails (CC)</span>
+              <span class="profile-value" id="profile-additional-emails"></span>
+            </div>
+            <div class="profile-row">
               <span class="profile-label">Session Expires</span>
               <span class="profile-value" id="profile-expires"></span>
             </div>
@@ -501,6 +505,11 @@
           <div class="form-group" style="margin-top:12px;">
             <label class="profile-label" for="edit-address">Address</label>
             <textarea id="edit-address" class="profile-edit-input" placeholder="Your mailing address" rows="3" style="resize:vertical;"></textarea>
+          </div>
+          <div class="form-group" style="margin-top:12px;">
+            <label class="profile-label" for="edit-additional-emails">Additional Emails (for Thank Letter CC)</label>
+            <input type="text" id="edit-additional-emails" class="profile-edit-input" placeholder="email1@example.com, email2@example.com" style="font-size:13px;">
+            <div style="font-size:12px;color:var(--text-light);margin-top:4px;">Comma-separated. These email IDs will be added to the CC field when a thank-you letter is sent.</div>
           </div>
           <div class="profile-edit-actions">
             <button class="btn-primary btn-sm" onclick="saveProfile()" id="btn-save-profile">💾 Save</button>
@@ -663,6 +672,9 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.getElementById('profile-phone').textContent = data.phone || '(not set)';
   document.getElementById('profile-pan').textContent = data.pan || '(not set)';
   document.getElementById('profile-address').textContent = data.address || '(not set)';
+  document.getElementById('profile-additional-emails').textContent = (Array.isArray(data.additionalEmails) && data.additionalEmails.length > 0)
+    ? data.additionalEmails.join(', ')
+    : '(not set)';
 
   // ── If user has no name set, auto-prompt to fill profile ──
   if (!currentUserName) {
@@ -744,6 +756,7 @@ function showEditProfile() {
   document.getElementById('edit-phone').value = document.getElementById('profile-phone').textContent === '(not set)' ? '' : document.getElementById('profile-phone').textContent;
   document.getElementById('edit-pan').value = document.getElementById('profile-pan').textContent === '(not set)' ? '' : document.getElementById('profile-pan').textContent;
   document.getElementById('edit-address').value = document.getElementById('profile-address').textContent === '(not set)' ? '' : document.getElementById('profile-address').textContent;
+  document.getElementById('edit-additional-emails').value = document.getElementById('profile-additional-emails').textContent === '(not set)' ? '' : document.getElementById('profile-additional-emails').textContent;
   document.getElementById('profile-view').classList.add('hidden');
   document.getElementById('profile-edit').classList.add('active');
 }
@@ -760,6 +773,7 @@ async function saveProfile() {
   const phone = document.getElementById('edit-phone').value.trim();
   const pan = document.getElementById('edit-pan').value.trim().toUpperCase();
   const address = document.getElementById('edit-address').value.trim();
+  const additionalEmails = document.getElementById('edit-additional-emails').value.trim();
 
   if (!name) {
     document.getElementById('profile-error-msg').textContent = 'Name is required.';
@@ -781,7 +795,7 @@ async function saveProfile() {
     const res = await fetch('/auth/update-profile', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ name, phone, pan, address }),
+      body: JSON.stringify({ name, phone, pan, address, additionalEmails }),
     });
 
     const data = await res.json();
@@ -800,6 +814,9 @@ async function saveProfile() {
     document.getElementById('profile-phone').textContent = data.phone || '(not set)';
     document.getElementById('profile-pan').textContent = data.pan || '(not set)';
     document.getElementById('profile-address').textContent = data.address || '(not set)';
+    document.getElementById('profile-additional-emails').textContent = (Array.isArray(data.additionalEmails) && data.additionalEmails.length > 0)
+      ? data.additionalEmails.join(', ')
+      : '(not set)';
     document.getElementById('user-name-display').textContent = data.name || name;
 
     if (redirectAfterProfile) {

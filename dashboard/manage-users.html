@@ -490,6 +490,7 @@
     .users-table .col-pan { min-width: 110px; }
     .users-table .col-address { min-width: 200px; max-width: 260px; }
     .users-table .col-tamil { min-width: 130px; }
+    .users-table .col-extra-emails { min-width: 200px; max-width: 240px; }
     .users-table .col-notes { min-width: 180px; max-width: 240px; }
     .users-table .col-roles { min-width: 180px; }
     .users-table .col-dates { min-width: 100px; }
@@ -580,6 +581,7 @@
               <th>PAN</th>
               <th>Address</th>
               <th>Tamil Name</th>
+              <th>Additional Emails</th>
               <th>Notes</th>
               <th>Roles</th>
               <th>First Login</th>
@@ -877,6 +879,7 @@ function renderUsers(users) {
       pan: user.pan || '',
       address: user.address || '',
       tamilName: user.tamilName || '',
+      additionalEmails: (Array.isArray(user.additionalEmails) ? user.additionalEmails : []).join(', '),
       notes: user.notes || '',
       roles: [...roles],
     };
@@ -932,6 +935,10 @@ function renderUsers(users) {
       <td class="col-tamil">
         <span class="cell-readonly ${user.tamilName ? '' : 'empty'}">${escapeHtml(user.tamilName || '—')}</span>
         <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="tamilName" value="${escapeHtml(user.tamilName || '')}" onchange="onFieldChange('${user.email}', 'tamilName', this.value)">
+      </td>
+      <td class="col-extra-emails">
+        <span class="cell-readonly" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml((user.additionalEmails || []).join(', '))}">${escapeHtml((user.additionalEmails || []).join(', ') || '—')}</span>
+        <input type="text" class="edit-mode-field" data-email="${safeEmail}" data-field="additionalEmails" value="${escapeHtml((user.additionalEmails || []).join(', '))}" placeholder="email1@x.com, email2@y.com" style="min-width:180px;" onchange="onFieldChange('${user.email}', 'additionalEmails', this.value)">
       </td>
       <td class="col-notes">
         <span class="cell-readonly notes-cell ${user.notes ? '' : 'empty'}" onclick="openZoomField('${user.email}', 'notes')">${escapeHtml(user.notes || '— (click to view/edit)')}</span>
@@ -1246,7 +1253,7 @@ function updateReadonlyDisplay(email) {
   const tr = document.querySelector(`tr[data-email="${email}"]`);
   if (!tr) return;
   
-  const fields = ['name', 'phone', 'pan', 'address', 'tamilName', 'notes'];
+  const fields = ['name', 'phone', 'pan', 'address', 'tamilName', 'additionalEmails', 'notes'];
   for (const field of fields) {
     const val = (user[field] || '').toString();
     const span = tr.querySelector(`.cell-readonly[onclick*="${field}"]`) || tr.querySelector(`.col-${field} .cell-readonly`);
@@ -1348,7 +1355,7 @@ async function saveAllChanges() {
     const update = { email: user.email };
     let hasChanges = false;
     
-    for (const field of ['name', 'phone', 'pan', 'address', 'tamilName', 'notes']) {
+    for (const field of ['name', 'phone', 'pan', 'address', 'tamilName', 'additionalEmails', 'notes']) {
       const origVal = (orig[field] || '').toString().trim();
       const newVal = (user[field] || '').toString().trim();
       if (origVal !== newVal) {
