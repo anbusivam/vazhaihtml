@@ -58,14 +58,14 @@
       font-weight: 600;
     }
     .dashboard-container {
-      max-width: 1200px;
+      max-width: 100%;
       margin: 24px auto;
-      padding: 0 20px;
+      padding: 0 16px;
     }
     .card {
       background: white;
       border-radius: var(--radius);
-      padding: 24px;
+      padding: 20px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.06);
       margin-bottom: 20px;
     }
@@ -182,6 +182,11 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
+      table-layout: auto;
+    }
+    .users-table td {
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .users-table th {
       text-align: left;
@@ -365,7 +370,7 @@
         </div>
       </div>
       <div style="overflow-x:auto;">
-        <table class="users-table" style="min-width:800px;">
+        <table class="users-table">
           <thead>
             <tr>
               <th style="width:44px;text-align:center;">Edit</th>

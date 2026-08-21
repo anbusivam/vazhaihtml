@@ -372,6 +372,31 @@
   status = 200
 
 [[redirects]]
+  from = "/expense/manage"
+  to = "/.netlify/functions/expense-manage"
+  status = 200
+
+[[redirects]]
+  from = "/expense/list"
+  to = "/.netlify/functions/expense-list"
+  status = 200
+
+[[redirects]]
+  from = "/expense/upload"
+  to = "/.netlify/functions/expense-upload"
+  status = 200
+
+[[redirects]]
+  from = "/expense/file"
+  to = "/.netlify/functions/expense-file"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard/manage-expenses"
+  to = "/dashboard/manage-expenses.html"
+  status = 200
+
+[[redirects]]
   from = "/donor-wall"
   to = "/.netlify/functions/donor-wall"
   status = 200

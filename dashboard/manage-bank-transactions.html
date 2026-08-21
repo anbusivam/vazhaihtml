@@ -58,14 +58,14 @@
       font-weight: 600;
     }
     .dashboard-container {
-      max-width: 1200px;
+      max-width: 100%;
       margin: 24px auto;
-      padding: 0 20px;
+      padding: 0 16px;
     }
     .card {
       background: white;
       border-radius: var(--radius);
-      padding: 24px;
+      padding: 20px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.06);
       margin-bottom: 20px;
     }
@@ -207,6 +207,7 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 12px;
+      table-layout: auto;
     }
     .txn-table th {
       text-align: left;
@@ -233,7 +234,7 @@
     .txn-table-scroll {
       max-height: 500px;
       overflow-y: auto;
-      overflow-x: auto;
+       overflow-x: auto;
       border: 1px solid var(--border);
       border-radius: 8px;
       position: relative;
@@ -285,6 +286,16 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       display: block;
+    }
+    .txn-table td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .txn-table td.txn-payment-id,
+    .txn-table td.txn-date,
+    .txn-table td.txn-chq,
+    .txn-table td.txn-amount {
+      white-space: nowrap;
     }
     .txn-amount {
       font-weight: 600;
@@ -343,7 +354,7 @@
     }
     .filter-group {
       flex: 1;
-      min-width: 160px;
+      min-width: 140px;
     }
     .filter-group label {
       display: block;
@@ -464,7 +475,7 @@
       background: white;
       border-radius: 12px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-      max-width: 700px;
+      max-width: 900px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
@@ -685,6 +696,7 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 12px;
+      table-layout: auto;
     }
     .mapping-table th {
       text-align: left;
@@ -707,6 +719,7 @@
       vertical-align: middle;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .mapping-table tr:hover td {
       background: #fafafa;
@@ -718,7 +731,7 @@
       padding: 3px 6px;
       border-radius: 4px;
       display: inline-block;
-      max-width: 200px;
+      max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       vertical-align: middle;
@@ -847,6 +860,38 @@
     .create-payment-btn:hover {
       background: #f59e0b;
       color: white;
+    }
+    .create-expense-btn {
+      padding: 5px 10px;
+      font-size: 11px;
+      border-radius: 5px;
+      background: #f3e5f5;
+      color: #7b1fa2;
+      border: 1.5px solid #ba68c8;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .create-expense-btn:hover {
+      background: #ba68c8;
+      color: white;
+    }
+    .linked-expense-chip {
+      display: inline-block;
+      background: #f3e5f5;
+      color: #7b1fa2;
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+      margin: 1px;
+      cursor: pointer;
+    }
+    .linked-expense-chip:hover {
+      background: #e1bee7;
     }
     .orphan-payment-id {
       font-weight: 600;
@@ -1048,7 +1093,7 @@
     <div id="txn-empty" class="empty-state" style="display:none;">No bank transactions found matching the current filters. Adjust the filters above or upload a CSV file to get started.</div>
     <div id="txn-table-wrap" style="display:none;">
       <div class="txn-table-scroll">
-        <table class="txn-table" id="txn-table" style="min-width:800px;">
+        <table class="txn-table" id="txn-table">
           <thead>
             <tr>
               <th data-col="tranDate">TRAN DATE<span class="resize-handle" data-col="tranDate"></span></th>
@@ -1059,6 +1104,7 @@
               <th data-col="deposit">DEPOSIT (CR)<span class="resize-handle" data-col="deposit"></span></th>
               <th data-col="paymentId">PAYMENT ID<span class="resize-handle" data-col="paymentId"></span></th>
               <th data-col="linkedUser">LINKED USER<span class="resize-handle" data-col="linkedUser"></span></th>
+              <th data-col="linkedExpenses">LINKED EXPENSES<span class="resize-handle" data-col="linkedExpenses"></span></th>
               <th data-col="actions" style="min-width:90px;">ACTIONS</th>
             </tr>
           </thead>
@@ -1221,6 +1267,68 @@
     <div class="modal-actions">
       <button class="btn-primary btn-outline" onclick="closeMappingModal()">Cancel</button>
       <button class="btn-primary" id="save-mapping-modal-btn" onclick="saveMappingFromModal()">💾 Save Mapping</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Expense from Bank Transaction Modal -->
+<div class="modal-overlay" id="create-expense-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCreateExpenseModal()">✕</button>
+    <h3 id="create-expense-title">💸 Create Expense</h3>
+
+    <div id="create-expense-form">
+      <!-- Bank transaction details -->
+      <div class="review-section-title">🏦 Bank Transaction Details</div>
+      <div class="bank-detail-row"><span class="label">Narration:</span> <span class="value" id="ce-bank-narration"></span></div>
+      <div class="bank-detail-row"><span class="label">Date:</span> <span class="value" id="ce-bank-date"></span></div>
+      <div class="bank-detail-row"><span class="label">Amount:</span> <span class="value" id="ce-bank-amount"></span></div>
+
+      <!-- Expense details -->
+      <div class="review-section-title">📝 Expense Details</div>
+      <div class="form-group">
+        <label>Description <span class="hint">— what was this expense for?</span></label>
+        <input type="text" id="ce-description" placeholder="e.g. School supplies for children" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Voucher / Bill No. <span class="hint">— optional</span></label>
+        <input type="text" id="ce-voucher" placeholder="e.g. INV-2026-001" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Amount (₹)</label>
+        <input type="number" id="ce-amount" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Expense Date</label>
+        <input type="date" id="ce-date">
+      </div>
+      <div class="form-group">
+        <label>Payment Mode</label>
+        <select id="ce-mode">
+          <option value="bank">🏦 Direct Bank Transaction</option>
+          <option value="cash">💵 Cash</option>
+          <option value="other-person">👤 Through Other Person</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notes <span class="hint">— optional</span></label>
+        <textarea id="ce-notes" placeholder="Any additional notes about this expense"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-primary btn-outline" onclick="closeCreateExpenseModal()">Cancel</button>
+        <button class="btn-primary" id="create-expense-save-btn" onclick="createExpenseRecord()">💾 Create Expense</button>
+      </div>
+    </div>
+
+    <!-- Success state -->
+    <div id="create-expense-success" style="display:none;">
+      <div class="success-check">✅</div>
+      <div class="success-title">Expense Created!</div>
+      <div class="success-subtitle" id="ce-success-subtitle"></div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="closeCreateExpenseModal()">Done</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1408,6 +1516,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
       if (document.getElementById('create-payment-modal').classList.contains('open')) {
         closeCreatePaymentModal();
+      }
+      if (document.getElementById('create-expense-modal').classList.contains('open')) {
+        closeCreateExpenseModal();
       }
     }
   });
@@ -1626,6 +1737,21 @@ async function loadTransactions() {
         const linkedUserName = txn.linkedUserName ? escapeHtmlAttr(txn.linkedUserName) : '';
         createPaymentHtml = `<button class="create-payment-btn" onclick="openCreatePaymentModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}', ${Number(txn.deposit) || 0}, '${escapeHtmlAttr(txn.tranDate || '')}', '${escapeHtmlAttr(txn.chqNo || '')}', '${linkedUserId}', '${linkedUserName}')">💰 Create Payment</button>`;
       }
+
+      // Create Expense button — show for withdrawal (DR) transactions
+      let createExpenseHtml = '';
+      const withdrawalAmt = Number(txn.withdrawal);
+      if (withdrawalAmt && withdrawalAmt > 0) {
+        createExpenseHtml = `<button class="create-expense-btn" onclick="openCreateExpenseModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}', ${withdrawalAmt}, '${escapeHtmlAttr(txn.tranDate || '')}')">💸 Create Expense</button>`;
+      }
+
+      // Linked expenses display
+      let linkedExpensesHtml = '—';
+      if (txn.expenseKeys && txn.expenseKeys.length > 0) {
+        linkedExpensesHtml = txn.expenseKeys.map(key => 
+          `<span class="linked-expense-chip" onclick="window.open('/dashboard/manage-expenses', '_blank')" title="Linked expense: ${escapeHtml(key)}">💸 ${escapeHtml(key)}</span>`
+        ).join(' ');
+      }
       
       tr.innerHTML = `
         <td class="txn-date">${escapeHtml(txn.tranDate || '—')}</td>
@@ -1636,7 +1762,8 @@ async function loadTransactions() {
         <td class="txn-amount cr">${deposit}</td>
         <td class="txn-payment-id">${paymentIdHtml}</td>
         <td>${linkedUserHtml}</td>
-        <td><div class="action-btns">${linkBtnHtml}${createPaymentHtml}</div></td>
+        <td>${linkedExpensesHtml}</td>
+        <td><div class="action-btns">${linkBtnHtml}${createPaymentHtml}${createExpenseHtml}</div></td>
       `;
       tbody.appendChild(tr);
     }
@@ -3276,6 +3403,157 @@ function showCreatePaymentReview(data) {
   // Scroll to top of modal
   const modalBox = document.querySelector('#create-payment-modal .modal-box');
   if (modalBox) modalBox.scrollTop = 0;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Create Expense from Bank Transaction Logic
+// ════════════════════════════════════════════════════════════════════
+
+let ceCurrentTxnKey = '';
+let ceCurrentNarration = '';
+let ceCurrentAmount = 0;
+let ceCurrentTranDate = '';
+
+/**
+ * Open the Create Expense modal for a bank transaction.
+ */
+function openCreateExpenseModal(txnKey, narration, amount, tranDate) {
+  ceCurrentTxnKey = txnKey;
+  ceCurrentNarration = narration || '';
+  ceCurrentAmount = Number(amount) || 0;
+  ceCurrentTranDate = tranDate || '';
+
+  // Populate bank details
+  document.getElementById('ce-bank-narration').textContent = ceCurrentNarration || '—';
+  document.getElementById('ce-bank-date').textContent = ceCurrentTranDate || '—';
+  document.getElementById('ce-bank-amount').textContent = ceCurrentAmount ? '₹' + ceCurrentAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
+
+  // Reset form
+  document.getElementById('ce-description').value = '';
+  document.getElementById('ce-voucher').value = '';
+  document.getElementById('ce-amount').value = ceCurrentAmount || '';
+  document.getElementById('ce-date').value = ceCurrentTranDate ? convertBankDateToISO(ceCurrentTranDate) : new Date().toISOString().split('T')[0];
+  document.getElementById('ce-mode').value = 'bank';
+  document.getElementById('ce-notes').value = ceCurrentNarration || '';
+  document.getElementById('ce-description').classList.remove('input-error');
+  document.getElementById('ce-amount').classList.remove('input-error');
+
+  // Show form, hide success
+  document.getElementById('create-expense-form').style.display = 'block';
+  document.getElementById('create-expense-success').style.display = 'none';
+  document.getElementById('create-expense-title').textContent = '💸 Create Expense';
+
+  // Open modal
+  document.getElementById('create-expense-modal').classList.add('open');
+
+  // Focus description
+  setTimeout(() => {
+    document.getElementById('ce-description').focus();
+  }, 100);
+}
+
+/**
+ * Convert a bank date (dd/mm/yyyy) to ISO format (yyyy-mm-dd).
+ */
+function convertBankDateToISO(bankDate) {
+  if (!bankDate) return new Date().toISOString().split('T')[0];
+  const parts = String(bankDate).trim().split('/');
+  if (parts.length === 3) {
+    const d = parts[0].padStart(2, '0');
+    const m = parts[1].padStart(2, '0');
+    const y = parts[2];
+    if (y.length === 4 && !isNaN(parseInt(y)) && !isNaN(parseInt(m)) && !isNaN(parseInt(d))) {
+      return `${y}-${m}-${d}`;
+    }
+  }
+  return new Date().toISOString().split('T')[0];
+}
+
+/**
+ * Close the Create Expense modal.
+ */
+function closeCreateExpenseModal() {
+  document.getElementById('create-expense-modal').classList.remove('open');
+  ceCurrentTxnKey = '';
+  ceCurrentNarration = '';
+  ceCurrentAmount = 0;
+  ceCurrentTranDate = '';
+}
+
+/**
+ * Create the expense record by calling the backend.
+ */
+async function createExpenseRecord() {
+  const description = document.getElementById('ce-description').value.trim();
+  const voucherNo = document.getElementById('ce-voucher').value.trim();
+  const amount = document.getElementById('ce-amount').value;
+  const expenseDate = document.getElementById('ce-date').value;
+  const paymentMode = document.getElementById('ce-mode').value;
+  const notes = document.getElementById('ce-notes').value.trim();
+
+  // Validate
+  if (!description) {
+    document.getElementById('ce-description').classList.add('input-error');
+    alert('Description is required.');
+    document.getElementById('ce-description').focus();
+    return;
+  }
+  document.getElementById('ce-description').classList.remove('input-error');
+
+  if (!amount || parseFloat(amount) <= 0) {
+    document.getElementById('ce-amount').classList.add('input-error');
+    alert('Amount must be a positive number.');
+    document.getElementById('ce-amount').focus();
+    return;
+  }
+  document.getElementById('ce-amount').classList.remove('input-error');
+
+  const btn = document.getElementById('create-expense-save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Creating...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/expense/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        action: 'create',
+        description,
+        voucherNo,
+        amount,
+        expenseDate,
+        paymentMode,
+        notes,
+        transactionKeys: [ceCurrentTxnKey],
+        documents: [],
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      alert('Error: ' + data.error);
+      return;
+    }
+
+    // Show success state
+    document.getElementById('create-expense-form').style.display = 'none';
+    document.getElementById('create-expense-success').style.display = 'block';
+    document.getElementById('create-expense-title').textContent = '✅ Expense Created';
+    document.getElementById('ce-success-subtitle').textContent = data.message || 'Expense created successfully.';
+
+    // Refresh transactions list to show linked expenses
+    loadTransactions();
+  } catch (err) {
+    alert('Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Create Expense';
+  }
 }
 
 async function logout() {

@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Manage Expenses — Vazhai</title>
+  <link rel="icon" type="image/x-icon" href="/images/favicon_io/favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon_io/logo192x192.png">
+  <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --green: #4a7c59;
+      --green-dark: #2d5a3f;
+      --green-light: #e8f5e9;
+      --green-bg: #f0f9f0;
+      --text: #333;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--green-bg);
+      min-height: 100vh;
+    }
+    .dashboard-header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dashboard-header h1 {
+      font-size: 20px;
+      color: var(--green-dark);
+      margin: 0;
+      font-weight: 700;
+    }
+    .dashboard-header .user-info {
+      font-size: 14px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-header .user-info .email {
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .dashboard-container {
+      max-width: 100%;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--text);
+      margin: 0 0 16px;
+    }
+    .btn-primary {
+      padding: 10px 20px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--green); }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-primary:disabled:hover { background: #ccc; }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--green-dark);
+      border: 2px solid var(--green-dark);
+    }
+    .btn-outline:hover {
+      background: var(--green-light);
+    }
+    .btn-danger {
+      background: #d32f2f;
+      border-color: #d32f2f;
+    }
+    .btn-danger:hover { background: #b71c1c; }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error { background: #fef2f2; color: #d32f2f; display: block; }
+    .msg.success { background: var(--green-light); color: var(--green-dark); display: block; }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .home-link {
+      display: inline-block;
+      margin-top: 16px;
+      margin-left: 16px;
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .home-link:hover { text-decoration: underline; }
+    .dashboard-topnav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 10px 20px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+    .dashboard-topnav a {
+      color: var(--green-dark);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--green-light);
+      transition: background 0.2s;
+    }
+    .dashboard-topnav a:hover {
+      background: #c8e6c9;
+    }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+      background: #f8f9fa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      flex: 1;
+      min-width: 160px;
+    }
+    .filter-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+    }
+    .filter-group input[type="text"],
+    .filter-group select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      background: white;
+      transition: border-color 0.15s;
+    }
+    .filter-group input:focus,
+    .filter-group select:focus {
+      border-color: var(--green);
+    }
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    /* ── Expense Table ── */
+    .expense-table-scroll {
+      max-height: 500px;
+      overflow-y: auto;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .expense-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      table-layout: auto;
+    }
+    .expense-table th {
+      text-align: left;
+      padding: 8px 8px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      background: #f8f9fa;
+      z-index: 2;
+    }
+    .expense-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .expense-table tr:hover td {
+      background: #fafafa;
+    }
+    .expense-desc {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
+    .expense-amount {
+      font-weight: 600;
+      white-space: nowrap;
+      color: #d32f2f;
+    }
+    .expense-date {
+      white-space: nowrap;
+      font-size: 11px;
+    }
+    .expense-count-badge {
+      display: inline-block;
+      background: var(--green-light);
+      color: var(--green-dark);
+      border-radius: 12px;
+      padding: 2px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .mode-badge {
+      display: inline-block;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .mode-cash {
+      background: #fff8e1;
+      color: #b45309;
+      border: 1px solid #f59e0b;
+    }
+    .mode-bank {
+      background: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #64b5f6;
+    }
+    .mode-other {
+      background: #f3e5f5;
+      color: #7b1fa2;
+      border: 1px solid #ba68c8;
+    }
+    .linked-txn-chip {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+      margin: 1px;
+    }
+    .doc-chip {
+      display: inline-block;
+      background: #e3f2fd;
+      color: #1565c0;
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+      margin: 1px;
+      text-decoration: none;
+    }
+    .doc-chip:hover {
+      background: #bbdefb;
+    }
+    .action-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      white-space: nowrap;
+    }
+    .mini-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 5px;
+      background: white;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .mini-btn:hover {
+      border-color: var(--green);
+      background: var(--green-light);
+      color: var(--green-dark);
+    }
+    .mini-btn.danger {
+      border-color: #fecaca;
+      color: #d32f2f;
+    }
+    .mini-btn.danger:hover {
+      background: #fef2f2;
+      border-color: #d32f2f;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      position: relative;
+    }
+    .modal-box h3 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      color: var(--green-dark);
+    }
+    .modal-close {
+      position: absolute;
+      top: 12px; right: 16px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-light);
+      line-height: 1;
+      padding: 4px;
+    }
+    .modal-close:hover { color: var(--text); }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .form-group label .hint {
+      font-weight: 400;
+      color: var(--text-light);
+      font-size: 12px;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="date"],
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      background: #fff;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--green);
+    }
+    .form-group textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .form-group input.input-error,
+    .form-group textarea.input-error {
+      border-color: #d32f2f;
+      background: #fef2f2;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .modal-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 24px 0 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── File upload ── */
+    .file-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .file-upload-area:hover {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .file-upload-area.dragover {
+      border-color: var(--green-dark);
+      background: #c8e6c9;
+    }
+    .file-upload-area input[type="file"] {
+      display: none;
+    }
+
+    /* ── Linked transactions list ── */
+    .linked-txn-list {
+      margin-top: 8px;
+    }
+    .linked-txn-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #fafafa;
+      font-size: 12px;
+    }
+    .linked-txn-item .txn-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .linked-txn-item .txn-narration {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .linked-txn-item .txn-meta {
+      font-size: 11px;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+    .linked-txn-item .txn-amount {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .linked-txn-item .txn-amount.dr { color: #d32f2f; }
+    .linked-txn-item .txn-amount.cr { color: #2e7d32; }
+
+    /* ── Documents list ── */
+    .doc-list {
+      margin-top: 8px;
+    }
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #fafafa;
+      font-size: 12px;
+    }
+    .doc-item .doc-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .doc-item .doc-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .doc-item .doc-meta {
+      font-size: 11px;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+
+    /* ── Bank transaction search for linking ── */
+    .txn-search-box {
+      position: relative;
+    }
+    .txn-search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+      margin-top: 4px;
+    }
+    .txn-search-results.open {
+      display: block;
+    }
+    .txn-search-result-item {
+      padding: 8px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .txn-search-result-item:hover {
+      background: var(--green-light);
+    }
+    .txn-search-result-item .txn-narration {
+      font-size: 12px;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .txn-search-result-item .txn-meta {
+      font-size: 11px;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+    .txn-search-empty {
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text-light);
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>💸 Manage Expenses</h1>
+  <div class="user-info">
+    <span>Signed in as <span class="email" id="admin-email"></span></span>
+    <button class="btn-primary btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="dashboard-topnav">
+  <a href="/">🏠 Home</a>
+  <a href="/dashboard/manage">⚙️ Admin Dashboard</a>
+  <a href="/dashboard/manage-bank-transactions">🏦 Bank Transactions</a>
+</div>
+
+<div class="dashboard-container">
+
+  <!-- Expenses List Card -->
+  <div class="card" id="expenses-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <h2 style="margin:0;">📋 Expenses <span class="expense-count-badge" id="expense-count">0</span></h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-primary" id="expense-refresh-btn" onclick="loadExpenses()">🔄 Refresh</button>
+        <button class="btn-primary" onclick="openCreateExpenseModal()">➕ Add Expense</button>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-row">
+        <div class="filter-group" style="flex:2;">
+          <label for="filter-search">Search</label>
+          <input type="text" id="filter-search" placeholder="Search by description, voucher no, or notes..." autocomplete="off">
+        </div>
+        <div class="filter-group">
+          <label for="filter-mode">Payment Mode</label>
+          <select id="filter-mode">
+            <option value="">All</option>
+            <option value="cash">Cash</option>
+            <option value="bank">Bank</option>
+            <option value="other-person">Other Person</option>
+          </select>
+        </div>
+        <div class="filter-group" style="flex:0 0 auto;display:flex;align-items:flex-end;">
+          <div class="filter-actions">
+            <button class="btn-primary btn-sm" onclick="applyFilters()">🔍 Fetch</button>
+            <button class="btn-primary btn-sm btn-outline" onclick="resetFilters()">✕ Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="expense-msg" class="msg"></div>
+    <div id="expense-loading" class="loading-state" style="display:none;">Loading expenses...</div>
+    <div id="expense-empty" class="empty-state" style="display:none;">No expenses found. Click "➕ Add Expense" to create your first expense record.</div>
+    <div id="expense-table-wrap" style="display:none;">
+      <div class="expense-table-scroll">
+        <table class="expense-table">
+          <thead>
+            <tr>
+              <th>DESCRIPTION</th>
+              <th>VOUCHER / BILL</th>
+              <th>AMOUNT</th>
+              <th>DATE</th>
+              <th>PAYMENT MODE</th>
+              <th>LINKED TXNS</th>
+              <th>DOCUMENTS</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+    <a href="/" class="home-link">🏠 Home</a>
+    <a href="/dashboard/manage" class="home-link">⚙️ Admin Dashboard</a>
+    <a href="/dashboard/manage-bank-transactions" class="home-link">🏦 Bank Transactions</a>
+  </div>
+</div>
+
+<!-- Create/Edit Expense Modal -->
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeExpenseModal()">✕</button>
+    <h3 id="expense-modal-title">➕ Add Expense</h3>
+
+    <div class="form-group">
+      <label>Description <span class="hint">— what was this expense for?</span></label>
+      <input type="text" id="expense-description" placeholder="e.g. School supplies for children" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label>Voucher / Bill No. <span class="hint">— optional</span></label>
+      <input type="text" id="expense-voucher" placeholder="e.g. INV-2026-001" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label>Amount (₹)</label>
+      <input type="number" id="expense-amount" placeholder="0.00" min="0" step="0.01">
+    </div>
+
+    <div class="form-group">
+      <label>Expense Date</label>
+      <input type="date" id="expense-date">
+    </div>
+
+    <div class="form-group">
+      <label>Payment Mode</label>
+      <select id="expense-mode">
+        <option value="cash">💵 Cash</option>
+        <option value="bank">🏦 Direct Bank Transaction</option>
+        <option value="other-person">👤 Through Other Person</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Notes <span class="hint">— optional</span></label>
+      <textarea id="expense-notes" placeholder="Any additional notes about this expense"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary btn-outline" onclick="closeExpenseModal()">Cancel</button>
+      <button class="btn-primary" id="save-expense-btn" onclick="saveExpense()">💾 Save Expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- Expense Detail Modal (view linked transactions, documents, link/unlink) -->
+<div class="modal-overlay" id="expense-detail-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeExpenseDetailModal()">✕</button>
+    <h3 id="detail-title">📋 Expense Details</h3>
+
+    <!-- Expense info -->
+    <div class="form-group">
+      <label>Description</label>
+      <div id="detail-description" style="font-size:14px;font-weight:600;color:var(--text);"></div>
+    </div>
+    <div class="form-group">
+      <label>Voucher / Bill No.</label>
+      <div id="detail-voucher" style="font-size:13px;color:var(--text);"></div>
+    </div>
+    <div class="form-group">
+      <label>Amount</label>
+      <div id="detail-amount" style="font-size:16px;font-weight:700;color:#d32f2f;"></div>
+    </div>
+    <div class="form-group">
+      <label>Expense Date</label>
+      <div id="detail-date" style="font-size:13px;color:var(--text);"></div>
+    </div>
+    <div class="form-group">
+      <label>Payment Mode</label>
+      <div id="detail-mode"></div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <div id="detail-notes" style="font-size:13px;color:var(--text);"></div>
+    </div>
+
+    <!-- Linked bank transactions -->
+    <div class="modal-section-title">🏦 Linked Bank Transactions</div>
+    <div class="form-group">
+      <div class="txn-search-box">
+        <input type="text" id="detail-txn-search" placeholder="Search bank transactions to link..." autocomplete="off" oninput="onDetailTxnSearchInput()">
+        <div class="txn-search-results" id="detail-txn-search-results"></div>
+      </div>
+      <div class="linked-txn-list" id="detail-linked-txns"></div>
+    </div>
+
+    <!-- Documents -->
+    <div class="modal-section-title">📎 Documents</div>
+    <div class="form-group">
+      <div class="file-upload-area" id="detail-doc-drop-area" onclick="document.getElementById('detail-doc-input').click()" ondragover="handleDocDragOver(event)" ondragleave="handleDocDragLeave(event)" ondrop="handleDocDrop(event)">
+        <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">📂 Drag & drop a document here, or click to select</div>
+        <input type="file" id="detail-doc-input" onchange="handleDocFile(event)">
+        <div id="detail-doc-file-name" style="font-size:12px;font-weight:600;color:var(--green-dark);display:none;"></div>
+      </div>
+      <div class="doc-list" id="detail-docs"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary btn-outline" onclick="closeExpenseDetailModal()">Close</button>
+      <button class="btn-primary" onclick="openEditExpenseFromDetail()">✏️ Edit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentUserEmail = '';
+let allExpenses = [];
+let currentFilters = { search: '', paymentMode: '' };
+
+// Detail modal state
+let detailExpenseKey = '';
+let detailExpense = null;
+let detailLinkedTxns = [];
+let detailTxnSearchResults = [];
+let detailTxnSearchTimeout = null;
+let detailPendingDocFile = null;
+
+// Edit modal state
+let editingExpenseKey = '';
+
+document.addEventListener('DOMContentLoaded', async function() {
+  const res = await fetch('/auth/check');
+  const data = await res.json();
+  
+  if (!data.authenticated) {
+    window.location.href = '/login';
+    return;
+  }
+  
+  const isAdmin = data.roles ? data.roles.includes('admin') : (data.role === 'admin');
+  if (!isAdmin) {
+    showMsg('error', 'Admin access required. You do not have admin privileges.');
+    setTimeout(() => { window.location.href = '/'; }, 2000);
+    return;
+  }
+  
+  currentUserEmail = data.email;
+  document.getElementById('admin-email').textContent = data.email;
+
+  // Load expenses
+  loadExpenses();
+
+  // Wire up filter events
+  document.getElementById('filter-search').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyFilters();
+    }
+  });
+
+  // Close modals on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      if (document.getElementById('expense-modal').classList.contains('open')) {
+        closeExpenseModal();
+      }
+      if (document.getElementById('expense-detail-modal').classList.contains('open')) {
+        closeExpenseDetailModal();
+      }
+    }
+  });
+});
+
+function showMsg(type, text) {
+  const el = document.getElementById('expense-msg');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  if (text) el.style.display = 'block';
+  else el.style.display = 'none';
+}
+
+function applyFilters() {
+  currentFilters.search = document.getElementById('filter-search').value.trim();
+  currentFilters.paymentMode = document.getElementById('filter-mode').value;
+  renderExpensesTable();
+}
+
+function resetFilters() {
+  document.getElementById('filter-search').value = '';
+  document.getElementById('filter-mode').value = '';
+  currentFilters = { search: '', paymentMode: '' };
+  renderExpensesTable();
+}
+
+async function loadExpenses() {
+  showMsg('', '');
+  document.getElementById('expense-loading').style.display = 'block';
+  document.getElementById('expense-empty').style.display = 'none';
+  document.getElementById('expense-table-wrap').style.display = 'none';
+  document.getElementById('expense-refresh-btn').disabled = true;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/expense/list', { headers });
+    const data = await res.json();
+
+    document.getElementById('expense-loading').style.display = 'none';
+    document.getElementById('expense-refresh-btn').disabled = false;
+
+    if (data.error) {
+      showMsg('error', data.error);
+      return;
+    }
+
+    allExpenses = data.expenses || [];
+    document.getElementById('expense-count').textContent = allExpenses.length;
+    renderExpensesTable();
+  } catch (err) {
+    document.getElementById('expense-loading').style.display = 'none';
+    document.getElementById('expense-refresh-btn').disabled = false;
+    showMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+function renderExpensesTable() {
+  const tbody = document.getElementById('expense-tbody');
+  const emptyEl = document.getElementById('expense-empty');
+  const tableWrap = document.getElementById('expense-table-wrap');
+
+  // Apply filters
+  let filtered = allExpenses;
+  if (currentFilters.search) {
+    const search = currentFilters.search.toLowerCase();
+    filtered = filtered.filter(e => {
+      const desc = (e.description || '').toLowerCase();
+      const voucher = (e.voucherNo || '').toLowerCase();
+      const notes = (e.notes || '').toLowerCase();
+      return desc.includes(search) || voucher.includes(search) || notes.includes(search);
+    });
+  }
+  if (currentFilters.paymentMode) {
+    filtered = filtered.filter(e => e.paymentMode === currentFilters.paymentMode);
+  }
+
+  if (filtered.length === 0) {
+    emptyEl.style.display = 'block';
+    tableWrap.style.display = 'none';
+    tbody.innerHTML = '';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  tableWrap.style.display = 'block';
+  tbody.innerHTML = '';
+
+  for (const expense of filtered) {
+    const tr = document.createElement('tr');
+
+    // Payment mode badge
+    let modeBadge = '';
+    if (expense.paymentMode === 'cash') {
+      modeBadge = '<span class="mode-badge mode-cash">💵 Cash</span>';
+    } else if (expense.paymentMode === 'bank') {
+      modeBadge = '<span class="mode-badge mode-bank">🏦 Bank</span>';
+    } else {
+      modeBadge = '<span class="mode-badge mode-other">👤 Other Person</span>';
+    }
+
+    // Linked transactions chips
+    let linkedHtml = '—';
+    if (expense.linkedTransactions && expense.linkedTransactions.length > 0) {
+      linkedHtml = expense.linkedTransactions.map(t => 
+        `<span class="linked-txn-chip" title="${escapeHtml(t.narration || '')}">${escapeHtml(t.tranDate || '')}</span>`
+      ).join(' ');
+    }
+
+    // Documents
+    let docsHtml = '—';
+    if (expense.documents && expense.documents.length > 0) {
+      docsHtml = expense.documents.map(d => 
+        `<a class="doc-chip" href="${escapeHtml(d.url || '#')}" target="_blank" title="${escapeHtml(d.filename || '')}">📄 ${escapeHtml(d.filename || '')}</a>`
+      ).join(' ');
+    }
+
+    const amount = '₹' + Number(expense.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    const date = expense.expenseDate || '—';
+
+    tr.innerHTML = `
+      <td><span class="expense-desc" title="${escapeHtml(expense.description || '')}">${escapeHtml(expense.description || '—')}</span></td>
+      <td>${escapeHtml(expense.voucherNo || '—')}</td>
+      <td class="expense-amount">${amount}</td>
+      <td class="expense-date">${escapeHtml(date)}</td>
+      <td>${modeBadge}</td>
+      <td>${linkedHtml}</td>
+      <td>${docsHtml}</td>
+      <td>
+        <div class="action-btns">
+          <button class="mini-btn" onclick="openExpenseDetail('${escapeHtmlAttr(expense.key)}')">👁 View</button>
+          <button class="mini-btn" onclick="openEditExpense('${escapeHtmlAttr(expense.key)}')">✏️ Edit</button>
+          <button class="mini-btn danger" onclick="deleteExpense('${escapeHtmlAttr(expense.key)}')">🗑</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Create / Edit Expense Modal
+// ════════════════════════════════════════════════════════════════════
+
+function openCreateExpenseModal() {
+  editingExpenseKey = '';
+  document.getElementById('expense-modal-title').textContent = '➕ Add Expense';
+  document.getElementById('expense-description').value = '';
+  document.getElementById('expense-voucher').value = '';
+  document.getElementById('expense-amount').value = '';
+  document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('expense-mode').value = 'cash';
+  document.getElementById('expense-notes').value = '';
+  document.getElementById('expense-description').classList.remove('input-error');
+  document.getElementById('expense-amount').classList.remove('input-error');
+
+  document.getElementById('expense-modal').classList.add('open');
+  setTimeout(() => {
+    document.getElementById('expense-description').focus();
+  }, 100);
+}
+
+function openEditExpense(expenseKey) {
+  const expense = allExpenses.find(e => e.key === expenseKey);
+  if (!expense) {
+    showMsg('error', 'Expense not found.');
+    return;
+  }
+
+  editingExpenseKey = expenseKey;
+  document.getElementById('expense-modal-title').textContent = '✏️ Edit Expense';
+  document.getElementById('expense-description').value = expense.description || '';
+  document.getElementById('expense-voucher').value = expense.voucherNo || '';
+  document.getElementById('expense-amount').value = expense.amount || '';
+  document.getElementById('expense-date').value = expense.expenseDate || '';
+  document.getElementById('expense-mode').value = expense.paymentMode || 'cash';
+  document.getElementById('expense-notes').value = expense.notes || '';
+  document.getElementById('expense-description').classList.remove('input-error');
+  document.getElementById('expense-amount').classList.remove('input-error');
+
+  document.getElementById('expense-modal').classList.add('open');
+  setTimeout(() => {
+    document.getElementById('expense-description').focus();
+  }, 100);
+}
+
+function openEditExpenseFromDetail() {
+  closeExpenseDetailModal();
+  openEditExpense(detailExpenseKey);
+}
+
+function closeExpenseModal() {
+  document.getElementById('expense-modal').classList.remove('open');
+  editingExpenseKey = '';
+}
+
+async function saveExpense() {
+  const description = document.getElementById('expense-description').value.trim();
+  const voucherNo = document.getElementById('expense-voucher').value.trim();
+  const amount = document.getElementById('expense-amount').value;
+  const expenseDate = document.getElementById('expense-date').value;
+  const paymentMode = document.getElementById('expense-mode').value;
+  const notes = document.getElementById('expense-notes').value.trim();
+
+  // Validate
+  if (!description) {
+    document.getElementById('expense-description').classList.add('input-error');
+    showMsg('error', 'Description is required.');
+    document.getElementById('expense-description').focus();
+    return;
+  }
+  document.getElementById('expense-description').classList.remove('input-error');
+
+  if (!amount || parseFloat(amount) <= 0) {
+    document.getElementById('expense-amount').classList.add('input-error');
+    showMsg('error', 'Amount must be a positive number.');
+    document.getElementById('expense-amount').focus();
+    return;
+  }
+  document.getElementById('expense-amount').classList.remove('input-error');
+
+  const btn = document.getElementById('save-expense-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving...';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    let body;
+    if (editingExpenseKey) {
+      body = {
+        action: 'update',
+        expenseKey: editingExpenseKey,
+        description,
+        voucherNo,
+        amount,
+        expenseDate,
+        paymentMode,
+        notes,
+      };
+    } else {
+      body = {
+        action: 'create',
+        description,
+        voucherNo,
+        amount,
+        expenseDate,
+        paymentMode,
+        notes,
+        transactionKeys: [],
+        documents: [],
+      };
+    }
+
+    const res = await fetch('/expense/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      showMsg('error', data.error);
+    } else {
+      showMsg('success', data.message);
+      closeExpenseModal();
+      loadExpenses();
+    }
+  } catch (err) {
+    showMsg('error', 'Network error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Save Expense';
+  }
+}
+
+async function deleteExpense(expenseKey) {
+  const expense = allExpenses.find(e => e.key === expenseKey);
+  const label = expense ? expense.description : expenseKey;
+
+  if (!confirm(`Delete expense "${label}"?\n\nThis will also unlink it from all linked bank transactions.`)) {
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/expense/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action: 'delete', expenseKey }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      showMsg('error', data.error);
+    } else {
+      showMsg('success', data.message);
+      loadExpenses();
+    }
+  } catch (err) {
+    showMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Expense Detail Modal
+// ════════════════════════════════════════════════════════════════════
+
+async function openExpenseDetail(expenseKey) {
+  detailExpenseKey = expenseKey;
+  detailExpense = null;
+  detailLinkedTxns = [];
+  detailPendingDocFile = null;
+
+  // Reset UI
+  document.getElementById('detail-description').textContent = 'Loading...';
+  document.getElementById('detail-voucher').textContent = '—';
+  document.getElementById('detail-amount').textContent = '—';
+  document.getElementById('detail-date').textContent = '—';
+  document.getElementById('detail-mode').innerHTML = '—';
+  document.getElementById('detail-notes').textContent = '—';
+  document.getElementById('detail-linked-txns').innerHTML = '<div class="loading-state" style="padding:10px;">Loading...</div>';
+  document.getElementById('detail-docs').innerHTML = '';
+  document.getElementById('detail-txn-search').value = '';
+  document.getElementById('detail-txn-search-results').classList.remove('open');
+  document.getElementById('detail-doc-file-name').style.display = 'none';
+  document.getElementById('detail-doc-file-name').textContent = '';
+  document.getElementById('detail-doc-input').value = '';
+
+  // Open modal
+  document.getElementById('expense-detail-modal').classList.add('open');
+  document.getElementById('detail-title').textContent = '📋 Expense Details';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/expense/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action: 'get', expenseKey }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      document.getElementById('detail-description').textContent = 'Error: ' + data.error;
+      return;
+    }
+
+    detailExpense = data.expense;
+    detailLinkedTxns = data.linkedTransactions || [];
+
+    // Populate expense info
+    document.getElementById('detail-description').textContent = detailExpense.description || '—';
+    document.getElementById('detail-voucher').textContent = detailExpense.voucherNo || '—';
+    document.getElementById('detail-amount').textContent = '₹' + Number(detailExpense.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    document.getElementById('detail-date').textContent = detailExpense.expenseDate || '—';
+    document.getElementById('detail-notes').textContent = detailExpense.notes || '—';
+
+    // Payment mode
+    let modeBadge = '';
+    if (detailExpense.paymentMode === 'cash') {
+      modeBadge = '<span class="mode-badge mode-cash">💵 Cash</span>';
+    } else if (detailExpense.paymentMode === 'bank') {
+      modeBadge = '<span class="mode-badge mode-bank">🏦 Direct Bank Transaction</span>';
+    } else {
+      modeBadge = '<span class="mode-badge mode-other">👤 Through Other Person</span>';
+    }
+    document.getElementById('detail-mode').innerHTML = modeBadge;
+
+    // Render linked transactions
+    renderDetailLinkedTxns();
+
+    // Render documents
+    renderDetailDocs();
+  } catch (err) {
+    document.getElementById('detail-description').textContent = 'Network error: ' + err.message;
+  }
+}
+
+function renderDetailLinkedTxns() {
+  const container = document.getElementById('detail-linked-txns');
+
+  if (!detailLinkedTxns || detailLinkedTxns.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--text-light);padding:8px 0;">No bank transactions linked to this expense yet.</div>';
+    return;
+  }
+
+  let html = '';
+  for (const txn of detailLinkedTxns) {
+    const amount = txn.withdrawal ? '₹' + Number(txn.withdrawal).toLocaleString('en-IN', { minimumFractionDigits: 2 }) + ' DR' : 
+                   txn.deposit ? '₹' + Number(txn.deposit).toLocaleString('en-IN', { minimumFractionDigits: 2 }) + ' CR' : '—';
+    const amountClass = txn.withdrawal ? 'dr' : 'cr';
+    html += `<div class="linked-txn-item">` +
+      `<div class="txn-info">` +
+        `<div class="txn-narration" title="${escapeHtml(txn.narration || '')}">${escapeHtml(txn.narration || '—')}</div>` +
+        `<div class="txn-meta">${escapeHtml(txn.tranDate || '—')}${txn.chqNo ? ' • Chq: ' + escapeHtml(txn.chqNo) : ''}</div>` +
+      `</div>` +
+      `<span class="txn-amount ${amountClass}">${amount}</span>` +
+      `<button class="mini-btn danger" onclick="unlinkTxn('${escapeHtmlAttr(txn.key)}')">Unlink</button>` +
+    `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function renderDetailDocs() {
+  const container = document.getElementById('detail-docs');
+
+  if (!detailExpense || !detailExpense.documents || detailExpense.documents.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--text-light);padding:8px 0;">No documents uploaded yet.</div>';
+    return;
+  }
+
+  let html = '';
+  for (const doc of detailExpense.documents) {
+    const size = doc.size ? formatFileSize(doc.size) : '';
+    html += `<div class="doc-item">` +
+      `<div class="doc-info">` +
+        `<div class="doc-name">📄 ${escapeHtml(doc.filename || 'document')}</div>` +
+        `<div class="doc-meta">${escapeHtml(doc.contentType || '')}${size ? ' • ' + size : ''} • ${escapeHtml(doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString('en-IN') : '')}</div>` +
+      `</div>` +
+      `<a class="mini-btn" href="${escapeHtml(doc.url || '#')}" target="_blank">👁 View</a>` +
+    `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function closeExpenseDetailModal() {
+  document.getElementById('expense-detail-modal').classList.remove('open');
+  detailExpenseKey = '';
+  detailExpense = null;
+  detailLinkedTxns = [];
+  detailPendingDocFile = null;
+}
+
+// ── Link/unlink transactions ──
+
+function onDetailTxnSearchInput() {
+  const query = document.getElementById('detail-txn-search').value.trim();
+  clearTimeout(detailTxnSearchTimeout);
+  detailTxnSearchTimeout = setTimeout(() => {
+    doDetailTxnSearch(query);
+  }, 300);
+}
+
+async function doDetailTxnSearch(query) {
+  const resultsEl = document.getElementById('detail-txn-search-results');
+
+  if (!query) {
+    resultsEl.classList.remove('open');
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/bank/transactions?search=' + encodeURIComponent(query) + '&perPage=20', { headers });
+    const data = await res.json();
+
+    if (data.error) {
+      resultsEl.innerHTML = '<div class="txn-search-empty">Error: ' + escapeHtml(data.error) + '</div>';
+      resultsEl.classList.add('open');
+      return;
+    }
+
+    const transactions = data.transactions || [];
+    detailTxnSearchResults = transactions;
+
+    if (transactions.length === 0) {
+      resultsEl.innerHTML = '<div class="txn-search-empty">No bank transactions found matching "' + escapeHtml(query) + '"</div>';
+      resultsEl.classList.add('open');
+      return;
+    }
+
+    let html = '';
+    for (const txn of transactions) {
+      // Skip already linked transactions
+      if (detailLinkedTxns.some(t => t.key === txn.key)) continue;
+
+      const amount = txn.withdrawal ? '₹' + Number(txn.withdrawal).toLocaleString('en-IN', { minimumFractionDigits: 2 }) + ' DR' : 
+                     txn.deposit ? '₹' + Number(txn.deposit).toLocaleString('en-IN', { minimumFractionDigits: 2 }) + ' CR' : '—';
+      html += `<div class="txn-search-result-item" onclick="linkTxn('${escapeHtmlAttr(txn.key)}')">` +
+        `<div class="txn-narration">${escapeHtml(txn.narration || '—')}</div>` +
+        `<div class="txn-meta">${escapeHtml(txn.tranDate || '—')} • ${amount}</div>` +
+      `</div>`;
+    }
+
+    if (html === '') {
+      html = '<div class="txn-search-empty">All matching transactions are already linked.</div>';
+    }
+
+    resultsEl.innerHTML = html;
+    resultsEl.classList.add('open');
+  } catch (err) {
+    resultsEl.innerHTML = '<div class="txn-search-empty">Network error: ' + escapeHtml(err.message) + '</div>';
+    resultsEl.classList.add('open');
+  }
+}
+
+async function linkTxn(txnKey) {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/expense/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action: 'link', expenseKey: detailExpenseKey, transactionKey: txnKey }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      showMsg('error', data.error);
+      return;
+    }
+
+    // Refresh the detail view
+    document.getElementById('detail-txn-search').value = '';
+    document.getElementById('detail-txn-search-results').classList.remove('open');
+    await openExpenseDetail(detailExpenseKey);
+    loadExpenses();
+  } catch (err) {
+    showMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+async function unlinkTxn(txnKey) {
+  if (!confirm('Unlink this bank transaction from the expense?')) return;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/expense/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action: 'unlink', expenseKey: detailExpenseKey, transactionKey: txnKey }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      showMsg('error', data.error);
+      return;
+    }
+
+    // Refresh the detail view
+    await openExpenseDetail(detailExpenseKey);
+    loadExpenses();
+  } catch (err) {
+    showMsg('error', 'Network error: ' + err.message);
+  }
+}
+
+// ── Document upload ──
+
+function handleDocDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('detail-doc-drop-area').classList.add('dragover');
+}
+
+function handleDocDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('detail-doc-drop-area').classList.remove('dragover');
+}
+
+function handleDocDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById('detail-doc-drop-area').classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    detailPendingDocFile = files[0];
+    document.getElementById('detail-doc-file-name').textContent = '📄 ' + files[0].name;
+    document.getElementById('detail-doc-file-name').style.display = 'block';
+    uploadDocument();
+  }
+}
+
+function handleDocFile(event) {
+  const file = event.target.files[0];
+  if (file) {
+    detailPendingDocFile = file;
+    document.getElementById('detail-doc-file-name').textContent = '📄 ' + file.name;
+    document.getElementById('detail-doc-file-name').style.display = 'block';
+    uploadDocument();
+  }
+}
+
+async function uploadDocument() {
+  if (!detailPendingDocFile) return;
+  if (!detailExpenseKey) return;
+
+  const file = detailPendingDocFile;
+  const formData = new FormData();
+  formData.append('expenseKey', detailExpenseKey);
+  formData.append('file', file);
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('/expense/upload', {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      showMsg('error', data.error);
+      document.getElementById('detail-doc-file-name').style.display = 'none';
+      document.getElementById('detail-doc-file-name').textContent = '';
+      document.getElementById('detail-doc-input').value = '';
+      detailPendingDocFile = null;
+      return;
+    }
+
+    // Clear pending file
+    detailPendingDocFile = null;
+    document.getElementById('detail-doc-file-name').style.display = 'none';
+    document.getElementById('detail-doc-file-name').textContent = '';
+    document.getElementById('detail-doc-input').value = '';
+
+    // Refresh the detail view
+    await openExpenseDetail(detailExpenseKey);
+    loadExpenses();
+  } catch (err) {
+    showMsg('error', 'Network error: ' + err.message);
+    document.getElementById('detail-doc-file-name').style.display = 'none';
+    document.getElementById('detail-doc-file-name').textContent = '';
+    document.getElementById('detail-doc-input').value = '';
+    detailPendingDocFile = null;
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  var a = String.fromCharCode(38);
+  return String(str)
+    .replace(/&/g, a + 'amp;')
+    .replace(/</g, a + 'lt;')
+    .replace(/>/g, a + 'gt;')
+    .replace(/"/g, a + 'quot;')
+    .replace(/'/g, a + '#039;');
+}
+
+function escapeHtmlAttr(str) {
+  if (!str) return '';
+  var a = String.fromCharCode(38);
+  var q = String.fromCharCode(34);
+  return escapeHtml(str).replace(new RegExp(a + 'quot;', 'g'), q);
+}
+
+async function logout() {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch('/auth/logout', { method: 'POST', headers });
+  } catch (_) {}
+  localStorage.removeItem('vazhai_session');
+  document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>
