@@ -218,7 +218,7 @@
   <!-- Export Backup Card -->
   <div class="card" id="export-card">
     <h2>⬇️ Export Backup</h2>
-    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Download all blob data (users, payments, receipts, blog posts, comments, thank letter template) as a JSON file for safekeeping.</p>
+    <p style="font-size:13px;color:var(--text-light);margin:0 0 16px;">Download all blob data (users, payments, receipts, thank letter templates, donor wall, blog posts, comments, bank transactions, narration mappings, expenses, and documents) as a JSON file for safekeeping.</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
       <button class="btn-primary" id="backup-export-btn" onclick="exportBackup()">⬇️ Export Backup</button>
     </div>
@@ -362,8 +362,16 @@ async function exportBackup() {
     statsHtml += `💳 Payments: ${stats.payments}<br>`;
     statsHtml += `📋 Receipts: ${stats.receipts}<br>`;
     if (stats.hasThankletterTemplate) statsHtml += `📝 Thank letter template: Yes<br>`;
+    if (stats.thankletterTemplates) statsHtml += `📝 Thank letter templates: ${stats.thankletterTemplates}<br>`;
+    if (stats.donorWall) statsHtml += `🏛️ Donor wall: Yes<br>`;
+    if (stats.donorWallExcluded) statsHtml += `🏛️ Donor wall excluded: ${stats.donorWallExcluded}<br>`;
+    if (stats.donorWallManual) statsHtml += `🏛️ Donor wall manual: ${stats.donorWallManual}<br>`;
     statsHtml += `📝 Blogs: ${stats.blogs}<br>`;
     statsHtml += `💬 Comments: ${stats.comments}<br>`;
+    statsHtml += `🏦 Bank transactions: ${stats.bankTransactions}<br>`;
+    statsHtml += `🔗 Narration mappings: ${stats.narrationMappings}<br>`;
+    statsHtml += `🧾 Expenses: ${stats.expenses}<br>`;
+    statsHtml += `📎 Documents: ${stats.documents}<br>`;
     statsHtml += `<br><small>Exported at: ${new Date(data.exportedAt).toLocaleString()}</small>`;
     statsEl.innerHTML = statsHtml;
     statsEl.style.display = 'block';
@@ -411,8 +419,8 @@ function handleBackupFile(event) {
     }
 
     const version = dump.version || 0;
-    if (version !== 1) {
-      showRestoreMsg('error', `Unrecognized backup format version (${version}). Expected version 1.`);
+    if (version !== 1 && version !== 2) {
+      showRestoreMsg('error', `Unrecognized backup format version (${version}). Expected version 1 or 2.`);
       return;
     }
 
@@ -444,11 +452,26 @@ function confirmMerge(dump, fileName) {
   msg += `• ${paymentCount} payment(s)\n`;
   msg += `• ${Object.keys(authData['receipts:map'] || {}).length} receipt mapping(s)\n`;
   if (authData['thankletter_template']) msg += `• Thank letter template\n`;
+  if (authData['thankletter_templates'] && Object.keys(authData['thankletter_templates']).length > 0) {
+    msg += `• ${Object.keys(authData['thankletter_templates']).length} thank letter template(s)\n`;
+  }
   if (dump.stores.blog) {
     const blogCount = dump.stores.blog.blogs ? Object.keys(dump.stores.blog.blogs).length : 0;
     const commentCount = dump.stores.blog.comments ? Object.keys(dump.stores.blog.comments).length : 0;
     if (blogCount > 0) msg += `• ${blogCount} blog post(s)\n`;
     if (commentCount > 0) msg += `• ${commentCount} comment(s)\n`;
+  }
+  if (dump.stores.bank) {
+    const txnCount = dump.stores.bank.transactions ? Object.keys(dump.stores.bank.transactions).length : 0;
+    const mappingCount = dump.stores.bank['narration-mappings'] ? Object.keys(dump.stores.bank['narration-mappings']).length : 0;
+    if (txnCount > 0) msg += `• ${txnCount} bank transaction(s)\n`;
+    if (mappingCount > 0) msg += `• ${mappingCount} narration mapping(s)\n`;
+  }
+  if (dump.stores.expense) {
+    const expCount = dump.stores.expense.expenses ? Object.keys(dump.stores.expense.expenses).length : 0;
+    const docCount = dump.stores.expense.documents ? Object.keys(dump.stores.expense.documents).length : 0;
+    if (expCount > 0) msg += `• ${expCount} expense(s)\n`;
+    if (docCount > 0) msg += `• ${docCount} expense document(s)\n`;
   }
   msg += `\nℹ️ Merge mode: Backup data will be ADDED to existing data. Nothing will be deleted.\n\n`;
   msg += `Proceed with merge?`;
@@ -469,8 +492,11 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
   const authData = dump.stores.auth;
   const backupUserEmails = new Set(Object.keys(authData.users || {}));
   const backupPaymentIds = new Set(Object.keys(authData.payments || {}));
-  const backupReceiptKeys = new Set(Object.keys(authData['receipts:map'] || {}));
-  const backupSlugs = new Set(dump.stores.blog && dump.stores.blog.blogs ? Object.keys(dump.stores.blog.blogs) : []);
+    const backupReceiptKeys = new Set(Object.keys(authData['receipts:map'] || {}));
+    const backupSlugs = new Set(dump.stores.blog && dump.stores.blog.blogs ? Object.keys(dump.stores.blog.blogs) : []);
+  const backupTxnKeys = new Set(dump.stores.bank && dump.stores.bank.transactions ? Object.keys(dump.stores.bank.transactions) : []);
+  const backupMappingKeys = new Set(dump.stores.bank && dump.stores.bank['narration-mappings'] ? Object.keys(dump.stores.bank['narration-mappings']) : []);
+  const backupExpenseKeys = new Set(dump.stores.expense && dump.stores.expense.expenses ? Object.keys(dump.stores.expense.expenses) : []);
   const userCount = backupUserEmails.size;
   const paymentCount = backupPaymentIds.size;
   const exportTime = dump.exportedAt ? new Date(dump.exportedAt).toLocaleString() : 'unknown';
@@ -493,6 +519,8 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
     const current = currentData.data;
     const currentAuth = current.stores.auth;
     const currentBlog = current.stores.blog;
+    const currentBank = current.stores.bank;
+    const currentExpense = current.stores.expense;
 
     // Determine what will be deleted
     const currentUsersList = currentAuth['users:list'] || [];
@@ -513,8 +541,20 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
         .map(p => p.slug);
     }
 
+    // Bank transactions + narration mappings that will be deleted
+    const currentTxnList = (currentBank && currentBank['transactions:list']) || [];
+    const willDeleteTxns = currentTxnList.filter(k => !backupTxnKeys.has(k));
+    const currentMappingList = (currentBank && currentBank['narration-mapping:list']) || [];
+    const willDeleteMappings = currentMappingList.filter(k => !backupMappingKeys.has(k));
+
+    // Expenses that will be deleted
+    const currentExpenseList = (currentExpense && currentExpense['expenses:list']) || [];
+    const willDeleteExpenses = currentExpenseList.filter(k => !backupExpenseKeys.has(k));
+
     const hasDeletions = willDeleteUsers.length > 0 || willDeletePayments.length > 0 ||
-                         willDeleteReceipts.length > 0 || willDeleteBlogs.length > 0;
+                         willDeleteReceipts.length > 0 || willDeleteBlogs.length > 0 ||
+                         willDeleteTxns.length > 0 || willDeleteMappings.length > 0 ||
+                         willDeleteExpenses.length > 0;
 
     let msg = `⚠️ REPLACE MODE — DELETION PREVIEW\n\n`;
     msg += `Backup file: ${fileName}\n`;
@@ -524,7 +564,13 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
     msg += `• ${paymentCount} payment(s)\n`;
     msg += `• ${backupReceiptKeys.size} receipt mapping(s)\n`;
     if (authData['thankletter_template']) msg += `• Thank letter template\n`;
+    if (authData['thankletter_templates'] && Object.keys(authData['thankletter_templates']).length > 0) {
+      msg += `• ${Object.keys(authData['thankletter_templates']).length} thank letter template(s)\n`;
+    }
     if (backupSlugs.size > 0) msg += `• ${backupSlugs.size} blog post(s)\n`;
+    if (backupTxnKeys.size > 0) msg += `• ${backupTxnKeys.size} bank transaction(s)\n`;
+    if (backupMappingKeys.size > 0) msg += `• ${backupMappingKeys.size} narration mapping(s)\n`;
+    if (backupExpenseKeys.size > 0) msg += `• ${backupExpenseKeys.size} expense(s)\n`;
 
     msg += `\n━━━ RECORDS THAT WILL BE DELETED ━━━\n`;
     if (!hasDeletions) {
@@ -559,6 +605,15 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
           msg += `\n   ... and ${willDeleteBlogs.length - 10} more`;
         }
         msg += '\n';
+      }
+      if (willDeleteTxns.length > 0) {
+        msg += `\n🏦 BANK TRANSACTIONS (${willDeleteTxns.length})\n`;
+      }
+      if (willDeleteMappings.length > 0) {
+        msg += `\n🔗 NARRATION MAPPINGS (${willDeleteMappings.length})\n`;
+      }
+      if (willDeleteExpenses.length > 0) {
+        msg += `\n🧾 EXPENSES (${willDeleteExpenses.length})\n`;
       }
     }
 
@@ -692,6 +747,13 @@ async function performRestore(dump, fileName) {
     const rm = fmt(r.restored['receipts:map']);
     if (rm) statsHtml += `📋 Receipt mappings: ${rm}<br>`;
     if (r.restored['thankletter_template']) statsHtml += `📝 Thank letter template: restored<br>`;
+    const tl = fmt(r.restored['thankletter_template:list']);
+    if (tl) statsHtml += `📝 Thank letter template list: ${tl}<br>`;
+    const tt = fmt(r.restored['thankletter_templates']);
+    if (tt) statsHtml += `📝 Thank letter templates: ${tt}<br>`;
+    if (r.restored['donor-wall']) statsHtml += `🏛️ Donor wall: restored<br>`;
+    if (r.restored['donor-wall-excluded']) statsHtml += `🏛️ Donor wall exclusions: restored<br>`;
+    if (r.restored['donor-wall-manual']) statsHtml += `🏛️ Donor wall manual: restored<br>`;
     const bi = fmt(r.restored['blog:index']);
     if (bi) statsHtml += `📝 Blog index: ${bi}<br>`;
     const bp = fmt(r.restored.blogs);
@@ -700,12 +762,25 @@ async function performRestore(dump, fileName) {
     if (cc) statsHtml += `💬 Comments: ${cc}<br>`;
     const pc = fmt(r.restored['pending-comments']);
     if (pc) statsHtml += `💬 Pending comments: ${pc}<br>`;
+    const bt = fmt(r.restored.bank_transactions);
+    if (bt) statsHtml += `🏦 Bank transactions: ${bt}<br>`;
+    const nm = fmt(r.restored.narration_mappings);
+    if (nm) statsHtml += `🔗 Narration mappings: ${nm}<br>`;
+    const ex = fmt(r.restored.expenses);
+    if (ex) statsHtml += `🧾 Expenses: ${ex}<br>`;
+    const dc = fmt(r.restored.documents);
+    if (dc) statsHtml += `📎 Documents: ${dc}<br>`;
 
     // Show orphaned records deleted (replace mode only)
     if (r.restored['orphaned-users-deleted']) statsHtml += `🗑️ Orphaned users deleted: ${r.restored['orphaned-users-deleted']}<br>`;
     if (r.restored['orphaned-payments-deleted']) statsHtml += `🗑️ Orphaned payments deleted: ${r.restored['orphaned-payments-deleted']}<br>`;
     if (r.restored['orphaned-receipts-removed']) statsHtml += `🗑️ Orphaned receipt mappings removed: ${r.restored['orphaned-receipts-removed']}<br>`;
     if (r.restored['orphaned-blogs-deleted']) statsHtml += `🗑️ Orphaned blog posts deleted: ${r.restored['orphaned-blogs-deleted']}<br>`;
+    if (r.restored['orphaned-templates-deleted']) statsHtml += `🗑️ Orphaned thank letter templates deleted: ${r.restored['orphaned-templates-deleted']}<br>`;
+    if (r.restored['orphaned-bank-transactions-deleted']) statsHtml += `🗑️ Orphaned bank transactions deleted: ${r.restored['orphaned-bank-transactions-deleted']}<br>`;
+    if (r.restored['orphaned-narration-mappings-deleted']) statsHtml += `🗑️ Orphaned narration mappings deleted: ${r.restored['orphaned-narration-mappings-deleted']}<br>`;
+    if (r.restored['orphaned-expenses-deleted']) statsHtml += `🗑️ Orphaned expenses deleted: ${r.restored['orphaned-expenses-deleted']}<br>`;
+    if (r.restored['orphaned-documents-deleted']) statsHtml += `🗑️ Orphaned documents deleted: ${r.restored['orphaned-documents-deleted']}<br>`;
 
     if (r.errors && r.errors.length > 0) {
       statsHtml += `<br><span style="color:#d32f2f;">⚠️ ${r.errors.length} error(s) during restore:</span><br>`;
