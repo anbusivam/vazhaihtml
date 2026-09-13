@@ -878,6 +878,46 @@
       background: #ba68c8;
       color: white;
     }
+    .link-expense-btn {
+      padding: 5px 10px;
+      font-size: 11px;
+      border-radius: 5px;
+      background: #e8f5e9;
+      color: var(--green-dark);
+      border: 1.5px solid #81c784;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .link-expense-btn:hover {
+      background: #81c784;
+      color: white;
+    }
+    .expense-search-result {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .expense-search-result:last-child { border-bottom: none; }
+    .expense-search-result:hover { background: var(--green-light); }
+    .expense-search-result .expense-result-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .expense-search-result .expense-result-meta {
+      font-size: 11px;
+      color: var(--text-light);
+      margin-top: 3px;
+    }
+    .expense-search-empty {
+      padding: 14px;
+      font-size: 13px;
+      color: var(--text-light);
+      text-align: center;
+    }
     .linked-expense-chip {
       display: inline-block;
       background: #f3e5f5;
@@ -1278,6 +1318,7 @@
     <h3 id="create-expense-title">💸 Create Expense</h3>
 
     <div id="create-expense-form">
+      <div class="no-match-hint">You can create multiple expense records for this one bank transaction when a payment covers more than one bill or voucher.</div>
       <!-- Bank transaction details -->
       <div class="review-section-title">🏦 Bank Transaction Details</div>
       <div class="bank-detail-row"><span class="label">Narration:</span> <span class="value" id="ce-bank-narration"></span></div>
@@ -1329,6 +1370,24 @@
       <div class="modal-actions">
         <button class="btn-primary" onclick="closeCreateExpenseModal()">Done</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Link an existing expense to a bank transaction -->
+<div class="modal-overlay" id="link-expense-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeLinkExpenseModal()">✕</button>
+    <h3>🔗 Link Existing Expense</h3>
+    <div class="bank-detail-row"><span class="label">Transaction:</span> <span class="value" id="le-bank-narration"></span></div>
+    <div class="bank-detail-row"><span class="label">Amount:</span> <span class="value" id="le-bank-amount"></span></div>
+    <div class="form-group" style="margin-top:16px;">
+      <label for="le-search">Search expenses <span class="hint">— description, voucher, or notes</span></label>
+      <input type="text" id="le-search" placeholder="Type to search expenses..." autocomplete="off" oninput="searchExpensesToLink()">
+    </div>
+    <div id="le-results" style="border:1px solid var(--border);border-radius:8px;max-height:280px;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn-primary btn-outline" onclick="closeLinkExpenseModal()">Close</button>
     </div>
   </div>
 </div>
@@ -1519,6 +1578,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
       if (document.getElementById('create-expense-modal').classList.contains('open')) {
         closeCreateExpenseModal();
+      }
+      if (document.getElementById('link-expense-modal').classList.contains('open')) {
+        closeLinkExpenseModal();
       }
     }
   });
@@ -1740,9 +1802,11 @@ async function loadTransactions() {
 
       // Create Expense button — show for withdrawal (DR) transactions
       let createExpenseHtml = '';
+      let linkExpenseHtml = '';
       const withdrawalAmt = Number(txn.withdrawal);
       if (withdrawalAmt && withdrawalAmt > 0) {
         createExpenseHtml = `<button class="create-expense-btn" onclick="openCreateExpenseModal('${escapeHtml(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}', ${withdrawalAmt}, '${escapeHtmlAttr(txn.tranDate || '')}')">💸 Create Expense</button>`;
+        linkExpenseHtml = `<button class="link-expense-btn" onclick="openLinkExpenseModal('${escapeHtmlAttr(txn.key)}', '${escapeHtmlAttr(txn.narration || '')}', ${withdrawalAmt})">🔗 Link Expense</button>`;
       }
 
       // Linked expenses display
@@ -1763,7 +1827,7 @@ async function loadTransactions() {
         <td class="txn-payment-id">${paymentIdHtml}</td>
         <td>${linkedUserHtml}</td>
         <td>${linkedExpensesHtml}</td>
-        <td><div class="action-btns">${linkBtnHtml}${createPaymentHtml}${createExpenseHtml}</div></td>
+        <td><div class="action-btns">${linkBtnHtml}${createPaymentHtml}${createExpenseHtml}${linkExpenseHtml}</div></td>
       `;
       tbody.appendChild(tr);
     }
@@ -3413,6 +3477,88 @@ let ceCurrentTxnKey = '';
 let ceCurrentNarration = '';
 let ceCurrentAmount = 0;
 let ceCurrentTranDate = '';
+let leCurrentTxnKey = '';
+let leSearchTimeout = null;
+
+function openLinkExpenseModal(txnKey, narration, amount) {
+  leCurrentTxnKey = txnKey;
+  document.getElementById('le-bank-narration').textContent = narration || '—';
+  document.getElementById('le-bank-amount').textContent = amount ? '₹' + Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
+  document.getElementById('le-search').value = '';
+  document.getElementById('le-results').innerHTML = '<div class="expense-search-empty">Loading expenses...</div>';
+  document.getElementById('link-expense-modal').classList.add('open');
+  searchExpensesToLink();
+  setTimeout(() => document.getElementById('le-search').focus(), 100);
+}
+
+function closeLinkExpenseModal() {
+  document.getElementById('link-expense-modal').classList.remove('open');
+  leCurrentTxnKey = '';
+  clearTimeout(leSearchTimeout);
+}
+
+function searchExpensesToLink() {
+  clearTimeout(leSearchTimeout);
+  leSearchTimeout = setTimeout(loadExpensesToLink, 250);
+}
+
+async function loadExpensesToLink() {
+  const resultsEl = document.getElementById('le-results');
+  const query = document.getElementById('le-search').value.trim();
+  resultsEl.innerHTML = '<div class="expense-search-empty">Loading expenses...</div>';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch('/expense/list' + (query ? '?search=' + encodeURIComponent(query) : ''), { headers });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const expenses = data.expenses || [];
+    if (expenses.length === 0) {
+      resultsEl.innerHTML = '<div class="expense-search-empty">No expenses found.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = expenses.map(expense => {
+      const alreadyLinked = Array.isArray(expense.transactionKeys) && expense.transactionKeys.includes(leCurrentTxnKey);
+      const amount = '₹' + Number(expense.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+      const voucher = expense.voucherNo ? ' • Voucher: ' + escapeHtml(expense.voucherNo) : '';
+      const action = alreadyLinked
+        ? '<span style="color:var(--green-dark);font-weight:600;">Already linked</span>'
+        : `<button class="mini-btn" onclick="linkExistingExpense('${escapeHtmlAttr(expense.key)}')">Link</button>`;
+      return `<div class="expense-search-result">` +
+        `<div class="expense-result-title">${escapeHtml(expense.description || 'Untitled expense')}</div>` +
+        `<div class="expense-result-meta">${amount} • ${escapeHtml(expense.expenseDate || 'No date')}${voucher} <span style="float:right;">${action}</span></div>` +
+      `</div>`;
+    }).join('');
+  } catch (err) {
+    resultsEl.innerHTML = '<div class="expense-search-empty">Error: ' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+async function linkExistingExpense(expenseKey) {
+  if (!leCurrentTxnKey) return;
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch('/expense/manage', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ action: 'link', expenseKey, transactionKey: leCurrentTxnKey }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    closeLinkExpenseModal();
+    loadTransactions();
+  } catch (err) {
+    document.getElementById('le-results').insertAdjacentHTML('afterbegin', '<div class="expense-search-empty" style="color:#d32f2f;">Error: ' + escapeHtml(err.message) + '</div>');
+  }
+}
 
 /**
  * Open the Create Expense modal for a bank transaction.
