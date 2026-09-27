@@ -569,6 +569,60 @@
       color: var(--text-light);
       margin-top: 2px;
     }
+    .document-status {
+      display: inline-block;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .document-status.attached {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #81c784;
+    }
+    .document-status.required {
+      background: #fff3e0;
+      color: #c2410c;
+      border: 1px solid #fb923c;
+    }
+    .document-status.exempt {
+      background: #f3f4f6;
+      color: #4b5563;
+      border: 1px solid #9ca3af;
+    }
+    .document-warning {
+      margin-top: 6px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: #fff7ed;
+      color: #9a3412;
+      font-size: 12px;
+    }
+    .exemption-reason-group { display: none; }
+    .exemption-reason-group.visible { display: block; }
+    .cloudinary-doc-results {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+    .cloudinary-doc-result {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .cloudinary-doc-result:last-child { border-bottom: none; }
+    .cloudinary-doc-result:hover { background: var(--green-light); }
+    .cloudinary-doc-result img { width: 48px; height: 40px; object-fit: cover; border-radius: 4px; }
+    .cloudinary-doc-result .doc-result-info { flex: 1; min-width: 0; font-size: 12px; }
+    .cloudinary-doc-result .doc-result-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cloudinary-doc-result .doc-result-meta { color: var(--text-light); margin-top: 3px; }
 
     /* ── Bank transaction search for linking ── */
     .txn-search-box {
@@ -685,6 +739,7 @@
         <table class="expense-table">
           <thead>
             <tr>
+              <th>EXPENSE ID</th>
               <th>DESCRIPTION</th>
               <th>VOUCHER / BILL</th>
               <th>AMOUNT</th>
@@ -747,9 +802,44 @@
       <textarea id="expense-notes" placeholder="Any additional notes about this expense"></textarea>
     </div>
 
+    <div class="form-group">
+      <label>Bill / Voucher Attachment</label>
+      <select id="expense-doc-requirement" onchange="toggleExpenseExemptionReason()">
+        <option value="required">Attachment required</option>
+        <option value="not-required">Not required for this expense</option>
+      </select>
+    </div>
+    <div class="form-group exemption-reason-group" id="expense-exemption-reason-group">
+      <label>Why is an attachment not required?</label>
+      <textarea id="expense-doc-exemption-reason" placeholder="e.g. Small cash purchase with no bill available"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Attach Bill / Voucher <span class="hint">— optional now, required before completion unless exempted</span></label>
+      <div class="file-upload-area" id="expense-doc-drop-area" onclick="document.getElementById('expense-doc-input').click()" ondragover="handleExpenseDocDragOver(event)" ondragleave="handleExpenseDocDragLeave(event)" ondrop="handleExpenseDocDrop(event)">
+        <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">📂 Drag & drop a document here, or click to select</div>
+        <input type="file" id="expense-doc-input" accept="image/jpeg,image/png,image/gif,image/webp" multiple onchange="handleExpenseDocFile(event)">
+        <div id="expense-doc-file-name" style="font-size:12px;font-weight:600;color:var(--green-dark);display:none;"></div>
+      </div>
+      <button type="button" class="btn-primary btn-sm btn-outline" style="margin-top:8px;" onclick="openExpenseCloudinaryPicker()">☁️ Choose existing bill</button>
+      <div id="expense-cloudinary-selected" style="font-size:12px;color:var(--green-dark);margin-top:6px;"></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn-primary btn-outline" onclick="closeExpenseModal()">Cancel</button>
       <button class="btn-primary" id="save-expense-btn" onclick="saveExpense()">💾 Save Expense</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="expense-cloudinary-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeExpenseCloudinaryPicker()">✕</button>
+    <h3>☁️ Choose Existing Bill</h3>
+    <input type="text" id="expense-cloudinary-search" placeholder="Search bills and vouchers..." oninput="searchExpenseCloudinary()" autocomplete="off">
+    <div id="expense-cloudinary-results" class="cloudinary-doc-results"><div class="empty-state" style="padding:20px;">Loading bills...</div></div>
+    <div class="modal-actions">
+      <button class="btn-primary btn-outline" onclick="closeExpenseCloudinaryPicker()">Cancel</button>
+      <button class="btn-primary" onclick="useSelectedExpenseCloudinaryDocs()">Use selected</button>
     </div>
   </div>
 </div>
@@ -784,6 +874,10 @@
     <div class="form-group">
       <label>Notes</label>
       <div id="detail-notes" style="font-size:13px;color:var(--text);"></div>
+    </div>
+    <div class="form-group">
+      <label>Document Status</label>
+      <div id="detail-document-status"></div>
     </div>
 
     <!-- Linked bank transactions -->
@@ -829,6 +923,11 @@ let detailPendingDocFile = null;
 
 // Edit modal state
 let editingExpenseKey = '';
+let pendingExpenseDocFiles = [];
+let pendingExpenseCloudinaryDocs = [];
+let expenseCloudinarySearchTimer = null;
+let expenseCloudinaryDocumentsById = {};
+let createExpenseTransactionKey = '';
 
 document.addEventListener('DOMContentLoaded', async function() {
   const res = await fetch('/auth/check');
@@ -851,6 +950,17 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // Load expenses
   loadExpenses();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('create') === '1') {
+    openCreateExpenseModal({
+      transactionKey: params.get('transactionKey') || '',
+      narration: params.get('narration') || '',
+      amount: params.get('amount') || '',
+      tranDate: params.get('tranDate') || '',
+    });
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 
   // Wire up filter events
   document.getElementById('filter-search').addEventListener('keydown', function(e) {
@@ -937,10 +1047,11 @@ function renderExpensesTable() {
   if (currentFilters.search) {
     const search = currentFilters.search.toLowerCase();
     filtered = filtered.filter(e => {
+      const expenseId = (e.key || '').toLowerCase();
       const desc = (e.description || '').toLowerCase();
       const voucher = (e.voucherNo || '').toLowerCase();
       const notes = (e.notes || '').toLowerCase();
-      return desc.includes(search) || voucher.includes(search) || notes.includes(search);
+      return expenseId.includes(search) || desc.includes(search) || voucher.includes(search) || notes.includes(search);
     });
   }
   if (currentFilters.paymentMode) {
@@ -979,18 +1090,22 @@ function renderExpensesTable() {
       ).join(' ');
     }
 
-    // Documents
+    // Documents and attachment status
+    const documentStatus = getDocumentStatus(expense);
+    const statusBadge = `<span class="document-status ${documentStatus.className}" title="${escapeHtml(documentStatus.title)}">${documentStatus.label}</span>`;
     let docsHtml = '—';
     if (expense.documents && expense.documents.length > 0) {
       docsHtml = expense.documents.map(d => 
         `<a class="doc-chip" href="${escapeHtml(d.url || '#')}" target="_blank" title="${escapeHtml(d.filename || '')}">📄 ${escapeHtml(d.filename || '')}</a>`
       ).join(' ');
     }
+    docsHtml = statusBadge + (docsHtml === '—' ? '' : '<br>' + docsHtml);
 
     const amount = '₹' + Number(expense.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
     const date = expense.expenseDate || '—';
 
     tr.innerHTML = `
+      <td><strong>${escapeHtml(expense.key || '—')}</strong></td>
       <td><span class="expense-desc" title="${escapeHtml(expense.description || '')}">${escapeHtml(expense.description || '—')}</span></td>
       <td>${escapeHtml(expense.voucherNo || '—')}</td>
       <td class="expense-amount">${amount}</td>
@@ -1001,7 +1116,7 @@ function renderExpensesTable() {
       <td>
         <div class="action-btns">
           <button class="mini-btn" onclick="openExpenseDetail('${escapeHtmlAttr(expense.key)}')">👁 View</button>
-          <button class="mini-btn" onclick="openEditExpense('${escapeHtmlAttr(expense.key)}')">✏️ Edit</button>
+          <button class="mini-btn" onclick="openEditExpense('${escapeHtmlAttr(expense.key)}')">${documentStatus.className === 'required' ? '📎 Attach' : '✏️ Edit'}</button>
           <button class="mini-btn danger" onclick="deleteExpense('${escapeHtmlAttr(expense.key)}')">🗑</button>
         </div>
       </td>
@@ -1010,19 +1125,40 @@ function renderExpensesTable() {
   }
 }
 
+function getDocumentStatus(expense) {
+  if (expense.documents && expense.documents.length > 0) {
+    return { className: 'attached', label: '✅ Attached', title: 'Bill or voucher attached.' };
+  }
+  if (expense.documentRequirement === 'not-required') {
+    return {
+      className: 'exempt',
+      label: '— Not required',
+      title: expense.documentExemptionReason || 'Attachment not required.',
+    };
+  }
+  return { className: 'required', label: '⚠️ Attach document', title: 'A bill or voucher should be attached.' };
+}
+
 // ════════════════════════════════════════════════════════════════════
 // Create / Edit Expense Modal
 // ════════════════════════════════════════════════════════════════════
 
-function openCreateExpenseModal() {
+function openCreateExpenseModal(prefill = null) {
   editingExpenseKey = '';
+  createExpenseTransactionKey = prefill && prefill.transactionKey ? prefill.transactionKey : '';
   document.getElementById('expense-modal-title').textContent = '➕ Add Expense';
   document.getElementById('expense-description').value = '';
   document.getElementById('expense-voucher').value = '';
-  document.getElementById('expense-amount').value = '';
-  document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('expense-mode').value = 'cash';
-  document.getElementById('expense-notes').value = '';
+  document.getElementById('expense-amount').value = prefill && prefill.amount ? prefill.amount : '';
+  document.getElementById('expense-date').value = prefill && prefill.tranDate ? convertExpenseBankDateToISO(prefill.tranDate) : new Date().toISOString().split('T')[0];
+  document.getElementById('expense-mode').value = prefill && prefill.transactionKey ? 'bank' : 'cash';
+  document.getElementById('expense-notes').value = prefill && prefill.narration ? prefill.narration : '';
+  document.getElementById('expense-doc-requirement').value = 'required';
+  document.getElementById('expense-doc-exemption-reason').value = '';
+  pendingExpenseDocFiles = [];
+  pendingExpenseCloudinaryDocs = [];
+  resetExpenseDocPicker();
+  toggleExpenseExemptionReason();
   document.getElementById('expense-description').classList.remove('input-error');
   document.getElementById('expense-amount').classList.remove('input-error');
 
@@ -1030,6 +1166,14 @@ function openCreateExpenseModal() {
   setTimeout(() => {
     document.getElementById('expense-description').focus();
   }, 100);
+}
+
+function convertExpenseBankDateToISO(bankDate) {
+  const parts = String(bankDate || '').trim().split('/');
+  if (parts.length === 3 && parts[2].length === 4) {
+    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+  }
+  return new Date().toISOString().split('T')[0];
 }
 
 function openEditExpense(expenseKey) {
@@ -1047,6 +1191,12 @@ function openEditExpense(expenseKey) {
   document.getElementById('expense-date').value = expense.expenseDate || '';
   document.getElementById('expense-mode').value = expense.paymentMode || 'cash';
   document.getElementById('expense-notes').value = expense.notes || '';
+  document.getElementById('expense-doc-requirement').value = expense.documentRequirement || 'required';
+  document.getElementById('expense-doc-exemption-reason').value = expense.documentExemptionReason || '';
+  pendingExpenseDocFiles = [];
+  pendingExpenseCloudinaryDocs = [];
+  resetExpenseDocPicker();
+  toggleExpenseExemptionReason();
   document.getElementById('expense-description').classList.remove('input-error');
   document.getElementById('expense-amount').classList.remove('input-error');
 
@@ -1064,6 +1214,8 @@ function openEditExpenseFromDetail() {
 function closeExpenseModal() {
   document.getElementById('expense-modal').classList.remove('open');
   editingExpenseKey = '';
+  createExpenseTransactionKey = '';
+  pendingExpenseDocFiles = [];
 }
 
 async function saveExpense() {
@@ -1073,6 +1225,8 @@ async function saveExpense() {
   const expenseDate = document.getElementById('expense-date').value;
   const paymentMode = document.getElementById('expense-mode').value;
   const notes = document.getElementById('expense-notes').value.trim();
+  const documentRequirement = document.getElementById('expense-doc-requirement').value;
+  const documentExemptionReason = document.getElementById('expense-doc-exemption-reason').value.trim();
 
   // Validate
   if (!description) {
@@ -1090,6 +1244,12 @@ async function saveExpense() {
     return;
   }
   document.getElementById('expense-amount').classList.remove('input-error');
+
+  if (documentRequirement === 'not-required' && !documentExemptionReason) {
+    showMsg('error', 'Please provide a reason when an attachment is not required.');
+    document.getElementById('expense-doc-exemption-reason').focus();
+    return;
+  }
 
   const btn = document.getElementById('save-expense-btn');
   btn.disabled = true;
@@ -1111,6 +1271,8 @@ async function saveExpense() {
         expenseDate,
         paymentMode,
         notes,
+        documentRequirement,
+        documentExemptionReason,
       };
     } else {
       body = {
@@ -1121,8 +1283,10 @@ async function saveExpense() {
         expenseDate,
         paymentMode,
         notes,
-        transactionKeys: [],
-        documents: [],
+        documentRequirement,
+        documentExemptionReason,
+        transactionKeys: createExpenseTransactionKey ? [createExpenseTransactionKey] : [],
+        documents: pendingExpenseCloudinaryDocs,
       };
     }
 
@@ -1137,7 +1301,17 @@ async function saveExpense() {
     if (data.error) {
       showMsg('error', data.error);
     } else {
-      showMsg('success', data.message);
+      const expenseKey = data.expense && data.expense.key;
+      let uploadError = '';
+      for (const file of pendingExpenseDocFiles) {
+        try {
+          await uploadExpenseDocumentFile(expenseKey, file, token);
+        } catch (err) {
+          uploadError = err.message;
+          break;
+        }
+      }
+      showMsg(uploadError ? 'error' : 'success', uploadError ? `${data.message} Attachment upload failed: ${uploadError}` : data.message);
       closeExpenseModal();
       loadExpenses();
     }
@@ -1147,6 +1321,133 @@ async function saveExpense() {
     btn.disabled = false;
     btn.textContent = '💾 Save Expense';
   }
+}
+
+function toggleExpenseExemptionReason() {
+  const isExempt = document.getElementById('expense-doc-requirement').value === 'not-required';
+  document.getElementById('expense-exemption-reason-group').classList.toggle('visible', isExempt);
+}
+
+function resetExpenseDocPicker() {
+  document.getElementById('expense-doc-input').value = '';
+  document.getElementById('expense-doc-file-name').textContent = '';
+  document.getElementById('expense-doc-file-name').style.display = 'none';
+}
+
+function setPendingExpenseDocFiles(files) {
+  pendingExpenseDocFiles = Array.from(files || []).filter(file => file.type.startsWith('image/') && file.size < 1024 * 1024);
+  if (files && pendingExpenseDocFiles.length !== files.length) {
+    showMsg('error', 'Only images smaller than 1 MB can be attached.');
+  }
+  const label = document.getElementById('expense-doc-file-name');
+  if (pendingExpenseDocFiles.length === 0) {
+    label.textContent = '';
+    label.style.display = 'none';
+    return;
+  }
+  label.textContent = `📄 ${pendingExpenseDocFiles.length} document${pendingExpenseDocFiles.length === 1 ? '' : 's'} selected`;
+  label.style.display = 'block';
+}
+
+function handleExpenseDocDragOver(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  document.getElementById('expense-doc-drop-area').classList.add('dragover');
+}
+
+function handleExpenseDocDragLeave(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  document.getElementById('expense-doc-drop-area').classList.remove('dragover');
+}
+
+function handleExpenseDocDrop(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  document.getElementById('expense-doc-drop-area').classList.remove('dragover');
+  setPendingExpenseDocFiles(event.dataTransfer.files);
+}
+
+function handleExpenseDocFile(event) {
+  setPendingExpenseDocFiles(event.target.files);
+}
+
+function openExpenseCloudinaryPicker() {
+  document.getElementById('expense-cloudinary-modal').classList.add('open');
+  document.getElementById('expense-cloudinary-search').value = '';
+  document.getElementById('expense-cloudinary-results').innerHTML = '<div class="empty-state" style="padding:20px;">Loading bills...</div>';
+  loadExpenseCloudinaryDocs();
+}
+
+function closeExpenseCloudinaryPicker() {
+  document.getElementById('expense-cloudinary-modal').classList.remove('open');
+}
+
+function searchExpenseCloudinary() {
+  clearTimeout(expenseCloudinarySearchTimer);
+  expenseCloudinarySearchTimer = setTimeout(loadExpenseCloudinaryDocs, 300);
+}
+
+async function loadExpenseCloudinaryDocs() {
+  const query = document.getElementById('expense-cloudinary-search').value.trim();
+  const results = document.getElementById('expense-cloudinary-results');
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const response = await fetch('/expense/cloudinary-search', { method: 'POST', headers, body: JSON.stringify({ search: query }) });
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    if (!data.documents || data.documents.length === 0) {
+      results.innerHTML = '<div class="empty-state" style="padding:20px;">No bills found.</div>';
+      return;
+    }
+    expenseCloudinaryDocumentsById = {};
+    results.innerHTML = data.documents.map(document => {
+      expenseCloudinaryDocumentsById[document.publicId] = document;
+      const selected = pendingExpenseCloudinaryDocs.some(item => item.publicId === document.publicId);
+      const thumb = document.thumbnail || document.url;
+      return `<div class="cloudinary-doc-result" onclick="toggleExpenseCloudinaryDoc('${escapeHtmlAttr(document.publicId)}')">` +
+        (document.resourceType === 'image' ? `<img src="${escapeHtml(thumb)}" alt="">` : '<span style="font-size:28px;">📄</span>') +
+        `<div class="doc-result-info"><div class="doc-result-name">${selected ? '✅ ' : ''}${escapeHtml(document.filename || document.publicId)}</div><div class="doc-result-meta">${escapeHtml(document.folder || '')} • ${formatExpenseAttachmentSize(document.bytes)}</div></div></div>`;
+    }).join('');
+  } catch (err) {
+    results.innerHTML = '<div class="empty-state" style="padding:20px;color:#d32f2f;">' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+function toggleExpenseCloudinaryDoc(publicId) {
+  const document = expenseCloudinaryDocumentsById[publicId];
+  if (!document) return;
+  const index = pendingExpenseCloudinaryDocs.findIndex(item => item.publicId === publicId);
+  if (index >= 0) pendingExpenseCloudinaryDocs.splice(index, 1);
+  else pendingExpenseCloudinaryDocs.push(document);
+  loadExpenseCloudinaryDocs();
+}
+
+function useSelectedExpenseCloudinaryDocs() {
+  document.getElementById('expense-cloudinary-selected').textContent = pendingExpenseCloudinaryDocs.length
+    ? `☁️ ${pendingExpenseCloudinaryDocs.length} existing bill${pendingExpenseCloudinaryDocs.length === 1 ? '' : 's'} selected`
+    : '';
+  closeExpenseCloudinaryPicker();
+}
+
+function formatExpenseAttachmentSize(bytes) {
+  if (!Number.isFinite(Number(bytes))) return 'size unknown';
+  return (Number(bytes) / 1024).toFixed(0) + ' KB';
+}
+
+async function uploadExpenseDocumentFile(expenseKey, file, token) {
+  if (!expenseKey) throw new Error('Expense was created but no expense key was returned.');
+  const formData = new FormData();
+  formData.append('expenseKey', expenseKey);
+  formData.append('file', file);
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch('/expense/upload', { method: 'POST', headers, body: formData });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || 'Upload failed.');
+  return data;
 }
 
 async function deleteExpense(expenseKey) {
@@ -1198,6 +1499,7 @@ async function openExpenseDetail(expenseKey) {
   document.getElementById('detail-date').textContent = '—';
   document.getElementById('detail-mode').innerHTML = '—';
   document.getElementById('detail-notes').textContent = '—';
+  document.getElementById('detail-document-status').innerHTML = 'Loading...';
   document.getElementById('detail-linked-txns').innerHTML = '<div class="loading-state" style="padding:10px;">Loading...</div>';
   document.getElementById('detail-docs').innerHTML = '';
   document.getElementById('detail-txn-search').value = '';
@@ -1237,6 +1539,9 @@ async function openExpenseDetail(expenseKey) {
     document.getElementById('detail-amount').textContent = '₹' + Number(detailExpense.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
     document.getElementById('detail-date').textContent = detailExpense.expenseDate || '—';
     document.getElementById('detail-notes').textContent = detailExpense.notes || '—';
+    const detailDocumentStatus = getDocumentStatus(detailExpense);
+    document.getElementById('detail-document-status').innerHTML = `<span class="document-status ${detailDocumentStatus.className}" title="${escapeHtml(detailDocumentStatus.title)}">${detailDocumentStatus.label}</span>` +
+      (detailDocumentStatus.className === 'exempt' ? `<div class="document-warning">Reason: ${escapeHtml(detailDocumentStatus.title)}</div>` : '');
 
     // Payment mode
     let modeBadge = '';

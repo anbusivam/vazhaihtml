@@ -895,6 +895,26 @@
       background: #81c784;
       color: white;
     }
+    .cloudinary-doc-results {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+    .cloudinary-doc-result {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .cloudinary-doc-result:hover { background: var(--green-light); }
+    .cloudinary-doc-result img { width: 48px; height: 40px; object-fit: cover; border-radius: 4px; }
+    .cloudinary-doc-result .doc-result-info { flex: 1; min-width: 0; font-size: 12px; }
+    .cloudinary-doc-result .doc-result-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cloudinary-doc-result .doc-result-meta { color: var(--text-light); margin-top: 3px; }
     .expense-search-result {
       padding: 10px 12px;
       border-bottom: 1px solid #f0f0f0;
@@ -1355,6 +1375,27 @@
         <label>Notes <span class="hint">— optional</span></label>
         <textarea id="ce-notes" placeholder="Any additional notes about this expense"></textarea>
       </div>
+      <div class="form-group">
+        <label>Bill / Voucher Attachment</label>
+        <select id="ce-doc-requirement" onchange="toggleCeExemptionReason()">
+          <option value="required">Attachment required</option>
+          <option value="not-required">Not required for this expense</option>
+        </select>
+      </div>
+      <div class="form-group" id="ce-exemption-reason-group" style="display:none;">
+        <label>Why is an attachment not required?</label>
+        <textarea id="ce-doc-exemption-reason" placeholder="e.g. Small cash purchase with no bill available"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Attach Bill / Voucher <span class="hint">— optional now, required before completion unless exempted</span></label>
+        <div class="file-upload-area" id="ce-doc-drop-area" onclick="document.getElementById('ce-doc-input').click()" ondragover="handleCeDocDragOver(event)" ondragleave="handleCeDocDragLeave(event)" ondrop="handleCeDocDrop(event)">
+          <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">📂 Drag & drop a document here, or click to select</div>
+          <input type="file" id="ce-doc-input" accept="image/jpeg,image/png,image/gif,image/webp" multiple onchange="handleCeDocFile(event)">
+          <div id="ce-doc-file-name" style="font-size:12px;font-weight:600;color:var(--green-dark);display:none;"></div>
+        </div>
+        <button type="button" class="btn-primary btn-sm btn-outline" style="margin-top:8px;" onclick="openCeCloudinaryPicker()">☁️ Choose existing bill</button>
+        <div id="ce-cloudinary-selected" style="font-size:12px;color:var(--green-dark);margin-top:6px;"></div>
+      </div>
 
       <div class="modal-actions">
         <button class="btn-primary btn-outline" onclick="closeCreateExpenseModal()">Cancel</button>
@@ -1370,6 +1411,19 @@
       <div class="modal-actions">
         <button class="btn-primary" onclick="closeCreateExpenseModal()">Done</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="ce-cloudinary-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCeCloudinaryPicker()">✕</button>
+    <h3>☁️ Choose Existing Bill</h3>
+    <input type="text" id="ce-cloudinary-search" placeholder="Search bills and vouchers..." oninput="searchCeCloudinary()" autocomplete="off">
+    <div id="ce-cloudinary-results" class="cloudinary-doc-results"><div class="empty-state" style="padding:20px;">Loading bills...</div></div>
+    <div class="modal-actions">
+      <button class="btn-primary btn-outline" onclick="closeCeCloudinaryPicker()">Cancel</button>
+      <button class="btn-primary" onclick="useSelectedCeCloudinaryDocs()">Use selected</button>
     </div>
   </div>
 </div>
@@ -3477,6 +3531,10 @@ let ceCurrentTxnKey = '';
 let ceCurrentNarration = '';
 let ceCurrentAmount = 0;
 let ceCurrentTranDate = '';
+let cePendingDocFiles = [];
+let cePendingCloudinaryDocs = [];
+let ceCloudinarySearchTimer = null;
+let ceCloudinaryDocumentsById = {};
 let leCurrentTxnKey = '';
 let leSearchTimeout = null;
 
@@ -3529,7 +3587,7 @@ async function loadExpensesToLink() {
         ? '<span style="color:var(--green-dark);font-weight:600;">Already linked</span>'
         : `<button class="mini-btn" onclick="linkExistingExpense('${escapeHtmlAttr(expense.key)}')">Link</button>`;
       return `<div class="expense-search-result">` +
-        `<div class="expense-result-title">${escapeHtml(expense.description || 'Untitled expense')}</div>` +
+        `<div class="expense-result-title">${escapeHtml(expense.key || '—')} · ${escapeHtml(expense.description || 'Untitled expense')}</div>` +
         `<div class="expense-result-meta">${amount} • ${escapeHtml(expense.expenseDate || 'No date')}${voucher} <span style="float:right;">${action}</span></div>` +
       `</div>`;
     }).join('');
@@ -3564,38 +3622,34 @@ async function linkExistingExpense(expenseKey) {
  * Open the Create Expense modal for a bank transaction.
  */
 function openCreateExpenseModal(txnKey, narration, amount, tranDate) {
-  ceCurrentTxnKey = txnKey;
+  ceCurrentTxnKey = txnKey || '';
   ceCurrentNarration = narration || '';
   ceCurrentAmount = Number(amount) || 0;
   ceCurrentTranDate = tranDate || '';
+  cePendingDocFiles = [];
+  cePendingCloudinaryDocs = [];
 
-  // Populate bank details
   document.getElementById('ce-bank-narration').textContent = ceCurrentNarration || '—';
   document.getElementById('ce-bank-date').textContent = ceCurrentTranDate || '—';
   document.getElementById('ce-bank-amount').textContent = ceCurrentAmount ? '₹' + ceCurrentAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—';
-
-  // Reset form
   document.getElementById('ce-description').value = '';
   document.getElementById('ce-voucher').value = '';
   document.getElementById('ce-amount').value = ceCurrentAmount || '';
   document.getElementById('ce-date').value = ceCurrentTranDate ? convertBankDateToISO(ceCurrentTranDate) : new Date().toISOString().split('T')[0];
   document.getElementById('ce-mode').value = 'bank';
-  document.getElementById('ce-notes').value = ceCurrentNarration || '';
+  document.getElementById('ce-notes').value = ceCurrentNarration;
+  document.getElementById('ce-doc-requirement').value = 'required';
+  document.getElementById('ce-doc-exemption-reason').value = '';
+  resetCeDocPicker();
+  document.getElementById('ce-cloudinary-selected').textContent = '';
+  toggleCeExemptionReason();
   document.getElementById('ce-description').classList.remove('input-error');
   document.getElementById('ce-amount').classList.remove('input-error');
-
-  // Show form, hide success
   document.getElementById('create-expense-form').style.display = 'block';
   document.getElementById('create-expense-success').style.display = 'none';
   document.getElementById('create-expense-title').textContent = '💸 Create Expense';
-
-  // Open modal
   document.getElementById('create-expense-modal').classList.add('open');
-
-  // Focus description
-  setTimeout(() => {
-    document.getElementById('ce-description').focus();
-  }, 100);
+  setTimeout(() => document.getElementById('ce-description').focus(), 100);
 }
 
 /**
@@ -3624,6 +3678,7 @@ function closeCreateExpenseModal() {
   ceCurrentNarration = '';
   ceCurrentAmount = 0;
   ceCurrentTranDate = '';
+  cePendingDocFiles = [];
 }
 
 /**
@@ -3636,6 +3691,8 @@ async function createExpenseRecord() {
   const expenseDate = document.getElementById('ce-date').value;
   const paymentMode = document.getElementById('ce-mode').value;
   const notes = document.getElementById('ce-notes').value.trim();
+  const documentRequirement = document.getElementById('ce-doc-requirement').value;
+  const documentExemptionReason = document.getElementById('ce-doc-exemption-reason').value.trim();
 
   // Validate
   if (!description) {
@@ -3653,6 +3710,12 @@ async function createExpenseRecord() {
     return;
   }
   document.getElementById('ce-amount').classList.remove('input-error');
+
+  if (documentRequirement === 'not-required' && !documentExemptionReason) {
+    alert('Please provide a reason when an attachment is not required.');
+    document.getElementById('ce-doc-exemption-reason').focus();
+    return;
+  }
 
   const btn = document.getElementById('create-expense-save-btn');
   btn.disabled = true;
@@ -3674,8 +3737,10 @@ async function createExpenseRecord() {
         expenseDate,
         paymentMode,
         notes,
+        documentRequirement,
+        documentExemptionReason,
         transactionKeys: [ceCurrentTxnKey],
-        documents: [],
+        documents: cePendingCloudinaryDocs,
       }),
     });
 
@@ -3686,11 +3751,23 @@ async function createExpenseRecord() {
       return;
     }
 
+    let uploadError = '';
+    for (const file of cePendingDocFiles) {
+      try {
+        await uploadCeExpenseDocument(file, data.expense && data.expense.key, token);
+      } catch (err) {
+        uploadError = err.message;
+        break;
+      }
+    }
+
     // Show success state
     document.getElementById('create-expense-form').style.display = 'none';
     document.getElementById('create-expense-success').style.display = 'block';
     document.getElementById('create-expense-title').textContent = '✅ Expense Created';
-    document.getElementById('ce-success-subtitle').textContent = data.message || 'Expense created successfully.';
+    document.getElementById('ce-success-subtitle').textContent = uploadError
+      ? `Expense ID: ${data.expense && data.expense.key ? data.expense.key : '—'}. Attachment upload failed: ${uploadError}`
+      : `Expense ID: ${data.expense && data.expense.key ? data.expense.key : '—'}. ${data.message || 'Expense created successfully.'}`;
 
     // Refresh transactions list to show linked expenses
     loadTransactions();
@@ -3700,6 +3777,133 @@ async function createExpenseRecord() {
     btn.disabled = false;
     btn.textContent = '💾 Create Expense';
   }
+}
+
+function toggleCeExemptionReason() {
+  const visible = document.getElementById('ce-doc-requirement').value === 'not-required';
+  document.getElementById('ce-exemption-reason-group').style.display = visible ? 'block' : 'none';
+}
+
+function resetCeDocPicker() {
+  document.getElementById('ce-doc-input').value = '';
+  document.getElementById('ce-doc-file-name').textContent = '';
+  document.getElementById('ce-doc-file-name').style.display = 'none';
+}
+
+function setCePendingDocFiles(files) {
+  cePendingDocFiles = Array.from(files || []).filter(file => file.type.startsWith('image/') && file.size < 1024 * 1024);
+  if (files && cePendingDocFiles.length !== files.length) {
+    alert('Only images smaller than 1 MB can be attached.');
+  }
+  const label = document.getElementById('ce-doc-file-name');
+  if (!cePendingDocFiles.length) {
+    label.textContent = '';
+    label.style.display = 'none';
+    return;
+  }
+  label.textContent = `📄 ${cePendingDocFiles.length} document${cePendingDocFiles.length === 1 ? '' : 's'} selected`;
+  label.style.display = 'block';
+}
+
+function handleCeDocDragOver(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  document.getElementById('ce-doc-drop-area').classList.add('dragover');
+}
+
+function handleCeDocDragLeave(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  document.getElementById('ce-doc-drop-area').classList.remove('dragover');
+}
+
+function handleCeDocDrop(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  document.getElementById('ce-doc-drop-area').classList.remove('dragover');
+  setCePendingDocFiles(event.dataTransfer.files);
+}
+
+function handleCeDocFile(event) {
+  setCePendingDocFiles(event.target.files);
+}
+
+async function uploadCeExpenseDocument(file, expenseKey, token) {
+  if (!expenseKey) throw new Error('Expense was created but no expense key was returned.');
+  const formData = new FormData();
+  formData.append('expenseKey', expenseKey);
+  formData.append('file', file);
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch('/expense/upload', { method: 'POST', headers, body: formData });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || 'Upload failed.');
+  return data;
+}
+
+function openCeCloudinaryPicker() {
+  document.getElementById('ce-cloudinary-modal').classList.add('open');
+  document.getElementById('ce-cloudinary-search').value = '';
+  document.getElementById('ce-cloudinary-results').innerHTML = '<div class="empty-state" style="padding:20px;">Loading bills...</div>';
+  loadCeCloudinaryDocs();
+}
+
+function closeCeCloudinaryPicker() {
+  document.getElementById('ce-cloudinary-modal').classList.remove('open');
+}
+
+function searchCeCloudinary() {
+  clearTimeout(ceCloudinarySearchTimer);
+  ceCloudinarySearchTimer = setTimeout(loadCeCloudinaryDocs, 300);
+}
+
+async function loadCeCloudinaryDocs() {
+  const query = document.getElementById('ce-cloudinary-search').value.trim();
+  const results = document.getElementById('ce-cloudinary-results');
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const response = await fetch('/expense/cloudinary-search', { method: 'POST', headers, body: JSON.stringify({ search: query }) });
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    if (!data.documents || data.documents.length === 0) {
+      results.innerHTML = '<div class="empty-state" style="padding:20px;">No bills found.</div>';
+      return;
+    }
+    ceCloudinaryDocumentsById = {};
+    results.innerHTML = data.documents.map(document => {
+      ceCloudinaryDocumentsById[document.publicId] = document;
+      const selected = cePendingCloudinaryDocs.some(item => item.publicId === document.publicId);
+      const thumb = document.thumbnail || document.url;
+      return `<div class="cloudinary-doc-result" onclick="toggleCeCloudinaryDoc('${escapeHtmlAttr(document.publicId)}')">` +
+        (document.resourceType === 'image' ? `<img src="${escapeHtml(thumb)}" alt="">` : '<span style="font-size:28px;">📄</span>') +
+        `<div class="doc-result-info"><div class="doc-result-name">${selected ? '✅ ' : ''}${escapeHtml(document.filename || document.publicId)}</div><div class="doc-result-meta">${escapeHtml(document.folder || '')} • ${formatCeAttachmentSize(document.bytes)}</div></div></div>`;
+    }).join('');
+  } catch (err) {
+    results.innerHTML = '<div class="empty-state" style="padding:20px;color:#d32f2f;">' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+function toggleCeCloudinaryDoc(publicId) {
+  const document = ceCloudinaryDocumentsById[publicId];
+  if (!document) return;
+  const index = cePendingCloudinaryDocs.findIndex(item => item.publicId === publicId);
+  if (index >= 0) cePendingCloudinaryDocs.splice(index, 1);
+  else cePendingCloudinaryDocs.push(document);
+  loadCeCloudinaryDocs();
+}
+
+function useSelectedCeCloudinaryDocs() {
+  document.getElementById('ce-cloudinary-selected').textContent = cePendingCloudinaryDocs.length
+    ? `☁️ ${cePendingCloudinaryDocs.length} existing bill${cePendingCloudinaryDocs.length === 1 ? '' : 's'} selected`
+    : '';
+  closeCeCloudinaryPicker();
+}
+
+function formatCeAttachmentSize(bytes) {
+  if (!Number.isFinite(Number(bytes))) return 'size unknown';
+  return (Number(bytes) / 1024).toFixed(0) + ' KB';
 }
 
 async function logout() {

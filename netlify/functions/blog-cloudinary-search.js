@@ -5,6 +5,16 @@ const { handleOptions, CORS_HEADERS } = require('./blog-auth');
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || '';
 const CLOUDINARY_KEY = process.env.CLOUDINARY_KEY || '';
 const CLOUDINARY_SECRET = process.env.CLOUDINARY_SECRET || '';
+const EXPENSE_FOLDER = 'expense-documents';
+const BILL_FOLDER = 'bills';
+
+function isExpenseDocument(resource) {
+  const publicId = String(resource.public_id || '');
+  const folder = String(resource.folder || '');
+  return [EXPENSE_FOLDER, BILL_FOLDER].some(folderName =>
+    folder === folderName || folder.startsWith(`${folderName}/`) || publicId === folderName || publicId.startsWith(`${folderName}/`)
+  );
+}
 
 exports.handler = async function (event, context) {
   const optPre = handleOptions(event);
@@ -84,7 +94,7 @@ exports.handler = async function (event, context) {
     const cloudinaryData = await cloudinaryRes.json();
 
     // Map Cloudinary response to a simpler format
-    const images = (cloudinaryData.resources || []).map(r => ({
+    const images = (cloudinaryData.resources || []).filter(r => !isExpenseDocument(r)).map(r => ({
       publicId: r.public_id,
       url: r.secure_url || r.url,
       thumbnail: r.secure_url ? r.secure_url.replace('/upload/', '/upload/w_200,h_150,c_fill/') : (r.url || ''),
@@ -102,7 +112,7 @@ exports.handler = async function (event, context) {
       body: JSON.stringify({
         images,
         nextCursor: cloudinaryData.next_cursor || null,
-        totalCount: cloudinaryData.total_count || cloudinaryData.resources?.length || 0,
+        totalCount: images.length,
       }),
     };
   } catch (err) {

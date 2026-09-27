@@ -10,6 +10,11 @@
 
 const { getStore, ADMIN_EMAILS } = require('./auth-store');
 const { getExpenseStore } = require('./expense-store');
+const crypto = require('crypto');
+
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || '';
+const CLOUDINARY_KEY = process.env.CLOUDINARY_KEY || '';
+const CLOUDINARY_SECRET = process.env.CLOUDINARY_SECRET || '';
 
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
@@ -18,22 +23,15 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-// Maximum file size: 10 MB
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+// Maximum file size: 1 MB
+const MAX_FILE_SIZE = 1 * 1024 * 1024;
 
-// Allowed file types
+// Expense attachments are image-only bills and vouchers.
 const ALLOWED_TYPES = [
-  'application/pdf',
   'image/jpeg',
   'image/png',
   'image/gif',
   'image/webp',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'text/plain',
-  'text/csv',
 ];
 
 async function getSession(store, event) {
@@ -116,6 +114,65 @@ function sanitizeFilename(filename) {
   return base.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 100) || 'document';
 }
 
+function sanitizeFolderPart(value) {
+  return String(value || 'expense')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 80) || 'expense';
+}
+
+async function uploadToCloudinary(file, filename, expenseKey, publicId) {
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_KEY || !CLOUDINARY_SECRET) {
+    throw new Error('Cloudinary not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_KEY, and CLOUDINARY_SECRET env vars.');
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = `expense-documents/${sanitizeFolderPart(expenseKey)}`;
+  const resourceType = file.contentType.startsWith('image/') ? 'image' : 'raw';
+  const paramsToSign = { folder, public_id: publicId, timestamp };
+  const signString = Object.keys(paramsToSign)
+    .sort()
+    .map(key => `${key}=${paramsToSign[key]}`)
+    .join('&') + CLOUDINARY_SECRET;
+  const signature = crypto.createHash('sha1').update(signString).digest('hex');
+  const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`;
+  const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
+
+  const fields = [
+    ['api_key', CLOUDINARY_KEY],
+    ['timestamp', timestamp],
+    ['folder', folder],
+    ['public_id', publicId],
+    ['signature', signature],
+  ];
+  const parts = fields.map(([name, value]) =>
+    `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`
+  );
+  parts.push(
+    `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\n` +
+    `Content-Type: ${file.contentType}\r\n\r\n`
+  );
+
+  const requestBody = Buffer.concat([
+    ...parts.map(part => Buffer.from(part, 'utf-8')),
+    file.data,
+    Buffer.from(`\r\n--${boundary}--\r\n`, 'utf-8'),
+  ]);
+  const response = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+    body: requestBody,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[/expense/upload] Cloudinary error:', response.status, errorText);
+    throw new Error('Cloudinary upload failed.');
+  }
+
+  return response.json();
+}
+
 exports.handler = async function (event, context) {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: CORS_HEADERS, body: '' };
 
@@ -159,14 +216,14 @@ exports.handler = async function (event, context) {
     }
 
     // Check file size
-    if (filePart.data.length > MAX_FILE_SIZE) {
-      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'File is too large. Maximum size is 10 MB.' }) };
+    if (filePart.data.length >= MAX_FILE_SIZE) {
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Image is too large. Maximum size is 1 MB.' }) };
     }
 
     // Check file type
     const fileType = filePart.contentType || 'application/octet-stream';
     if (!ALLOWED_TYPES.includes(fileType)) {
-      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `File type "${fileType}" is not allowed. Allowed types: PDF, images, Word, Excel, text, CSV.` }) };
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `File type "${fileType}" is not allowed. Only JPEG, PNG, GIF, and WebP images are allowed.` }) };
     }
 
     const expenseStore = await getExpenseStore(event);
@@ -181,18 +238,13 @@ exports.handler = async function (event, context) {
     const docId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     const filename = sanitizeFilename(filePart.filename);
 
-    // Store the document in the expense store
-    const docKey = `document:${docId}`;
-    await expenseStore.set(docKey, filePart.data, {
-      metadata: {
-        contentType: fileType,
-        filename,
-        size: filePart.data.length,
-        uploadedBy: session.email,
-        uploadedAt: new Date().toISOString(),
-        expenseKey,
-      },
-    });
+    const uploadedAt = new Date().toISOString();
+    const cloudinaryData = await uploadToCloudinary(
+      { data: filePart.data, contentType: fileType },
+      filename,
+      expenseKey,
+      docId
+    );
 
     // Add document metadata to the expense record
     if (!expense.documents) expense.documents = [];
@@ -201,9 +253,12 @@ exports.handler = async function (event, context) {
       filename,
       contentType: fileType,
       size: filePart.data.length,
-      uploadedAt: new Date().toISOString(),
+      uploadedAt,
       uploadedBy: session.email,
-      url: `/expense/file?doc=${docId}`,
+      url: cloudinaryData.secure_url || cloudinaryData.url,
+      storage: 'cloudinary',
+      publicId: cloudinaryData.public_id,
+      resourceType: cloudinaryData.resource_type,
     };
     expense.documents.push(docMeta);
     expense.lastEditedAt = new Date().toISOString();

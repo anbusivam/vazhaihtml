@@ -387,6 +387,11 @@
   status = 200
 
 [[redirects]]
+from = "/expense/cloudinary-search"
+to = "/.netlify/functions/expense-cloudinary-search"
+status = 200
+
+[[redirects]]
   from = "/expense/file"
   to = "/.netlify/functions/expense-file"
   status = 200

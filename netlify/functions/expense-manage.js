@@ -36,17 +36,13 @@ async function getSession(store, event) {
 /**
  * Generate a unique key for an expense.
  */
-function generateExpenseKey(description, existingKeys) {
-  let key = String(description || 'expense').trim();
-  key = key.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase();
-  if (key.length > 80) key = key.substring(0, 80);
-  if (!key) key = 'expense';
-
-  let uniqueKey = key;
-  let counter = 1;
+function generateExpenseKey(existingKeys) {
+  const year = new Date().getFullYear();
+  let number = 1;
+  let uniqueKey = `${year}-${String(number).padStart(4, '0')}`;
   while (existingKeys.has(uniqueKey)) {
-    uniqueKey = `${key}-${counter}`;
-    counter++;
+    number++;
+    uniqueKey = `${year}-${String(number).padStart(4, '0')}`;
   }
   existingKeys.add(uniqueKey);
   return uniqueKey;
@@ -151,7 +147,7 @@ exports.handler = async function (event, context) {
 
     // ─── CREATE expense ───
     if (action === 'create') {
-      const { description, voucherNo, paymentMode, amount, expenseDate, notes, transactionKeys, documents } = body;
+      const { description, voucherNo, paymentMode, amount, expenseDate, notes, transactionKeys, documents, documentRequirement, documentExemptionReason } = body;
 
       if (!description || typeof description !== 'string' || description.trim() === '') {
         return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Description is required.' }) };
@@ -168,9 +164,18 @@ exports.handler = async function (event, context) {
         return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid payment mode. Use "cash", "bank", or "other-person".' }) };
       }
 
+      const requirement = String(documentRequirement || 'required').trim();
+      if (!['required', 'not-required'].includes(requirement)) {
+        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid document requirement.' }) };
+      }
+      const exemptionReason = String(documentExemptionReason || '').trim();
+      if (requirement === 'not-required' && !exemptionReason) {
+        return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'A reason is required when an attachment is not required.' }) };
+      }
+
       // Load existing keys to generate a unique key
       const existingKeys = new Set(await loadExpenseKeys(expenseStore));
-      const key = generateExpenseKey(description, existingKeys);
+      const key = generateExpenseKey(existingKeys);
 
       const record = {
         key,
@@ -180,8 +185,14 @@ exports.handler = async function (event, context) {
         amount: amountNum,
         expenseDate: String(expenseDate || '').trim(),
         notes: String(notes || '').trim(),
+        documentRequirement: requirement,
+        documentExemptionReason: requirement === 'not-required' ? exemptionReason : '',
         transactionKeys: Array.isArray(transactionKeys) ? transactionKeys.filter(k => typeof k === 'string' && k.trim() !== '') : [],
-        documents: Array.isArray(documents) ? documents : [],
+        documents: Array.isArray(documents) ? documents.filter(document => {
+          const publicId = String(document && document.publicId || '');
+          return (document.resourceType === 'image' || String(document.contentType || '').startsWith('image/')) &&
+            (publicId.startsWith('expense-documents/') || publicId.startsWith('bills/'));
+        }) : [],
         createdAt: new Date().toISOString(),
         createdBy: session.email,
         lastEditedAt: new Date().toISOString(),
@@ -227,7 +238,7 @@ exports.handler = async function (event, context) {
 
     // ─── UPDATE expense ───
     if (action === 'update') {
-      const { expenseKey, description, voucherNo, paymentMode, amount, expenseDate, notes } = body;
+      const { expenseKey, description, voucherNo, paymentMode, amount, expenseDate, notes, documentRequirement, documentExemptionReason } = body;
 
       if (!expenseKey || typeof expenseKey !== 'string' || expenseKey.trim() === '') {
         return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Expense key is required.' }) };
@@ -263,6 +274,18 @@ exports.handler = async function (event, context) {
       }
       if (notes !== undefined && notes !== null) {
         expense.notes = String(notes).trim();
+      }
+      if (documentRequirement !== undefined && documentRequirement !== null) {
+        const requirement = String(documentRequirement).trim();
+        if (!['required', 'not-required'].includes(requirement)) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid document requirement.' }) };
+        }
+        const exemptionReason = String(documentExemptionReason || '').trim();
+        if (requirement === 'not-required' && !exemptionReason) {
+          return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'A reason is required when an attachment is not required.' }) };
+        }
+        expense.documentRequirement = requirement;
+        expense.documentExemptionReason = requirement === 'not-required' ? exemptionReason : '';
       }
 
       expense.lastEditedAt = new Date().toISOString();
