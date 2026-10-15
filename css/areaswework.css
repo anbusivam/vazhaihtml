@@ -17,6 +17,8 @@
 .map-school-label { display:inline-flex; align-items:center; gap:4px; max-width:100%; padding:3px 6px 3px 4px; color:#fff; background:transparent; border:1px solid rgba(255,255,255,.85); border-radius:999px; cursor:pointer; font-family:var(--ff); font-size:.55rem; font-weight:800; line-height:1.05; text-shadow:0 1px 3px rgba(0,0,0,.9); pointer-events:auto; }
 .map-school-label:hover, .map-school-label:focus-visible { color:#fff; border-color:var(--sun); outline:1px solid var(--sun); outline-offset:1px; }
 .map-school-label span { display:grid; place-items:center; flex-shrink:0; width:14px; height:14px; color:#fff; background:var(--green); border-radius:50%; font-size:.5rem; text-shadow:none; }
+.place-name-icon { pointer-events:none; }
+.place-name-icon span { color:#fff; font-family:var(--ff); font-size:.5rem; font-weight:800; line-height:1; text-shadow:0 1px 3px rgba(0,0,0,.95), 1px 0 2px rgba(0,0,0,.8); white-space:nowrap; }
 .map-note { position:absolute; left:12px; bottom:12px; z-index:500; max-width:calc(100% - 24px); padding:7px 10px; color:var(--ink2); background:rgba(255,255,255,.92); border:1px solid rgba(0,0,0,.08); border-radius:6px; font-size:.65rem; font-weight:700; box-shadow:var(--shadow); }
 .school-section { padding-top:54px; }
 .school-section-heading { padding:0 0 18px; }

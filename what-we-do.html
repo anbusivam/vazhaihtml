@@ -38,12 +38,13 @@
 <link rel="icon" href="/images/favicon_io/favicon.ico">
 <link rel="apple-touch-icon" href="/images/favicon_io/logo192x192.png">
 <meta name="theme-color" content="#2A6B2F">
-<link rel="preload" as="image" href="/images/activity17.jpg" fetchpriority="low">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@0,600;1,600&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css?v=1.6">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="/css/areaswework.css">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://vazhai.in/"},{"@type":"ListItem","position":2,"name":"What We Do","item":"https://vazhai.in/what-we-do.html"}]}
 </script>
@@ -90,7 +91,10 @@
 </nav>
 <main id="main-content">
 <section id="what-we-do" class="pg active">
-  <img src="/images/activity17.jpg" alt="Vazhai NGO program activity" class="wwa-img" loading="lazy" decoding="async">
+  <section class="map-section" aria-labelledby="map-heading">
+    <div class="map-heading-row"><div class="map-heading-line"><span class="areas-eyebrow">Schools we work with</span><h2 id="map-heading">7 schools · 2 blocks · 858 students</h2></div></div>
+    <div class="map-frame"><div id="school-map" aria-label="Map showing Vazhai supported schools"></div><div id="map-school-labels" class="map-school-labels" aria-label="Schools on the map"></div></div>
+  </section>
   <div class="section">
     <span class="eyebrow muted">Three Roles · One Mission</span>
     <h1 class="section-hd">What We <em>Do</em></h1>
@@ -184,6 +188,8 @@
   <a href="/donate" class="bn-donate bn-item"><span class="bn-icon">💛</span><span class="bn-label">Donate</span></a>
   <a href="/contact" class="bn-item"><span class="bn-icon">📬</span><span class="bn-label">Contact</span></a>
 </nav>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="/js/areaswework.js"></script>
 <script src="/js/common.js?v=1.2"></script>
 <script src="/js/lang-switcher.js?v=1.1"></script>
 </body>

@@ -13,7 +13,8 @@ const standardLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y
 const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
 const satelliteRoads = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', { attribution: 'Road data &copy; Esri' });
 const satellitePlaces = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { attribution: 'Places &copy; Esri' });
-const satelliteReference = L.layerGroup([satelliteRoads, satellitePlaces]);
+const satelliteReferenceOverlay = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer/tile/{z}/{y}/{x}', { attribution: 'Reference data &copy; Esri' });
+const satelliteReference = L.layerGroup([satelliteRoads, satellitePlaces, satelliteReferenceOverlay]);
 satelliteLayer.addTo(map);
 satelliteReference.addTo(map);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -21,6 +22,7 @@ L.control.layers({ 'Standard map': standardLayer, 'Satellite view': satelliteLay
 
 const bounds = L.latLngBounds();
 const labels = document.getElementById('map-school-labels');
+const shownPlaces = new Set();
 
 schools.forEach((school, index) => {
   const position = [school.lat, school.lng];
@@ -28,6 +30,11 @@ schools.forEach((school, index) => {
   const marker = L.marker(position, { icon: L.divIcon({ className: '', html: `<div class="school-pin"><span>${index + 1}</span></div>`, iconSize: [30, 30], iconAnchor: [8, 27], popupAnchor: [7, -25] }) }).addTo(map);
   marker.bindPopup(`<div class="map-popup"><h3>${school.name}</h3><p>${school.village}, ${school.block}<br>${school.students} students listed</p><a href="https://www.google.com/maps/search/?api=1&query=${school.lat},${school.lng}" target="_blank" rel="noopener">Open in Google Maps ↗</a></div>`);
   school.marker = marker;
+
+  if (!shownPlaces.has(school.village)) {
+    L.marker(position, { interactive: false, zIndexOffset: -100, icon: L.divIcon({ className: 'place-name-icon', html: `<span>${school.village}</span>`, iconSize: [0, 0], iconAnchor: [-10, 8] }) }).addTo(map);
+    shownPlaces.add(school.village);
+  }
 
   const label = document.createElement('button');
   label.className = 'map-school-label';
