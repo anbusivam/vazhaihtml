@@ -119,6 +119,21 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://vazhai.in/events/world-childrens-day</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/events/ten-schools</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/events/independence-day-2025</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://vazhai.in/ta/events</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/events.html"/>
     <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/events"/>

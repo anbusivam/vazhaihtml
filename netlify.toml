@@ -171,6 +171,21 @@
   status = 200
 
 [[redirects]]
+  from = "/events/world-childrens-day"
+  to = "/events/world-childrens-day.html"
+  status = 200
+
+[[redirects]]
+  from = "/events/ten-schools"
+  to = "/events/ten-schools.html"
+  status = 200
+
+[[redirects]]
+  from = "/events/independence-day-2025"
+  to = "/events/independence-day-2025.html"
+  status = 200
+
+[[redirects]]
   from = "/auth/send-otp"
   to = "/.netlify/functions/auth-send-otp"
   status = 200
