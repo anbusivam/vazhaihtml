@@ -135,6 +135,11 @@
   status = 200
 
 [[redirects]]
+  from = "/areaswework"
+  to = "/areaswework.html"
+  status = 200
+
+[[redirects]]
   from = "/ta/donors"
   to = "/ta/donors.html"
   status = 200
