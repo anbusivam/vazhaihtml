@@ -1,11 +1,11 @@
 const schools = [
-  { name: 'PUPS Bettamugilalam', block: 'Kelamangalam', village: 'Bettamugilalam', students: 59, lat: 12.368930555555556, lng: 77.91008055555557 },
-  { name: 'PUMS Kottaiyur', block: 'Kelamangalam', village: 'Kottaiyur', students: 172, lat: 12.376402777777779, lng: 77.87935277777777 },
-  { name: 'PUMS Siddapuram', block: 'Kelamangalam', village: 'Siddapuram', students: 155, lat: 12.3657, lng: 77.88815277777779 },
-  { name: 'PUMS Bollakollai', block: 'Kelamangalam', village: 'Bollakollai', students: 162, lat: 12.356819444444444, lng: 77.89015833333335 },
-  { name: 'GHS Kodagarai', block: 'Thally', village: 'Kodagarai', students: 127, lat: 12.295530555555555, lng: 77.86153333333333 },
-  { name: 'PUPS Kodagarai', block: 'Thally', village: 'Kodagarai', students: 122, lat: 12.290627777777777, lng: 77.86082222222221 },
-  { name: 'PUPS Kotchavur', block: 'Thally', village: 'Kotchavur', students: 61, lat: 12.303291666666667, lng: 77.86097222222222 }
+  { name: 'Bettamugilalam', type: 'Primary School', block: 'Kelamangalam', village: 'Bettamugilalam', students: 59, lat: 12.368930555555556, lng: 77.91008055555557 },
+  { name: 'Kottaiyur', type: 'Middle School', block: 'Kelamangalam', village: 'Kottaiyur', students: 172, lat: 12.376402777777779, lng: 77.87935277777777 },
+  { name: 'Siddapuram', type: 'Middle School', block: 'Kelamangalam', village: 'Siddapuram', students: 155, lat: 12.3657, lng: 77.88815277777779 },
+  { name: 'Bollakollai', type: 'Middle School', block: 'Kelamangalam', village: 'Bollakollai', students: 162, lat: 12.356819444444444, lng: 77.89015833333335 },
+  { name: 'Kodagarai', type: 'Higher Secondary School', block: 'Thally', village: 'Kodagarai', students: 127, lat: 12.295530555555555, lng: 77.86153333333333 },
+  { name: 'Kodagarai', type: 'Primary School', block: 'Thally', village: 'Kodagarai', students: 122, lat: 12.290627777777777, lng: 77.86082222222221 },
+  { name: 'Kotchavur', type: 'Primary School', block: 'Thally', village: 'Kotchavur', students: 61, lat: 12.303291666666667, lng: 77.86097222222222 }
 ];
 
 const map = L.map('school-map', { scrollWheelZoom: false, zoomControl: false });
@@ -26,9 +26,10 @@ const shownPlaces = new Set();
 
 schools.forEach((school, index) => {
   const position = [school.lat, school.lng];
+  const displayName = `${school.name} - ${school.type}`;
   bounds.extend(position);
   const marker = L.marker(position, { icon: L.divIcon({ className: '', html: `<div class="school-pin"><span>${index + 1}</span></div>`, iconSize: [30, 30], iconAnchor: [8, 27], popupAnchor: [7, -25] }) }).addTo(map);
-  marker.bindPopup(`<div class="map-popup"><h3>${school.name}</h3><p>${school.village}, ${school.block}<br>${school.students} students listed</p><a href="https://www.google.com/maps/search/?api=1&query=${school.lat},${school.lng}" target="_blank" rel="noopener">Open in Google Maps ↗</a></div>`);
+  marker.bindPopup(`<div class="map-popup"><h3>${displayName}</h3><p>${school.village}, ${school.block}<br>${school.students} students listed</p><a href="https://www.google.com/maps/search/?api=1&query=${school.lat},${school.lng}" target="_blank" rel="noopener">Open in Google Maps ↗</a></div>`);
   school.marker = marker;
 
   if (!shownPlaces.has(school.village)) {
@@ -39,7 +40,7 @@ schools.forEach((school, index) => {
   const label = document.createElement('button');
   label.className = 'map-school-label';
   label.type = 'button';
-  label.innerHTML = `<span>${index + 1}</span>${school.name}`;
+  label.innerHTML = `<span>${index + 1}</span>${displayName}`;
   label.addEventListener('click', () => {
     map.setView(position, 14, { animate: true });
     school.marker.openPopup();
