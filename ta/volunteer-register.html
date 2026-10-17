@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>தன்னார்வலர் பதிவு — வாழை</title>
+<link rel="icon" href="/images/favicon_io/favicon.ico">
+<link rel="stylesheet" href="/css/style.css?v=1.6">
+<style>
+  #volunteer-registration { max-width:820px; margin:0 auto; padding:42px 20px 64px; }
+  .registration-top { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:28px; }
+  .registration-top a { color:var(--green); font-weight:800; text-decoration:none; }
+  .registration-card { background:#fff; border:1px solid var(--border); border-radius:var(--r-lg); padding:26px 22px; box-shadow:0 8px 30px rgba(31,55,35,.08); }
+  .registration-card h1 { margin:0 0 8px; font-size:clamp(1.8rem,5vw,2.8rem); color:var(--ink); }
+  .registration-card h1 em { color:var(--amber); font-style:italic; }
+  .registration-card .intro { color:var(--ink2); line-height:1.9; margin:0 0 24px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-field { display:flex; flex-direction:column; gap:6px; }
+  .form-field.full { grid-column:1/-1; }
+  fieldset.form-field { border:0; padding:0; margin:0; min-width:0; }
+  .form-legend { padding:0; }
+  .form-field label, .form-legend { font-size:.76rem; font-weight:800; color:var(--ink); }
+  .form-field input, .form-field select, .form-field textarea { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:var(--r); padding:11px 12px; font:inherit; color:var(--ink); background:#fff; }
+  .form-field textarea { min-height:100px; resize:vertical; }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline:2px solid var(--amber-l); border-color:var(--amber); }
+  .form-help { font-size:.72rem; color:var(--muted); line-height:1.6; }
+  .interest-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-top:10px; }
+  .interest-grid label { display:flex; gap:10px; align-items:flex-start; min-height:44px; box-sizing:border-box; padding:11px 12px; border:1px solid var(--border); border-radius:var(--r); background:#fffdf8; color:var(--ink2); font-size:.82rem; line-height:1.7; cursor:pointer; transition:border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+  .interest-grid label:hover { border-color:var(--amber); background:#fffaf0; }
+  .interest-grid label:has(input:checked) { border-color:var(--green); background:var(--green-l); box-shadow:0 0 0 1px var(--green); color:var(--green-d); }
+  .interest-grid input { flex:0 0 auto; width:16px; height:16px; margin:6px 0 0; accent-color:var(--green); }
+  .interest-grid label:last-child { grid-column:1/-1; }
+  .consent { display:flex; gap:8px; align-items:flex-start; color:var(--ink2); font-size:.78rem; line-height:1.7; }
+  .consent input { flex:0 0 auto; width:16px; height:16px; margin:6px 0 0; accent-color:var(--green); }
+  .form-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:22px; }
+  .form-actions button { border:0; cursor:pointer; }
+  .form-status { display:none; margin-top:18px; padding:12px 14px; border-radius:var(--r); font-size:.82rem; line-height:1.7; }
+  .form-status.success { display:block; background:var(--green-l); color:var(--green-d); }
+  .form-status.error { display:block; background:#fff0ed; color:#9b3021; }
+  .success-home { display:none; margin-top:12px; }
+  .success-home.visible { display:inline-flex; }
+  #volunteer-form.submitted .form-grid, #volunteer-form.submitted .trap, #volunteer-form.submitted .form-actions { display:none; }
+  .trap { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  @media (max-width:620px) { .form-grid, .interest-grid { grid-template-columns:1fr; } .interest-grid label:last-child { grid-column:auto; } .registration-card { padding:22px 16px; } }
+</style>
+</head>
+<body>
+<header class="top-bar"><div class="top-logo"><img src="/images/favicon_io/logo192x192.png" alt="Vazhai NGO"></div><div class="top-brand"><div class="top-name">வாழை <span>VAZHAI</span></div><div class="top-sub">கிராமப்புற கல்வித் தொண்டு நிறுவனம்</div></div></header>
+<nav class="lang-switcher" aria-label="Language Switcher"><a href="/volunteer-register" class="lang-link">English</a><span class="lang-sep">|</span><a href="/ta/volunteer-register" class="lang-link active">தமிழ்</a></nav>
+<nav class="sidebar">
+  <div class="sb-brand"><div class="sb-logo"><img src="/images/favicon_io/logo192x192.png" alt="Vazhai NGO"></div><div class="sb-brand-text"><div class="sb-name">வாழை VAZHAI</div><div class="sb-tag">கிராமப்புற கல்வித் தொண்டு நிறுவனம்</div></div></div>
+  <div class="sb-lang"><a href="/volunteer-register" class="lang-link">English</a><span class="lang-sep">|</span><a href="/ta/volunteer-register" class="lang-link active">தமிழ்</a></div>
+  <a href="/ta/donate" class="sb-donate-btn">💛 நன்கொடை</a>
+  <nav class="sb-nav">
+    <a href="/ta/" class="sb-item"><span class="sb-item-icon">🌿</span><span class="sb-item-label">முகப்பு</span></a>
+    <a href="/ta/who-we-are" class="sb-item"><span class="sb-item-icon">🌱</span><span class="sb-item-label">நாங்கள் யார்</span></a>
+    <a href="/ta/what-we-do" class="sb-item"><span class="sb-item-icon">📚</span><span class="sb-item-label">நாங்கள் செய்வது</span></a>
+    <a href="/ta/join" class="sb-item active"><span class="sb-item-icon">🤝</span><span class="sb-item-label">வாழையில் சேர</span></a>
+    <a href="/ta/donate" class="sb-item"><span class="sb-item-icon">💛</span><span class="sb-item-label">நன்கொடை</span></a>
+    <a href="/ta/contact" class="sb-item"><span class="sb-item-icon">📬</span><span class="sb-item-label">தொடர்பு</span></a>
+    <a href="/ta/events" class="sb-item"><span class="sb-item-icon">📅</span><span class="sb-item-label">நிகழ்வுகள்</span></a>
+    <a href="/ta/blog" class="sb-item"><span class="sb-item-icon">📝</span><span class="sb-item-label">வலைப்பதிவு</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-footer-live"><div class="live-dot"></div>Krishnagiri · Active 2025</div><div class="sb-footer-reg">Est. April 2005 · Reg. No. 296/05<br>Tamil Nadu, India</div><div class="sb-footer-links"><a href="/ta/terms">Terms</a> · <a href="/ta/privacy-policy">Privacy</a></div></div>
+</nav>
+<main id="main-content"><section id="volunteer-registration">
+  <div class="registration-top"><a href="/ta/join">← வாழையில் இணையுங்கள்</a><a href="/ta/">முகப்பு</a></div>
+  <div class="registration-card">
+    <span class="eyebrow muted">தன்னார்வலர் பதிவு</span>
+    <h1>வாழையோடு <em>இணைந்து செயல்படுங்கள்</em></h1>
+    <p class="intro">உங்களைப் பற்றியும், நீங்கள் செய்ய விரும்பும் பங்களிப்பைப் பற்றியும் சிறிது தெரிவியுங்கள். ஒரு சிறிய பணி, ஒரு உரையாடல் அல்லது மாதத்திற்கு சில மணிநேரங்களிலிருந்து தொடங்கலாம்.</p>
+    <form id="volunteer-form">
+      <div class="form-grid">
+        <div class="form-field"><label for="name">பெயர் *</label><input id="name" name="name" required maxlength="120" autocomplete="name"></div>
+        <div class="form-field"><label for="email">மின்னஞ்சல் *</label><input id="email" name="email" type="email" required maxlength="254" autocomplete="email"></div>
+        <div class="form-field"><label for="phone">தொலைபேசி எண் *</label><input id="phone" name="phone" type="tel" required maxlength="40" autocomplete="tel"></div>
+        <div class="form-field"><label for="city">வசிக்கும் நகரம் *</label><input id="city" name="city" required maxlength="120" autocomplete="address-level2"></div>
+        <div class="form-field"><label for="ageGroup">வயது பிரிவு *</label><select id="ageGroup" name="ageGroup" required><option value="">ஒன்றைத் தேர்ந்தெடுக்கவும்</option><option value="below-18">18 வயதிற்குக் கீழ்</option><option value="18-24">18–24</option><option value="25-35">25–35</option><option value="36-45">36–45</option><option value="46-50">46–50</option><option value="above-50">50 வயதிற்கு மேல்</option></select></div>
+        <div class="form-field"><label for="qualification">கல்வித் தகுதி *</label><input id="qualification" name="qualification" required maxlength="120" placeholder="மாணவர், பட்டதாரி, முதுநிலை போன்றவை"></div>
+        <fieldset class="form-field full"><legend class="form-legend">எவ்வாறு பங்களிக்க விரும்புகிறீர்கள்? *</legend><div class="interest-grid"><label><input type="checkbox" name="interests" value="learning-materials"> கற்றல் உபகரணங்களை உருவாக்குதல்</label><label><input type="checkbox" name="interests" value="career-conversation"> உங்கள் பணியனுபவத்தைப் பகிர்தல்</label><label><input type="checkbox" name="interests" value="catch-up-support"> மாணவர் கற்றலில் முன்னேற உதவுதல்</label><label><input type="checkbox" name="interests" value="student-projects"> மாணவர் திட்டத்திற்கு வழிகாட்டுதல்</label><label><input type="checkbox" name="interests" value="college-guidance"> கல்லூரி விண்ணப்பத்தில் உதவுதல்</label><label><input type="checkbox" name="interests" value="employment-exchange"> வேலைவாய்ப்பு அலுவலகப் பதிவில் உதவுதல்</label><label><input type="checkbox" name="interests" value="outreach"> வாழையை நபர்கள் அல்லது நிறுவனங்களுடன் இணைத்தல்</label><label><input type="checkbox" name="interests" value="explore"> இன்னும் தெரியவில்லை — குழுவில் இணைந்து, கவனித்து, கற்றுக்கொண்டு, எனக்குப் பொருத்தமான வழியைக் கண்டறிய விரும்புகிறேன்</label></div></fieldset>
+        <div class="form-field full"><label for="availability">எவ்வளவு நேரம் ஒதுக்க முடியும்? *</label><select id="availability" name="availability" required><option value="">ஒன்றைத் தேர்ந்தெடுக்கவும்</option><option value="one-task">ஒரு தெளிவான பணி</option><option value="few-hours-month">மாதத்திற்கு சில மணிநேரங்கள்</option><option value="regular">தொடர்ச்சியான பங்களிப்பு</option><option value="discuss">இன்னும் முடிவு செய்யவில்லை</option></select></div>
+        <div class="form-field"><label for="howHeard">வாழையைப் பற்றி எப்படித் தெரிந்துகொண்டீர்கள்?</label><input id="howHeard" name="howHeard" maxlength="80"></div>
+        <div class="form-field"><label for="comments">வேறு ஏதேனும் தெரிவிக்க விரும்புகிறீர்களா?</label><textarea id="comments" name="comments" maxlength="2000" placeholder="உங்கள் அனுபவம், ஆர்வம் அல்லது கேள்விகள்"></textarea></div>
+        <div class="form-field full"><label class="consent"><input id="consent" name="consent" type="checkbox" required> இந்த விவரங்களை வாழை சேமித்து, தன்னார்வப் பணியைப் பற்றி என்னைத் தொடர்புகொள்ளலாம் என ஒப்புக்கொள்கிறேன். *</label><span class="form-help">கடவுச்சொல் அல்லது நிதி தொடர்பான முக்கியமான தகவல்களைப் பகிர வேண்டாம்.</span></div>
+      </div>
+      <div class="trap" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary btn-lg">பதிவை அனுப்புங்கள் →</button><a href="/ta/join" class="btn btn-outline btn-lg">பின் செல்லவும்</a></div>
+      <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
+    </form>
+    <a href="/ta/" id="success-home" class="btn btn-primary btn-lg success-home">முகப்புக்குச் செல்லவும்</a>
+  </div>
+</section></main>
+<script>
+const form = document.getElementById('volunteer-form');
+const statusEl = document.getElementById('form-status');
+form.addEventListener('submit', async (event) => {
+  event.preventDefault(); statusEl.className = 'form-status'; statusEl.textContent = '';
+  const interests = [...form.querySelectorAll('input[name="interests"]:checked')].map(input => input.value);
+  if (!interests.length) { statusEl.className = 'form-status error'; statusEl.textContent = 'குறைந்தது ஒரு பங்களிப்பு வழியைத் தேர்ந்தெடுக்கவும்.'; return; }
+  const submit = form.querySelector('button[type="submit"]'); submit.disabled = true; submit.textContent = 'அனுப்பப்படுகிறது...';
+  const data = Object.fromEntries(new FormData(form).entries()); data.interests = interests; data.consent = form.consent.checked;
+  try {
+    const response = await fetch('/volunteer/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    const result = await response.json(); if (!response.ok || result.error) throw new Error(result.error || 'பதிவை அனுப்ப முடியவில்லை.');
+    form.reset(); form.classList.add('submitted'); statusEl.className = 'form-status success'; statusEl.textContent = 'நன்றி. உங்கள் தன்னார்வலர் பதிவு பெறப்பட்டது. வாழை குழு விரைவில் உங்களைத் தொடர்புகொள்ளும்.'; document.getElementById('success-home').classList.add('visible');
+  } catch (error) { statusEl.className = 'form-status error'; statusEl.textContent = error.message; }
+  finally { submit.disabled = false; submit.textContent = 'பதிவை அனுப்புங்கள் →'; }
+});
+</script>
+</body>
+</html>

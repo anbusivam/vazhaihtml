@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register as a Volunteer — Vazhai</title>
+<link rel="icon" href="/images/favicon_io/favicon.ico">
+<link rel="stylesheet" href="/css/style.css?v=1.6">
+<style>
+  #volunteer-registration { max-width: 820px; margin: 0 auto; padding: 42px 20px 64px; }
+  .registration-top { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:28px; }
+  .registration-top a { color:var(--green); font-weight:800; text-decoration:none; }
+  .registration-card { background:#fff; border:1px solid var(--border); border-radius:var(--r-lg); padding:26px 22px; box-shadow:0 8px 30px rgba(31,55,35,.08); }
+  .registration-card h1 { margin:0 0 8px; font-size:clamp(1.8rem,5vw,2.8rem); color:var(--ink); }
+  .registration-card .intro { color:var(--ink2); line-height:1.7; margin:0 0 24px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-field { display:flex; flex-direction:column; gap:6px; }
+  .form-field.full { grid-column:1/-1; }
+  fieldset.form-field { border:0; padding:0; margin:0; min-width:0; }
+  .form-legend { padding:0; }
+  .form-field label, .form-legend { font-size:.76rem; font-weight:800; color:var(--ink); }
+  .form-field input, .form-field select, .form-field textarea { width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:var(--r); padding:11px 12px; font:inherit; color:var(--ink); background:#fff; }
+  .form-field textarea { min-height:100px; resize:vertical; }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline:2px solid var(--amber-l); border-color:var(--amber); }
+  .form-help { font-size:.72rem; color:var(--muted); line-height:1.5; }
+  .interest-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-top:10px; }
+  .interest-grid label { display:flex; gap:10px; align-items:flex-start; min-height:44px; box-sizing:border-box; padding:11px 12px; border:1px solid var(--border); border-radius:var(--r); background:#fffdf8; color:var(--ink2); font-size:.82rem; line-height:1.4; cursor:pointer; transition:border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+  .interest-grid label:hover { border-color:var(--amber); background:#fffaf0; }
+  .interest-grid label:has(input:checked) { border-color:var(--green); background:var(--green-l); box-shadow:0 0 0 1px var(--green); color:var(--green-d); }
+  .interest-grid input { flex:0 0 auto; width:16px; height:16px; margin:1px 0 0; accent-color:var(--green); }
+  .interest-grid label:last-child { grid-column:1/-1; }
+  .consent { display:flex; gap:8px; align-items:flex-start; color:var(--ink2); font-size:.78rem; line-height:1.5; }
+  .consent input { flex:0 0 auto; width:16px; height:16px; margin:3px 0 0; accent-color:var(--green); }
+  .form-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:22px; }
+  .form-actions button { border:0; cursor:pointer; }
+  .form-status { display:none; margin-top:18px; padding:12px 14px; border-radius:var(--r); font-size:.82rem; line-height:1.5; }
+  .form-status.success { display:block; background:var(--green-l); color:var(--green-d); }
+  .form-status.error { display:block; background:#fff0ed; color:#9b3021; }
+  .success-home { display:none; margin-top:12px; }
+  .success-home.visible { display:inline-flex; }
+  #volunteer-form.submitted .form-grid, #volunteer-form.submitted .trap, #volunteer-form.submitted .form-actions { display:none; }
+  .trap { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+  @media (max-width:620px) { .form-grid, .interest-grid { grid-template-columns:1fr; } .interest-grid label:last-child { grid-column:auto; } .registration-card { padding:22px 16px; } }
+</style>
+</head>
+<body>
+<header class="top-bar">
+  <div class="top-logo"><img src="/images/favicon_io/logo192x192.png" alt="Vazhai NGO"></div>
+  <div class="top-brand"><div class="top-name">வாழை <span>VAZHAI</span></div><div class="top-sub">Rural Education · Tamil Nadu</div></div>
+</header>
+<nav class="lang-switcher" aria-label="Language Switcher">
+  <a href="/volunteer-register" class="lang-link active">English</a><span class="lang-sep">|</span><a href="/ta/volunteer-register" class="lang-link">தமிழ்</a>
+</nav>
+<nav class="sidebar">
+  <div class="sb-brand"><div class="sb-logo"><img src="/images/favicon_io/logo192x192.png" alt="Vazhai NGO"></div><div class="sb-brand-text"><div class="sb-name">வாழை VAZHAI</div><div class="sb-tag">Rural Education NGO</div></div></div>
+  <div class="sb-lang"><a href="/volunteer-register" class="lang-link active">English</a><span class="lang-sep">|</span><a href="/ta/volunteer-register" class="lang-link">தமிழ்</a></div>
+  <a href="/donate" class="sb-donate-btn">💛 Donate Now</a>
+  <nav class="sb-nav">
+    <a href="/" class="sb-item"><span class="sb-item-icon">🌿</span><span class="sb-item-label">Home</span></a>
+    <a href="/who-we-are" class="sb-item"><span class="sb-item-icon">🌱</span><span class="sb-item-label">Who We Are</span></a>
+    <a href="/what-we-do" class="sb-item"><span class="sb-item-icon">📚</span><span class="sb-item-label">What We Do</span></a>
+    <a href="/join" class="sb-item active"><span class="sb-item-icon">🤝</span><span class="sb-item-label">Join Vazhai</span></a>
+    <a href="/donate" class="sb-item"><span class="sb-item-icon">💛</span><span class="sb-item-label">Donate</span></a>
+    <a href="/contact" class="sb-item"><span class="sb-item-icon">📬</span><span class="sb-item-label">Contact</span></a>
+    <a href="/events" class="sb-item"><span class="sb-item-icon">📅</span><span class="sb-item-label">Events</span></a>
+    <a href="/blog" class="sb-item"><span class="sb-item-icon">📝</span><span class="sb-item-label">Blog</span></a>
+  </nav>
+  <div class="sb-footer"><div class="sb-footer-live"><div class="live-dot"></div>Krishnagiri · Active 2025</div><div class="sb-footer-reg">Est. April 2005 · Reg. No. 296/05<br>Tamil Nadu, India</div><div class="sb-footer-links"><a href="/terms">Terms</a> · <a href="/privacy-policy">Privacy</a></div></div>
+</nav>
+<main id="main-content">
+<section id="volunteer-registration">
+  <div class="registration-top"><a href="/join">← Back to Join Vazhai</a><a href="/">Home</a></div>
+  <div class="registration-card">
+    <span class="eyebrow muted">Volunteer registration</span>
+    <h1>Bring your skills to <em>Vazhai</em></h1>
+    <p class="intro">Tell us a little about yourself and the kind of contribution that interests you. You can start with one small task, a conversation, or a few hours a month.</p>
+    <form id="volunteer-form">
+      <div class="form-grid">
+        <div class="form-field"><label for="name">Name *</label><input id="name" name="name" required maxlength="120" autocomplete="name"></div>
+        <div class="form-field"><label for="email">Email *</label><input id="email" name="email" type="email" required maxlength="254" autocomplete="email"></div>
+        <div class="form-field"><label for="phone">Phone number *</label><input id="phone" name="phone" type="tel" required maxlength="40" autocomplete="tel"></div>
+        <div class="form-field"><label for="city">City of residence *</label><input id="city" name="city" required maxlength="120" autocomplete="address-level2"></div>
+        <div class="form-field"><label for="ageGroup">Age group *</label><select id="ageGroup" name="ageGroup" required><option value="">Select one</option><option value="below-18">Below 18</option><option value="18-24">18–24</option><option value="25-35">25–35</option><option value="36-45">36–45</option><option value="46-50">46–50</option><option value="above-50">Above 50</option></select></div>
+        <div class="form-field"><label for="qualification">Educational qualification *</label><input id="qualification" name="qualification" required maxlength="120" placeholder="Student, Graduate, Post Graduate, etc."></div>
+        <fieldset class="form-field full"><legend class="form-legend">How would you like to contribute? *</legend><div class="interest-grid"><label><input type="checkbox" name="interests" value="learning-materials"> Make learning materials</label><label><input type="checkbox" name="interests" value="career-conversation"> Share your career story</label><label><input type="checkbox" name="interests" value="catch-up-support"> Help a child catch up</label><label><input type="checkbox" name="interests" value="student-projects"> Guide a student project</label><label><input type="checkbox" name="interests" value="college-guidance"> Help with college applications</label><label><input type="checkbox" name="interests" value="employment-exchange"> Help with Employment Exchange registration</label><label><input type="checkbox" name="interests" value="outreach"> Connect Vazhai to people or organisations</label><label><input type="checkbox" name="interests" value="explore"> I am not sure yet — I would like to join, observe, learn, and find where I can help</label></div></fieldset>
+        <div class="form-field full"><label for="availability">How much time can you offer? *</label><select id="availability" name="availability" required><option value="">Select one</option><option value="one-task">One clear task</option><option value="few-hours-month">A few hours each month</option><option value="regular">Regular involvement</option><option value="discuss">I am not sure yet</option></select></div>
+        <div class="form-field"><label for="howHeard">How did you hear about Vazhai?</label><input id="howHeard" name="howHeard" maxlength="80"></div>
+        <div class="form-field"><label for="comments">Anything else you would like us to know?</label><textarea id="comments" name="comments" maxlength="2000" placeholder="Your experience, interests, or questions"></textarea></div>
+        <div class="form-field full"><label class="consent"><input id="consent" name="consent" type="checkbox" required> I agree that Vazhai may store these details and contact me about volunteering. *</label><span class="form-help">Please do not include passwords or sensitive financial information.</span></div>
+      </div>
+      <div class="trap" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary btn-lg">Send my registration →</button><a href="/join" class="btn btn-outline btn-lg">Back to Join</a></div>
+      <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
+    </form>
+    <a href="/" id="success-home" class="btn btn-primary btn-lg success-home">Go Home</a>
+  </div>
+</section>
+</main>
+<script>
+const form = document.getElementById('volunteer-form');
+const statusEl = document.getElementById('form-status');
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  statusEl.className = 'form-status';
+  statusEl.textContent = '';
+  const interests = [...form.querySelectorAll('input[name="interests"]:checked')].map(input => input.value);
+  if (!interests.length) { statusEl.className = 'form-status error'; statusEl.textContent = 'Please choose at least one way to contribute.'; return; }
+  const submit = form.querySelector('button[type="submit"]');
+  submit.disabled = true;
+  submit.textContent = 'Sending...';
+  const data = Object.fromEntries(new FormData(form).entries());
+  data.interests = interests;
+  data.consent = form.consent.checked;
+  try {
+    const response = await fetch('/volunteer/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    const result = await response.json();
+    if (!response.ok || result.error) throw new Error(result.error || 'Unable to submit registration.');
+    form.reset();
+    form.classList.add('submitted');
+    statusEl.className = 'form-status success';
+    statusEl.textContent = 'Thank you. Your registration has been received. The Vazhai team will contact you soon.';
+    document.getElementById('success-home').classList.add('visible');
+  } catch (error) {
+    statusEl.className = 'form-status error';
+    statusEl.textContent = error.message;
+  } finally {
+    submit.disabled = false;
+    submit.textContent = 'Send my registration →';
+  }
+});
+</script>
+</body>
+</html>

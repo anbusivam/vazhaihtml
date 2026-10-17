@@ -17,6 +17,7 @@ const { getStore, ADMIN_EMAILS } = require('./auth-store');
 const { getBlogStore } = require('./blog-store');
 const { getBankStore } = require('./bank-store');
 const { getExpenseStore } = require('./expense-store');
+const { getVolunteerStore } = require('./volunteer-store');
 
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
@@ -50,10 +51,11 @@ async function exportAllData(event) {
   const blogStore = await getBlogStore(event);
   const bankStore = await getBankStore(event);
   const expenseStore = await getExpenseStore(event);
+  const volunteerStore = await getVolunteerStore(event);
 
   const dump = {
     exportedAt: new Date().toISOString(),
-    version: 2,
+    version: 3,
     stores: {},
   };
 
@@ -300,6 +302,22 @@ async function exportAllData(event) {
     expenseData.documents = documents;
 
     dump.stores.expense = expenseData;
+  }
+
+  // ── Volunteer store data ──
+  if (volunteerStore) {
+    const volunteerData = {};
+    const volunteersList = await volunteerStore.get('volunteers:list', { type: 'json' }) || [];
+    volunteerData['volunteers:list'] = volunteersList;
+    const volunteers = {};
+    for (const id of volunteersList) {
+      try {
+        const volunteer = await volunteerStore.get(`volunteer:${id}`, { type: 'json' });
+        if (volunteer) volunteers[id] = volunteer;
+      } catch (_) {}
+    }
+    volunteerData.volunteers = volunteers;
+    dump.stores.volunteer = volunteerData;
   }
 
   return dump;
@@ -1108,6 +1126,55 @@ async function restoreMerge(authStore, blogStore, bankStore, expenseStore, dump,
   }
 }
 
+async function restoreVolunteersReplace(volunteerStore, volunteerData, results) {
+  if (!volunteerData) return;
+  const currentIds = await volunteerStore.get('volunteers:list', { type: 'json' }) || [];
+  const backupIds = volunteerData['volunteers:list'] || [];
+  const backupRecords = volunteerData.volunteers || {};
+  await volunteerStore.setJSON('volunteers:list', backupIds);
+
+  let restored = 0;
+  for (const [id, record] of Object.entries(backupRecords)) {
+    try {
+      await volunteerStore.setJSON(`volunteer:${id}`, record);
+      restored++;
+    } catch (err) {
+      results.errors.push(`Failed to restore volunteer ${id}: ${err.message}`);
+    }
+  }
+  for (const id of currentIds) {
+    if (!backupIds.includes(id)) {
+      try { await volunteerStore.delete(`volunteer:${id}`); } catch (err) {
+        results.errors.push(`Failed to delete orphaned volunteer ${id}: ${err.message}`);
+      }
+    }
+  }
+  results.restored['volunteers:list'] = backupIds.length;
+  results.restored.volunteers = restored;
+}
+
+async function restoreVolunteersMerge(volunteerStore, volunteerData, results) {
+  if (!volunteerData) return;
+  const existingIds = await volunteerStore.get('volunteers:list', { type: 'json' }) || [];
+  const mergedIds = [...existingIds];
+  let added = 0;
+  for (const id of volunteerData['volunteers:list'] || []) {
+    if (!mergedIds.includes(id)) { mergedIds.push(id); added++; }
+  }
+  await volunteerStore.setJSON('volunteers:list', mergedIds);
+  let restored = 0;
+  for (const [id, record] of Object.entries(volunteerData.volunteers || {})) {
+    try {
+      await volunteerStore.setJSON(`volunteer:${id}`, record);
+      restored++;
+    } catch (err) {
+      results.errors.push(`Failed to merge volunteer ${id}: ${err.message}`);
+    }
+  }
+  results.restored['volunteers:list'] = { total: mergedIds.length, added };
+  results.restored.volunteers = restored;
+}
+
 exports.handler = async function (event, context) {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };
@@ -1150,6 +1217,7 @@ exports.handler = async function (event, context) {
         narrationMappings: dump.stores.bank ? Object.keys(dump.stores.bank['narration-mappings'] || {}).length : 0,
         expenses: dump.stores.expense ? Object.keys(dump.stores.expense.expenses || {}).length : 0,
         documents: dump.stores.expense ? Object.keys(dump.stores.expense.documents || {}).length : 0,
+        volunteers: dump.stores.volunteer ? Object.keys(dump.stores.volunteer.volunteers || {}).length : 0,
       };
 
       return {
@@ -1209,12 +1277,15 @@ exports.handler = async function (event, context) {
       const blogStore = await getBlogStore(event);
       const bankStore = await getBankStore(event);
       const expenseStore = await getExpenseStore(event);
+      const volunteerStore = await getVolunteerStore(event);
       const results = { restored: {}, errors: [], mode: restoreMode };
 
       if (restoreMode === 'merge') {
         await restoreMerge(authStore, blogStore, bankStore, expenseStore, dump, results);
+        await restoreVolunteersMerge(volunteerStore, dump.stores.volunteer, results);
       } else {
         await restoreReplace(authStore, blogStore, bankStore, expenseStore, dump, results);
+        await restoreVolunteersReplace(volunteerStore, dump.stores.volunteer, results);
       }
 
       return {

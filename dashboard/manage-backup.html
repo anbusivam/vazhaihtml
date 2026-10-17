@@ -372,6 +372,7 @@ async function exportBackup() {
     statsHtml += `🔗 Narration mappings: ${stats.narrationMappings}<br>`;
     statsHtml += `🧾 Expenses: ${stats.expenses}<br>`;
     statsHtml += `📎 Documents: ${stats.documents}<br>`;
+    statsHtml += `🤝 Volunteer registrations: ${stats.volunteers || 0}<br>`;
     statsHtml += `<br><small>Exported at: ${new Date(data.exportedAt).toLocaleString()}</small>`;
     statsEl.innerHTML = statsHtml;
     statsEl.style.display = 'block';
@@ -419,8 +420,8 @@ function handleBackupFile(event) {
     }
 
     const version = dump.version || 0;
-    if (version !== 1 && version !== 2) {
-      showRestoreMsg('error', `Unrecognized backup format version (${version}). Expected version 1 or 2.`);
+    if (version !== 1 && version !== 2 && version !== 3) {
+      showRestoreMsg('error', `Unrecognized backup format version (${version}). Expected version 1, 2, or 3.`);
       return;
     }
 
@@ -473,6 +474,10 @@ function confirmMerge(dump, fileName) {
     if (expCount > 0) msg += `• ${expCount} expense(s)\n`;
     if (docCount > 0) msg += `• ${docCount} expense document(s)\n`;
   }
+  if (dump.stores.volunteer) {
+    const volunteerCount = dump.stores.volunteer.volunteers ? Object.keys(dump.stores.volunteer.volunteers).length : 0;
+    if (volunteerCount > 0) msg += `• ${volunteerCount} volunteer registration(s)\n`;
+  }
   msg += `\nℹ️ Merge mode: Backup data will be ADDED to existing data. Nothing will be deleted.\n\n`;
   msg += `Proceed with merge?`;
 
@@ -497,6 +502,7 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
   const backupTxnKeys = new Set(dump.stores.bank && dump.stores.bank.transactions ? Object.keys(dump.stores.bank.transactions) : []);
   const backupMappingKeys = new Set(dump.stores.bank && dump.stores.bank['narration-mappings'] ? Object.keys(dump.stores.bank['narration-mappings']) : []);
   const backupExpenseKeys = new Set(dump.stores.expense && dump.stores.expense.expenses ? Object.keys(dump.stores.expense.expenses) : []);
+  const backupVolunteerKeys = new Set(dump.stores.volunteer && dump.stores.volunteer.volunteers ? Object.keys(dump.stores.volunteer.volunteers) : []);
   const userCount = backupUserEmails.size;
   const paymentCount = backupPaymentIds.size;
   const exportTime = dump.exportedAt ? new Date(dump.exportedAt).toLocaleString() : 'unknown';
@@ -521,6 +527,7 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
     const currentBlog = current.stores.blog;
     const currentBank = current.stores.bank;
     const currentExpense = current.stores.expense;
+    const currentVolunteer = current.stores.volunteer;
 
     // Determine what will be deleted
     const currentUsersList = currentAuth['users:list'] || [];
@@ -550,11 +557,13 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
     // Expenses that will be deleted
     const currentExpenseList = (currentExpense && currentExpense['expenses:list']) || [];
     const willDeleteExpenses = currentExpenseList.filter(k => !backupExpenseKeys.has(k));
+    const currentVolunteerList = (currentVolunteer && currentVolunteer['volunteers:list']) || [];
+    const willDeleteVolunteers = currentVolunteerList.filter(k => !backupVolunteerKeys.has(k));
 
     const hasDeletions = willDeleteUsers.length > 0 || willDeletePayments.length > 0 ||
                          willDeleteReceipts.length > 0 || willDeleteBlogs.length > 0 ||
                          willDeleteTxns.length > 0 || willDeleteMappings.length > 0 ||
-                         willDeleteExpenses.length > 0;
+                         willDeleteExpenses.length > 0 || willDeleteVolunteers.length > 0;
 
     let msg = `⚠️ REPLACE MODE — DELETION PREVIEW\n\n`;
     msg += `Backup file: ${fileName}\n`;
@@ -571,6 +580,7 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
     if (backupTxnKeys.size > 0) msg += `• ${backupTxnKeys.size} bank transaction(s)\n`;
     if (backupMappingKeys.size > 0) msg += `• ${backupMappingKeys.size} narration mapping(s)\n`;
     if (backupExpenseKeys.size > 0) msg += `• ${backupExpenseKeys.size} expense(s)\n`;
+    if (backupVolunteerKeys.size > 0) msg += `• ${backupVolunteerKeys.size} volunteer registration(s)\n`;
 
     msg += `\n━━━ RECORDS THAT WILL BE DELETED ━━━\n`;
     if (!hasDeletions) {
@@ -614,6 +624,9 @@ async function confirmReplaceWithDeletionPreview(dump, fileName) {
       }
       if (willDeleteExpenses.length > 0) {
         msg += `\n🧾 EXPENSES (${willDeleteExpenses.length})\n`;
+      }
+      if (willDeleteVolunteers.length > 0) {
+        msg += `\n🤝 VOLUNTEER REGISTRATIONS (${willDeleteVolunteers.length})\n`;
       }
     }
 
@@ -770,6 +783,10 @@ async function performRestore(dump, fileName) {
     if (ex) statsHtml += `🧾 Expenses: ${ex}<br>`;
     const dc = fmt(r.restored.documents);
     if (dc) statsHtml += `📎 Documents: ${dc}<br>`;
+    const vl = fmt(r.restored['volunteers:list']);
+    if (vl) statsHtml += `🤝 Volunteer list: ${vl}<br>`;
+    const vr = fmt(r.restored.volunteers);
+    if (vr) statsHtml += `🤝 Volunteer registrations: ${vr}<br>`;
 
     // Show orphaned records deleted (replace mode only)
     if (r.restored['orphaned-users-deleted']) statsHtml += `🗑️ Orphaned users deleted: ${r.restored['orphaned-users-deleted']}<br>`;

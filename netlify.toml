@@ -161,6 +161,16 @@
   status = 200
 
 [[redirects]]
+  from = "/volunteer-register"
+  to = "/volunteer-register.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/volunteer-register"
+  to = "/ta/volunteer-register.html"
+  status = 200
+
+[[redirects]]
   from = "/donate"
   to = "/donate.html"
   status = 200
@@ -397,6 +407,16 @@
   status = 200
 
 [[redirects]]
+  from = "/volunteer/register"
+  to = "/.netlify/functions/volunteer-register"
+  status = 200
+
+[[redirects]]
+  from = "/volunteer/manage"
+  to = "/.netlify/functions/volunteer-manage"
+  status = 200
+
+[[redirects]]
   from = "/expense/list"
   to = "/.netlify/functions/expense-list"
   status = 200
@@ -419,6 +439,11 @@ status = 200
 [[redirects]]
   from = "/dashboard/manage-expenses"
   to = "/dashboard/manage-expenses.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard/manage-volunteers"
+  to = "/dashboard/manage-volunteers.html"
   status = 200
 
 [[redirects]]
