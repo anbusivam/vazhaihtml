@@ -35,6 +35,62 @@ function response(statusCode, body) {
   return { statusCode, headers: CORS_HEADERS, body: JSON.stringify(body) };
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+async function sendVolunteerNotification(record) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('[volunteer-register] RESEND_API_KEY is not configured. Registration email was not sent.');
+    return;
+  }
+
+  const fields = [
+    ['Registration ID', record.id],
+    ['Submitted at', record.createdAt],
+    ['Name', record.name],
+    ['Email', record.email],
+    ['Phone', record.phone],
+    ['City', record.city],
+    ['Age group', record.ageGroup],
+    ['Educational qualification', record.qualification],
+    ['Interests', record.interests.join(', ')],
+    ['Availability', record.availability],
+    ['How they heard about Vazhai', record.howHeard],
+    ['Comments', record.comments],
+    ['Consent', 'Yes'],
+  ];
+  const text = fields.map(([label, value]) => `${label}: ${value || '(not provided)'}`).join('\n');
+  const html = fields.map(([label, value]) => `<p><strong>${escapeHtml(label)}</strong><br>${escapeHtml(value || '(not provided)')}</p>`).join('');
+
+  const resendResponse = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: process.env.VOLUNTEER_NOTIFICATION_FROM || process.env.OTP_FROM_EMAIL || 'do-not-reply@vazhai.in',
+      to: [process.env.VOLUNTEER_NOTIFICATION_TO || 'vazhai.connect@gmail.com'],
+      reply_to: record.email,
+      subject: `New volunteer registration: ${record.id} - ${record.name}`,
+      text,
+      html: `<h2>New Vazhai volunteer registration</h2>${html}`,
+    }),
+  });
+
+  if (!resendResponse.ok) {
+    const errorText = await resendResponse.text();
+    throw new Error(`Resend returned ${resendResponse.status}: ${errorText}`);
+  }
+}
+
 exports.handler = async function(event) {
   if (event.httpMethod === 'OPTIONS') return response(200, {});
   if (event.httpMethod !== 'POST') return response(405, { error: 'Method not allowed. Use POST.' });
@@ -113,6 +169,12 @@ exports.handler = async function(event) {
 
     await store.setJSON(`volunteer:${id}`, record);
     await store.setJSON('volunteers:list', [...existingIds, id]);
+
+    try {
+      await sendVolunteerNotification(record);
+    } catch (emailError) {
+      console.error('[volunteer-register] Registration email failed:', emailError.message);
+    }
 
     return response(200, {
       success: true,
