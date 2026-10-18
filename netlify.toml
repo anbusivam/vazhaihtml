@@ -110,6 +110,11 @@
   status = 200
 
 [[redirects]]
+  from = "/ta/events/school-companion-training-2026"
+  to = "/ta/events/school-companion-training-2026.html"
+  status = 200
+
+[[redirects]]
   from = "/ta/login"
   to = "/ta/login.html"
   status = 200
@@ -213,6 +218,11 @@
 [[redirects]]
   from = "/events/independence-day-2025"
   to = "/events/independence-day-2025.html"
+  status = 200
+
+[[redirects]]
+  from = "/events/school-companion-training-2026"
+  to = "/events/school-companion-training-2026.html"
   status = 200
 
 [[redirects]]

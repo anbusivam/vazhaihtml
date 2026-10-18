@@ -135,6 +135,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://vazhai.in/events/school-companion-training-2026</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/events/school-companion-training-2026"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/events/school-companion-training-2026"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/events/school-companion-training-2026"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/ta/events/school-companion-training-2026</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/events/school-companion-training-2026"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/events/school-companion-training-2026"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/events/school-companion-training-2026"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://vazhai.in/events/ten-schools</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/events/ten-schools"/>
     <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/events/ten-schools"/>
