@@ -1,4 +1,5 @@
 // Public endpoint: POST /volunteer/register
+const crypto = require('crypto');
 const { getVolunteerStore } = require('./volunteer-store');
 
 const CORS_HEADERS = {
@@ -15,6 +16,7 @@ const ALLOWED_INTERESTS = new Set([
   'student-projects',
   'college-guidance',
   'employment-exchange',
+  'field-survey',
   'outreach',
   'explore',
 ]);
@@ -41,6 +43,22 @@ exports.handler = async function(event) {
     const body = JSON.parse(event.body || '{}');
     if (clean(body.website, 100)) return response(200, { success: true });
 
+    if (body.action === 'whatsapp-detail') {
+      const id = clean(body.id, 40);
+      const token = clean(body.token, 100);
+      const name = clean(body.name, 120);
+      const email = clean(body.email, 254).toLowerCase();
+      const note = clean(body.note, 1000);
+      if (!id || !token || !name || !validEmail(email)) return response(400, { error: 'Please provide your name and a valid email.' });
+      const store = await getVolunteerStore(event);
+      const record = await store.get(`volunteer:${id}`, { type: 'json' });
+      if (!record || record.whatsappToken !== token) return response(403, { error: 'This registration link has expired.' });
+      record.whatsappDetails = { name, email, note, submittedAt: new Date().toISOString() };
+      record.updatedAt = new Date().toISOString();
+      await store.setJSON(`volunteer:${id}`, record);
+      return response(200, { success: true });
+    }
+
     const name = clean(body.name, 120);
     const email = clean(body.email, 254).toLowerCase();
     const phone = clean(body.phone, 40);
@@ -57,12 +75,8 @@ exports.handler = async function(event) {
     if (!name) return response(400, { error: 'Name is required.' });
     if (!validEmail(email)) return response(400, { error: 'A valid email is required.' });
     if (!phone) return response(400, { error: 'Phone number is required.' });
-    if (!ALLOWED_AGE_GROUPS.has(ageGroup)) return response(400, { error: 'Please select an age group.' });
-    if (!qualification) return response(400, { error: 'Educational qualification is required.' });
-    if (!city) return response(400, { error: 'City of residence is required.' });
-    if (!interests.length) return response(400, { error: 'Please choose at least one way to contribute.' });
-    if (!ALLOWED_AVAILABILITY.has(availability)) return response(400, { error: 'Please select your availability.' });
-    if (body.consent !== true) return response(400, { error: 'Please agree to be contacted by Vazhai.' });
+    if (ageGroup && !ALLOWED_AGE_GROUPS.has(ageGroup)) return response(400, { error: 'Please select a valid age group.' });
+    if (availability && !ALLOWED_AVAILABILITY.has(availability)) return response(400, { error: 'Please select a valid availability option.' });
 
     const store = await getVolunteerStore(event);
     const existingIds = await store.get('volunteers:list', { type: 'json' }) || [];
@@ -75,6 +89,7 @@ exports.handler = async function(event) {
     }
 
     const now = new Date().toISOString();
+    const whatsappToken = crypto.randomBytes(24).toString('hex');
     const record = {
       id,
       name,
@@ -87,6 +102,7 @@ exports.handler = async function(event) {
       availability,
       howHeard,
       comments,
+      whatsappToken,
       status: 'new',
       notes: '',
       createdAt: now,
@@ -99,6 +115,7 @@ exports.handler = async function(event) {
     return response(200, {
       success: true,
       id,
+      whatsappToken,
       message: 'Thank you. Your volunteer registration has been received.',
     });
   } catch (err) {

@@ -37,8 +37,19 @@
   .form-status { display:none; margin-top:18px; padding:12px 14px; border-radius:var(--r); font-size:.82rem; line-height:1.7; }
   .form-status.success { display:block; background:var(--green-l); color:var(--green-d); }
   .form-status.error { display:block; background:#fff0ed; color:#9b3021; }
-  .success-home { display:none; margin-top:12px; }
-  .success-home.visible { display:inline-flex; }
+  .success-actions { display:none; flex-wrap:wrap; gap:10px; margin-top:12px; }
+  .success-actions.visible { display:flex; }
+  .success-actions .success-home { display:inline-flex; margin-top:0; }
+  .success-whatsapp { background:#25D366; color:#fff; border-color:#25D366; }
+  .whatsapp-dialog[hidden] { display:none; }
+  .whatsapp-dialog { margin-top:18px; padding:18px; border:1px solid #bfe8c9; border-radius:var(--r); background:#f3fff5; }
+  .whatsapp-dialog h2 { margin:0 0 6px; font-size:1rem; color:var(--ink); }
+  .whatsapp-dialog p { margin:0 0 14px; color:var(--ink2); font-size:.8rem; line-height:1.7; }
+  .whatsapp-dialog .form-grid { gap:12px; }
+  .whatsapp-dialog .form-actions { margin-top:14px; }
+  .whatsapp-prompt { display:none; margin:0 0 22px; padding:14px 16px; border:1px solid #bfe8c9; border-radius:var(--r); background:#f3fff5; color:var(--ink2); font-size:.82rem; line-height:1.7; }
+  .whatsapp-prompt.visible { display:block; }
+  .whatsapp-prompt a { color:var(--green-d); font-weight:800; }
   #volunteer-form.submitted .form-grid, #volunteer-form.submitted .trap, #volunteer-form.submitted .form-actions { display:none; }
   .trap { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
   @media (max-width:620px) { .form-grid, .interest-grid { grid-template-columns:1fr; } .interest-grid label:last-child { grid-column:auto; } .registration-card { padding:22px 16px; } }
@@ -69,40 +80,87 @@
     <span class="eyebrow muted">தன்னார்வலர் பதிவு</span>
     <h1>வாழையோடு <em>இணைந்து செயல்படுங்கள்</em></h1>
     <p class="intro">உங்களைப் பற்றியும், நீங்கள் செய்ய விரும்பும் பங்களிப்பைப் பற்றியும் சிறிது தெரிவியுங்கள். ஒரு சிறிய பணி, ஒரு உரையாடல் அல்லது மாதத்திற்கு சில மணிநேரங்களிலிருந்து தொடங்கலாம்.</p>
+    <div id="whatsapp-prompt" class="whatsapp-prompt">தன்னார்வலர் WhatsApp குழுவில் இணைய விரும்புகிறீர்களா? முதலில் இந்தப் பதிவை நிரப்புங்கள். ஏற்கனவே பதிவு செய்திருந்தால் <a href="https://chat.whatsapp.com/Ka0HpPy3ZY0ErHAfEmv9F8" target="_blank" rel="noopener">தவிர்த்து WhatsApp-இல் சேருங்கள் ↗</a>.</div>
     <form id="volunteer-form">
       <div class="form-grid">
         <div class="form-field"><label for="name">பெயர் *</label><input id="name" name="name" required maxlength="120" autocomplete="name"></div>
         <div class="form-field"><label for="email">மின்னஞ்சல் *</label><input id="email" name="email" type="email" required maxlength="254" autocomplete="email"></div>
         <div class="form-field"><label for="phone">தொலைபேசி எண் *</label><input id="phone" name="phone" type="tel" required maxlength="40" autocomplete="tel"></div>
-        <div class="form-field"><label for="city">வசிக்கும் நகரம் *</label><input id="city" name="city" required maxlength="120" autocomplete="address-level2"></div>
-        <div class="form-field"><label for="ageGroup">வயது பிரிவு *</label><select id="ageGroup" name="ageGroup" required><option value="">ஒன்றைத் தேர்ந்தெடுக்கவும்</option><option value="below-18">18 வயதிற்குக் கீழ்</option><option value="18-24">18–24</option><option value="25-35">25–35</option><option value="36-45">36–45</option><option value="46-50">46–50</option><option value="above-50">50 வயதிற்கு மேல்</option></select></div>
-        <div class="form-field"><label for="qualification">கல்வித் தகுதி *</label><input id="qualification" name="qualification" required maxlength="120" placeholder="மாணவர், பட்டதாரி, முதுநிலை போன்றவை"></div>
-        <fieldset class="form-field full"><legend class="form-legend">எவ்வாறு பங்களிக்க விரும்புகிறீர்கள்? *</legend><div class="interest-grid"><label><input type="checkbox" name="interests" value="learning-materials"> கற்றல் உபகரணங்களை உருவாக்குதல்</label><label><input type="checkbox" name="interests" value="career-conversation"> உங்கள் பணியனுபவத்தைப் பகிர்தல்</label><label><input type="checkbox" name="interests" value="catch-up-support"> மாணவர் கற்றலில் முன்னேற உதவுதல்</label><label><input type="checkbox" name="interests" value="student-projects"> மாணவர் திட்டத்திற்கு வழிகாட்டுதல்</label><label><input type="checkbox" name="interests" value="college-guidance"> கல்லூரி விண்ணப்பத்தில் உதவுதல்</label><label><input type="checkbox" name="interests" value="employment-exchange"> வேலைவாய்ப்பு அலுவலகப் பதிவில் உதவுதல்</label><label><input type="checkbox" name="interests" value="outreach"> வாழையை நபர்கள் அல்லது நிறுவனங்களுடன் இணைத்தல்</label><label><input type="checkbox" name="interests" value="explore"> இன்னும் தெரியவில்லை — குழுவில் இணைந்து, கவனித்து, கற்றுக்கொண்டு, எனக்குப் பொருத்தமான வழியைக் கண்டறிய விரும்புகிறேன்</label></div></fieldset>
-        <div class="form-field full"><label for="availability">எவ்வளவு நேரம் ஒதுக்க முடியும்? *</label><select id="availability" name="availability" required><option value="">ஒன்றைத் தேர்ந்தெடுக்கவும்</option><option value="one-task">ஒரு தெளிவான பணி</option><option value="few-hours-month">மாதத்திற்கு சில மணிநேரங்கள்</option><option value="regular">தொடர்ச்சியான பங்களிப்பு</option><option value="discuss">இன்னும் முடிவு செய்யவில்லை</option></select></div>
+        <div class="form-field"><label for="city">வசிக்கும் நகரம்</label><input id="city" name="city" maxlength="120" autocomplete="address-level2"></div>
+        <div class="form-field"><label for="ageGroup">வயது பிரிவு</label><select id="ageGroup" name="ageGroup"><option value="">ஒன்றைத் தேர்ந்தெடுக்கவும்</option><option value="below-18">18 வயதிற்குக் கீழ்</option><option value="18-24">18–24</option><option value="25-35">25–35</option><option value="36-45">36–45</option><option value="46-50">46–50</option><option value="above-50">50 வயதிற்கு மேல்</option></select></div>
+        <div class="form-field"><label for="qualification">கல்வித் தகுதி</label><input id="qualification" name="qualification" maxlength="120" placeholder="மாணவர், பட்டதாரி, முதுநிலை போன்றவை"></div>
+        <fieldset class="form-field full"><legend class="form-legend">எவ்வாறு பங்களிக்க விரும்புகிறீர்கள்?</legend><div class="interest-grid"><label><input type="checkbox" name="interests" value="learning-materials"> கற்றல் உபகரணங்களை உருவாக்கி, மாணவர்கள் கற்றலில் முன்னேற உதவுதல்</label><label><input type="checkbox" name="interests" value="career-conversation"> தொழில் வழிகாட்டுதல் அமர்வுகளை நடத்துதல்</label><label><input type="checkbox" name="interests" value="college-guidance"> மாணவர்கள் ITI, கல்லூரி மற்றும் பிற கல்விப் பாதைகளில் சேர வழிகாட்டுதல்</label><label><input type="checkbox" name="interests" value="employment-exchange"> வேலைவாய்ப்பு அலுவலகத்தில் பதிவு செய்து, வேலை வாய்ப்புகளைத் தேட மாணவர்களுக்கு உதவுதல்</label><label><input type="checkbox" name="interests" value="field-survey"> பள்ளி மற்றும் சமூகத் தேவைகள் குறித்த கள ஆய்வுக்கு உதவுதல்</label><label><input type="checkbox" name="interests" value="outreach"> வாழையை நபர்கள் அல்லது நிறுவனங்களுடன் இணைத்தல்</label><label><input type="checkbox" name="interests" value="explore"> இன்னும் தெரியவில்லை — குழுவில் இணைந்து, கவனித்து, கற்றுக்கொண்டு, எனக்குப் பொருத்தமான வழியைக் கண்டறிய விரும்புகிறேன்</label></div></fieldset>
+        <div class="form-field full"><label for="availability">எவ்வளவு நேரம் ஒதுக்க முடியும்?</label><select id="availability" name="availability"><option value="">ஒன்றைத் தேர்ந்தெடுக்கவும்</option><option value="one-task">ஒரு தெளிவான பணி</option><option value="few-hours-month">மாதத்திற்கு சில மணிநேரங்கள்</option><option value="regular">தொடர்ச்சியான பங்களிப்பு</option><option value="discuss">இன்னும் முடிவு செய்யவில்லை</option></select></div>
         <div class="form-field"><label for="howHeard">வாழையைப் பற்றி எப்படித் தெரிந்துகொண்டீர்கள்?</label><input id="howHeard" name="howHeard" maxlength="80"></div>
         <div class="form-field"><label for="comments">வேறு ஏதேனும் தெரிவிக்க விரும்புகிறீர்களா?</label><textarea id="comments" name="comments" maxlength="2000" placeholder="உங்கள் அனுபவம், ஆர்வம் அல்லது கேள்விகள்"></textarea></div>
-        <div class="form-field full"><label class="consent"><input id="consent" name="consent" type="checkbox" required> இந்த விவரங்களை வாழை சேமித்து, தன்னார்வப் பணியைப் பற்றி என்னைத் தொடர்புகொள்ளலாம் என ஒப்புக்கொள்கிறேன். *</label><span class="form-help">கடவுச்சொல் அல்லது நிதி தொடர்பான முக்கியமான தகவல்களைப் பகிர வேண்டாம்.</span></div>
+        <div class="form-field full"><label class="consent"><input id="consent" name="consent" type="checkbox"> இந்த விவரங்களை வாழை சேமித்து, தன்னார்வப் பணியைப் பற்றி என்னைத் தொடர்புகொள்ளலாம் என ஒப்புக்கொள்கிறேன்.</label><span class="form-help">கடவுச்சொல் அல்லது நிதி தொடர்பான முக்கியமான தகவல்களைப் பகிர வேண்டாம்.</span></div>
       </div>
       <div class="trap" aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
       <div class="form-actions"><button type="submit" class="btn btn-primary btn-lg">பதிவை அனுப்புங்கள் →</button><a href="/ta/join" class="btn btn-outline btn-lg">பின் செல்லவும்</a></div>
       <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
     </form>
-    <a href="/ta/" id="success-home" class="btn btn-primary btn-lg success-home">முகப்புக்குச் செல்லவும்</a>
+    <div id="success-actions" class="success-actions">
+      <button type="button" id="open-whatsapp" class="btn btn-lg success-whatsapp">தன்னார்வலர் WhatsApp குழுவில் சேருங்கள் ↗</button>
+      <a href="https://chat.whatsapp.com/Ka0HpPy3ZY0ErHAfEmv9F8" target="_blank" rel="noopener" class="btn btn-outline btn-lg">தவிர்த்து WhatsApp-இல் சேருங்கள் ↗</a>
+      <a href="/ta/" id="success-home" class="btn btn-outline btn-lg success-home">முகப்புக்குச் செல்லவும்</a>
+    </div>
+    <div id="whatsapp-dialog" class="whatsapp-dialog" role="dialog" aria-labelledby="whatsapp-dialog-title" hidden>
+      <h2 id="whatsapp-dialog-title">WhatsApp குழுவில் சேர்வதற்கு முன்</h2>
+      <p>உங்கள் விவரங்களை உறுதிப்படுத்தி, உங்களைப் பற்றி வாழை குழு மேலும் அறிய ஒரு சிறு குறிப்பைப் பகிரலாம்.</p>
+      <form id="whatsapp-detail-form">
+        <div class="form-grid">
+          <div class="form-field"><label for="whatsapp-name">பெயர் *</label><input id="whatsapp-name" name="name" required maxlength="120"></div>
+          <div class="form-field"><label for="whatsapp-email">மின்னஞ்சல் *</label><input id="whatsapp-email" name="email" type="email" required maxlength="254"></div>
+          <div class="form-field full"><label for="whatsapp-note">வேறு ஏதேனும் தெரிவிக்க விரும்புகிறீர்களா?</label><textarea id="whatsapp-note" name="note" maxlength="1000" placeholder="உங்கள் ஆர்வம் அல்லது கேள்விகளைச் சுருக்கமாகப் பகிரலாம்"></textarea></div>
+        </div>
+        <div class="form-actions"><button type="submit" class="btn btn-primary">சேமித்து WhatsApp-இல் சேருங்கள் ↗</button><button type="button" id="skip-whatsapp-detail" class="btn btn-outline">தவிர்த்து WhatsApp-இல் சேருங்கள் ↗</button></div>
+      </form>
+    </div>
   </div>
 </section></main>
 <script>
 const form = document.getElementById('volunteer-form');
 const statusEl = document.getElementById('form-status');
+if (new URLSearchParams(window.location.search).get('whatsapp') === '1') document.getElementById('whatsapp-prompt').classList.add('visible');
+const whatsappUrl = 'https://chat.whatsapp.com/Ka0HpPy3ZY0ErHAfEmv9F8';
+let registrationId = '';
+let whatsappToken = '';
+
+function joinWhatsApp() {
+  window.location.href = whatsappUrl;
+}
+
+document.getElementById('open-whatsapp').addEventListener('click', () => {
+  document.getElementById('whatsapp-dialog').hidden = false;
+  document.getElementById('whatsapp-name').focus();
+});
+document.getElementById('skip-whatsapp-detail').addEventListener('click', joinWhatsApp);
+document.getElementById('whatsapp-detail-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const detailForm = event.currentTarget;
+  const button = detailForm.querySelector('button[type="submit"]');
+  button.disabled = true;
+  try {
+    const details = Object.fromEntries(new FormData(detailForm).entries());
+    const response = await fetch('/volunteer/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'whatsapp-detail', id: registrationId, token: whatsappToken, ...details }) });
+    const result = await response.json();
+    if (!response.ok || result.error) throw new Error(result.error || 'இந்த விவரங்களைச் சேமிக்க முடியவில்லை.');
+    joinWhatsApp();
+  } catch (error) {
+    button.disabled = false;
+    statusEl.className = 'form-status error';
+    statusEl.textContent = error.message;
+  }
+});
 form.addEventListener('submit', async (event) => {
   event.preventDefault(); statusEl.className = 'form-status'; statusEl.textContent = '';
   const interests = [...form.querySelectorAll('input[name="interests"]:checked')].map(input => input.value);
-  if (!interests.length) { statusEl.className = 'form-status error'; statusEl.textContent = 'குறைந்தது ஒரு பங்களிப்பு வழியைத் தேர்ந்தெடுக்கவும்.'; return; }
   const submit = form.querySelector('button[type="submit"]'); submit.disabled = true; submit.textContent = 'அனுப்பப்படுகிறது...';
   const data = Object.fromEntries(new FormData(form).entries()); data.interests = interests; data.consent = form.consent.checked;
   try {
     const response = await fetch('/volunteer/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
     const result = await response.json(); if (!response.ok || result.error) throw new Error(result.error || 'பதிவை அனுப்ப முடியவில்லை.');
-    form.reset(); form.classList.add('submitted'); statusEl.className = 'form-status success'; statusEl.textContent = 'நன்றி. உங்கள் தன்னார்வலர் பதிவு பெறப்பட்டது. வாழை குழு விரைவில் உங்களைத் தொடர்புகொள்ளும்.'; document.getElementById('success-home').classList.add('visible');
+    registrationId = result.id || ''; whatsappToken = result.whatsappToken || ''; document.getElementById('whatsapp-name').value = data.name; document.getElementById('whatsapp-email').value = data.email; form.reset(); form.classList.add('submitted'); statusEl.className = 'form-status success'; statusEl.textContent = 'நன்றி. உங்கள் தன்னார்வலர் பதிவு பெறப்பட்டது. வாழை குழு விரைவில் உங்களைத் தொடர்புகொள்ளும்.'; document.getElementById('success-actions').classList.add('visible');
   } catch (error) { statusEl.className = 'form-status error'; statusEl.textContent = error.message; }
   finally { submit.disabled = false; submit.textContent = 'பதிவை அனுப்புங்கள் →'; }
 });
