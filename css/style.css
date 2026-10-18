@@ -1338,12 +1338,33 @@ fieldset.form-field { border:0; padding:0; margin:0; min-width:0; }
 .event-detail-meta span { display: block; color: var(--muted); font-size: .65rem; font-weight: 800; margin-top: 7px; text-transform: uppercase; letter-spacing: .06em; }
 .event-detail-section { padding: 18px 0 34px; }
 .event-detail-section h2 { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.15; margin: 8px 0 14px; }
-.event-detail-section p { max-width: 680px; color: var(--ink2); font-size: .9rem; line-height: 1.8; margin-bottom: 12px; }
+.event-detail-section p { color: var(--ink2); font-size: .9rem; line-height: 1.8; margin-bottom: 12px; }
 .detail-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 18px; }
 .detail-list div { padding: 16px; border-left: 3px solid var(--amber); background: var(--bg2); }
 .detail-list strong, .detail-list span { display: block; }
 .detail-list strong { font-size: .88rem; margin-bottom: 5px; }
 .detail-list span { color: var(--muted); font-size: .75rem; line-height: 1.5; }
+main.event-detail-page > .event-detail-section:nth-of-type(5) .detail-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+}
+main.event-detail-page > .event-detail-section:nth-of-type(5) .detail-list div {
+  padding: 18px; border: 1px solid var(--border); border-top: 3px solid var(--green);
+  background: var(--green-l);
+}
+main.event-detail-page > .event-detail-section:nth-of-type(5) .detail-list strong {
+  color: var(--green-d); font-size: .95rem;
+}
+main.event-detail-page > .event-detail-section:nth-of-type(6) .detail-list {
+  grid-template-columns: 1fr; gap: 0; border-top: 1px solid var(--border);
+}
+main.event-detail-page > .event-detail-section:nth-of-type(6) .detail-list div {
+  display: grid; grid-template-columns: minmax(170px, .38fr) 1fr; gap: 18px;
+  padding: 16px 12px; border: 0; border-bottom: 1px solid var(--border);
+  border-left: 4px solid var(--amber); background: transparent;
+}
+main.event-detail-page > .event-detail-section:nth-of-type(6) .detail-list strong {
+  color: var(--ink); font-size: .9rem;
+}
 .school-list { margin: 20px 0 28px; }
 .school-list div { padding: 14px 16px; }
 .school-list strong { font-size: .95rem; }
@@ -1382,6 +1403,10 @@ fieldset.form-field { border:0; padding:0; margin:0; min-width:0; }
   .event-detail-meta strong { font-size: 1.45rem; }
   .event-detail-meta span { font-size: .55rem; }
   .detail-list { grid-template-columns: 1fr; }
+  main.event-detail-page > .event-detail-section:nth-of-type(5) .detail-list { grid-template-columns: 1fr; }
+  main.event-detail-page > .event-detail-section:nth-of-type(6) .detail-list div {
+    grid-template-columns: 1fr; gap: 5px;
+  }
   .event-photo-grid { grid-template-columns: 1fr; }
   .event-photo-wide { grid-column: auto; }
   .event-photo-wide img { aspect-ratio: 4 / 3; }
