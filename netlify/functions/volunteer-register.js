@@ -75,6 +75,8 @@ exports.handler = async function(event) {
     if (!name) return response(400, { error: 'Name is required.' });
     if (!validEmail(email)) return response(400, { error: 'A valid email is required.' });
     if (!phone) return response(400, { error: 'Phone number is required.' });
+    if (!interests.length) return response(400, { error: 'Please choose at least one way to contribute.' });
+    if (body.consent !== true) return response(400, { error: 'Please confirm that Vazhai may store these details and contact you about volunteering.' });
     if (ageGroup && !ALLOWED_AGE_GROUPS.has(ageGroup)) return response(400, { error: 'Please select a valid age group.' });
     if (availability && !ALLOWED_AVAILABILITY.has(availability)) return response(400, { error: 'Please select a valid availability option.' });
 

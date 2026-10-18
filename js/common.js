@@ -76,6 +76,14 @@ function initCarousels() {
 document.addEventListener('DOMContentLoaded', initCarousels);
 setTimeout(initCarousels, 400);
 
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('[data-analytics-event]').forEach(link => {
+    link.addEventListener('click', () => {
+      if (typeof gtag === 'function') gtag('event', link.dataset.analyticsEvent, { language: document.documentElement.lang || 'en' });
+    });
+  });
+});
+
 /* ── Dynamic years since April 2005 ── */
 (function() {
   const founded = new Date(2005, 3, 1);
