@@ -503,23 +503,28 @@ body {
   background: linear-gradient(105deg, #5e1730 0%, #b83258 52%, #e9785a 100%); border: 0; border-top: 3px solid #ffb36b; color: #fff;
   display: grid; grid-template-columns: 54px minmax(0, 1fr); grid-template-rows: auto 22px; align-items: center; gap: 2px 12px; padding: 10px 14px 9px;
   box-shadow: 0 8px 20px rgba(94,23,48,.22);
-  animation: featuredGlow 4s ease-in-out infinite;
+  animation: featuredGlow 5.5s ease-in-out infinite;
 }
 .impact-story.featured:hover { filter: brightness(1.08); }
 .impact-story.featured::before { display: none; }
 .impact-story.featured::after {
   content: ''; position: absolute; inset: 0 auto 0 -35%; width: 24%;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
-  transform: skewX(-18deg); animation: stripShine 4.5s ease-in-out infinite; pointer-events: none;
+  transform: skewX(-18deg); animation: stripShine 7s ease-in-out infinite; pointer-events: none;
 }
 .impact-feature-intro { grid-column: 2; min-width: 0; display: flex; align-items: center; gap: 10px; }
 .impact-event-status {
   position: absolute; top: 5px; left: 80px; z-index: 1;
-  color: #ffe5a3; font-size: .46rem; font-weight: 900;
+  color: #ffe5a3; font-size: .8rem; font-weight: 900;
   letter-spacing: .14em; line-height: 1; text-transform: uppercase;
+  padding: 3px 6px; background: rgba(94,23,48,.72); border-radius: 2px;
   transform-origin: left center;
-  animation: eventStatusPulse 3.2s ease-in-out infinite;
+  animation: eventStatusPulse 2.6s ease-in-out infinite;
   pointer-events: none;
+}
+.impact-event-status::after {
+  content: '👇'; display: inline-block; margin-left: 4px; font-size: .8rem;
+  animation: joinArrowInvite 2.4s ease-in-out infinite;
 }
 .impact-feature-intro h2 {
   color: #fff; font-size: clamp(1rem, 3.5vw, 1.45rem); line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
@@ -606,11 +611,13 @@ body {
 @keyframes stripShine { 0%, 55% { transform: translateX(0) skewX(-18deg); opacity: 0; } 70% { opacity: 1; } 100% { transform: translateX(580%) skewX(-18deg); opacity: 0; } }
 @keyframes rollSpark { from { transform: scale(.7) rotate(0); opacity: .5; } to { transform: scale(1.2) rotate(18deg); opacity: 1; } }
 @keyframes starBloom { 0%, 100% { transform: scale(.25) rotate(0); opacity: .15; } 35% { transform: scale(1.35) rotate(28deg); opacity: 1; } 65% { transform: scale(.7) rotate(52deg); opacity: .55; } }
-@keyframes eventStatusPulse { 0%, 12% { opacity: 0; transform: scale(.55); } 38% { opacity: 1; transform: scale(1); } 62% { opacity: 1; transform: scale(1.08); } 86%, 100% { opacity: 0; transform: scale(.7); } }
+@keyframes eventStatusPulse { 0%, 100% { opacity: .9; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
+@keyframes joinArrowInvite { 0%, 65%, 100% { transform: translateY(0); } 78% { transform: translateY(4px); } 90% { transform: translateY(1px); } }
 @keyframes dateFloat { 0%, 100% { transform: rotate(-3deg) translateY(0); } 50% { transform: rotate(-1deg) translateY(-4px); } }
 @keyframes dateSweep { 0%, 35% { transform: translateX(-18px) rotate(24deg); opacity: 0; } 55% { opacity: 1; } 80%, 100% { transform: translateX(88px) rotate(24deg); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .impact-story, .impact-roll-track, .impact-date, .impact-date::after, .impact-story.featured::after, .impact-roll span::after, .impact-star, .impact-event-status { animation: none; }
+  .impact-event-status::after { animation: none; }
 }
 
 /* ── HERO POEM / TAGLINE ── */

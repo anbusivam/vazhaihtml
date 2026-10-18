@@ -95,6 +95,21 @@
   status = 200
 
 [[redirects]]
+  from = "/ta/events/world-childrens-day"
+  to = "/ta/events/world-childrens-day.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/events/ten-schools"
+  to = "/ta/events/ten-schools.html"
+  status = 200
+
+[[redirects]]
+  from = "/ta/events/independence-day-2025"
+  to = "/ta/events/independence-day-2025.html"
+  status = 200
+
+[[redirects]]
   from = "/ta/login"
   to = "/ta/login.html"
   status = 200
