@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "echo 'Static site — no build step needed'"
+    "build": "echo 'Static site — no build step needed'",
+    "test": "node --test"
   },
   "dependencies": {
     "@netlify/blobs": "^10.7.9",

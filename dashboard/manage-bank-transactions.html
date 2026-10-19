@@ -3125,13 +3125,14 @@ function shouldShowCreatePayment(txn) {
   if (!deposit || deposit <= 0) return false;
 
   const narration = (txn.narration || '').toUpperCase();
-  const startsWithNeft = narration.startsWith('NEFT-AXIS');
-  const containsRazorpaySettlement = narration.includes('RAZORPAY PAYMENTS PVT LTD PA') || narration.includes('RAZORPAY SOFTWARE PRIVATE');
+  const isRazorpayNeft = /(?:^|[\s-])(?:DEP[-\s]*)?NEFT[-\s]*AXIS.*RAZORPAY\s+PAYMENTS\s+PVT\s+LT(?:D)?(?:\b|$)/i.test(narration);
+  const containsRazorpaySettlement = isRazorpayNeft ||
+    (narration.startsWith('NEFT-AXIS') && narration.includes('RAZORPAY SOFTWARE PRIVATE'));
   const containsIntOrCharges = narration.includes('INT:') || narration.includes('CHARGES FOR :');
   const containsTax = narration.includes('TAX:');
 
   // Hide if it's a Razorpay NEFT pattern
-  if (startsWithNeft && containsRazorpaySettlement) return false;
+  if (containsRazorpaySettlement) return false;
   // Hide if it contains both Int: and TAX: or CHARGES FOR : (Razorpay fee/tax entries)
   if (containsIntOrCharges && containsTax) return false;
 

@@ -14,6 +14,7 @@
 
 const { getStore, ADMIN_EMAILS } = require('./auth-store');
 const { getBankStore } = require('./bank-store');
+const { getTransactionStatuses } = require('./bank-transaction-status');
 
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
@@ -261,34 +262,6 @@ exports.handler = async function (event, context) {
         return date;
       }
 
-      function matchesStatus(txn) {
-        if (!status) return true;
-
-        const deposit = Number(txn.deposit);
-        const withdrawal = Number(txn.withdrawal);
-        const hasDeposit = deposit > 0;
-        const hasWithdrawal = withdrawal > 0;
-        const hasCreatedPayment = Boolean(txn.paymentId) && existingPaymentIds.includes(txn.paymentId);
-        const isOrphanPayment = Boolean(txn.paymentId) && !hasCreatedPayment;
-        const hasExpense = Array.isArray(txn.expenseKeys) && txn.expenseKeys.length > 0;
-
-        const narration = String(txn.narration || '').toUpperCase();
-        const isRazorpaySettlement = narration.startsWith('NEFT-AXIS') &&
-          (narration.includes('RAZORPAY PAYMENTS PVT LTD PA') || narration.includes('RAZORPAY SOFTWARE PRIVATE'));
-        const isFeeOrTaxEntry =
-          (narration.includes('INT:') || narration.includes('CHARGES FOR :')) && narration.includes('TAX:');
-        const needsPayment = hasDeposit && !hasCreatedPayment &&
-          (isOrphanPayment || (!isRazorpaySettlement && !isFeeOrTaxEntry));
-        const needsExpense = hasWithdrawal && !hasExpense;
-
-        if (status === 'needs-payment') return needsPayment;
-        if (status === 'payment-created') return hasCreatedPayment;
-        if (status === 'needs-expense') return needsExpense;
-        if (status === 'expense-created') return hasExpense;
-        if (status === 'other') return !needsPayment && !hasCreatedPayment && !needsExpense && !hasExpense;
-        return true;
-      }
-
       // ── Apply filters ──
       let filtered = allTransactions.filter(txn => {
         // Search on narration
@@ -306,7 +279,7 @@ exports.handler = async function (event, context) {
           if (!withdrawal || withdrawal <= 0) return false;
         }
 
-        if (!matchesStatus(txn)) return false;
+        if (status && !getTransactionStatuses(txn, existingPaymentIds).includes(status)) return false;
 
         // Date range filter
         if (dateFrom || dateTo) {
