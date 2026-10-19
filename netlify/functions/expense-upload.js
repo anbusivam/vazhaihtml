@@ -32,6 +32,8 @@ const ALLOWED_TYPES = [
   'image/png',
   'image/gif',
   'image/webp',
+  'image/heic',
+  'image/heif',
 ];
 
 async function getSession(store, event) {
@@ -90,7 +92,7 @@ function parseMultipart(buffer, boundary) {
       data: buffer.slice(dataStart, partEnd),
     });
 
-    start = nextBIdx !== -1 ? nextBIdx + boundaryBytes.length : buffer.length;
+    start = nextBIdx !== -1 ? nextBIdx : buffer.length;
   }
 
   return parts;
@@ -107,11 +109,30 @@ function extractContentType(headerSection) {
   return match ? match[1].trim() : null;
 }
 
+function inferContentType(filename) {
+  const extension = String(filename || '').toLowerCase().split('.').pop();
+  const types = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    heic: 'image/heic',
+    heif: 'image/heif',
+  };
+  return types[extension] || 'application/octet-stream';
+}
+
 function sanitizeFilename(filename) {
   if (!filename) return 'document';
   // Remove path components and dangerous characters
   const base = String(filename).split(/[\\/]/).pop();
   return base.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 100) || 'document';
+}
+
+function createCloudinaryPublicId(filename, docId) {
+  const baseName = filename.replace(/\.[^.]+$/, '') || 'document';
+  return `${baseName}-${docId}`.substring(0, 150);
 }
 
 function sanitizeFolderPart(value) {
@@ -121,13 +142,19 @@ function sanitizeFolderPart(value) {
     .substring(0, 80) || 'expense';
 }
 
-async function uploadToCloudinary(file, filename, expenseKey, publicId) {
+function getExpenseMonth(expenseDate) {
+  const match = String(expenseDate || '').match(/^(\d{4})-(\d{2})/);
+  if (match) return `${match[1]}-${match[2]}`;
+  return new Date().toISOString().slice(0, 7);
+}
+
+async function uploadToCloudinary(file, filename, expenseMonth, publicId) {
   if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_KEY || !CLOUDINARY_SECRET) {
     throw new Error('Cloudinary not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_KEY, and CLOUDINARY_SECRET env vars.');
   }
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const folder = `expense-documents/${sanitizeFolderPart(expenseKey)}`;
+  const folder = `expense-documents/${sanitizeFolderPart(expenseMonth)}`;
   const resourceType = file.contentType.startsWith('image/') ? 'image' : 'raw';
   const paramsToSign = { folder, public_id: publicId, timestamp };
   const signString = Object.keys(paramsToSign)
@@ -203,7 +230,7 @@ exports.handler = async function (event, context) {
     const filePart = parts.find(p => p.fieldName === 'file');
 
     if (!expenseKeyPart || !expenseKeyPart.data) {
-      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'expenseKey is required.' }) };
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `expenseKey is required. Received fields: ${parts.map(part => part.fieldName || 'unknown').join(', ') || 'none'}` }) };
     }
 
     const expenseKey = expenseKeyPart.data.toString('utf-8').trim();
@@ -212,7 +239,7 @@ exports.handler = async function (event, context) {
     }
 
     if (!filePart || !filePart.data || filePart.data.length === 0) {
-      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'No file found in upload.' }) };
+      return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `No file found in upload. Received fields: ${parts.map(part => part.fieldName || 'unknown').join(', ') || 'none'}` }) };
     }
 
     // Check file size
@@ -221,8 +248,8 @@ exports.handler = async function (event, context) {
     }
 
     // Check file type
-    const fileType = filePart.contentType || 'application/octet-stream';
-    if (!ALLOWED_TYPES.includes(fileType)) {
+    const fileType = (filePart.contentType || inferContentType(filePart.filename)).toLowerCase();
+    if (!ALLOWED_TYPES.includes(fileType) && !fileType.startsWith('image/')) {
       return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: `File type "${fileType}" is not allowed. Only JPEG, PNG, GIF, and WebP images are allowed.` }) };
     }
 
@@ -237,13 +264,14 @@ exports.handler = async function (event, context) {
     // Generate a unique document ID
     const docId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     const filename = sanitizeFilename(filePart.filename);
+    const publicId = createCloudinaryPublicId(filename, docId);
 
     const uploadedAt = new Date().toISOString();
     const cloudinaryData = await uploadToCloudinary(
       { data: filePart.data, contentType: fileType },
       filename,
-      expenseKey,
-      docId
+      getExpenseMonth(expense.expenseDate),
+      publicId
     );
 
     // Add document metadata to the expense record
