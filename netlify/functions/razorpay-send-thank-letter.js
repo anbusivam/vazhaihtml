@@ -31,6 +31,48 @@ async function getSession(store, event) {
   return session;
 }
 
+async function markThankLetterSent(store, paymentId, payment, sessionEmail) {
+  const updatedPayment = {
+    ...payment,
+    thankLetterSent: 'Yes',
+    thankLetterUpdatedAt: new Date().toISOString(),
+    thankLetterSentBy: sessionEmail,
+  };
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await store.setJSON(`payment:${paymentId}`, updatedPayment);
+      lastError = null;
+      break;
+    } catch (err) {
+      lastError = err;
+    }
+
+    if (attempt < 3) {
+      await new Promise(resolve => setTimeout(resolve, 250 * attempt));
+    }
+  }
+
+  if (lastError) throw lastError;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const savedPayment = await store.get(`payment:${paymentId}`, { type: 'json' });
+      const savedStatus = savedPayment && String(savedPayment.thankLetterSent || '').trim().toLowerCase();
+      if (savedStatus === 'yes') return;
+    } catch (err) {
+      console.warn('[razorpay-send-thank-letter] Thank-letter status verification delayed:', err.message);
+    }
+
+    if (attempt < 3) {
+      await new Promise(resolve => setTimeout(resolve, 250 * attempt));
+    }
+  }
+
+  console.warn('[razorpay-send-thank-letter] Thank-letter write acknowledged but read-back is not yet visible:', paymentId);
+}
+
 exports.handler = async function (event, context) {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };
@@ -62,14 +104,16 @@ exports.handler = async function (event, context) {
     }
 
     // ── Check if already sent (skip check if force resend) ──
-    if (payment.thankLetterSent === 'Yes' && !force) {
+    const alreadyThanked = payment.thankLetterSent === true ||
+      String(payment.thankLetterSent || '').trim().toLowerCase() === 'yes';
+    if (alreadyThanked && !force) {
       return {
         statusCode: 200,
         headers: CORS_HEADERS,
         body: JSON.stringify({ status: 'ignored', message: 'Thank letter already sent for this payment.' }),
       };
     }
-    if (payment.thankLetterSent === 'Yes' && force) {
+    if (alreadyThanked && force) {
       console.log('[razorpay-send-thank-letter] Force resend requested for payment', paymentId);
     }
 
@@ -264,12 +308,7 @@ exports.handler = async function (event, context) {
     }
 
     // ── Success: update payment record ──
-    await store.setJSON(`payment:${paymentId}`, {
-      ...payment,
-      thankLetterSent: 'Yes',
-      thankLetterUpdatedAt: new Date().toISOString(),
-      thankLetterSentBy: session.email,
-    });
+    await markThankLetterSent(store, paymentId, payment, session.email);
 
     console.log('[razorpay-send-thank-letter] Thank letter sent to', donorEmail, 'for payment', paymentId);
 
