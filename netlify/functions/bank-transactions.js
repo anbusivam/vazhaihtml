@@ -194,6 +194,7 @@ exports.handler = async function (event, context) {
       // ── Parse filter params ──
       const search = (params.search || '').trim().toLowerCase();
       const type = (params.type || '').trim().toLowerCase(); // 'deposit' | 'withdrawal' | ''
+      const status = (params.status || '').trim().toLowerCase(); // 'needs-payment' | 'payment-created' | 'needs-expense' | 'expense-created' | 'other' | ''
       const period = (params.period || 'all').trim().toLowerCase(); // 'last1month' | 'last3months' | 'last6months' | 'thisyear' | 'custom' | 'all'
       const dateFromRaw = (params.dateFrom || '').trim(); // yyyy-mm-dd
       const dateToRaw = (params.dateTo || '').trim(); // yyyy-mm-dd
@@ -232,6 +233,7 @@ exports.handler = async function (event, context) {
 
       // ── Load all transaction records ──
       const transactionsList = await bankStore.get('transactions:list', { type: 'json' }) || [];
+      const existingPaymentIds = await store.get('payments:list', { type: 'json' }) || [];
       
       const allTransactions = [];
       for (const key of transactionsList) {
@@ -259,6 +261,34 @@ exports.handler = async function (event, context) {
         return date;
       }
 
+      function matchesStatus(txn) {
+        if (!status) return true;
+
+        const deposit = Number(txn.deposit);
+        const withdrawal = Number(txn.withdrawal);
+        const hasDeposit = deposit > 0;
+        const hasWithdrawal = withdrawal > 0;
+        const hasCreatedPayment = Boolean(txn.paymentId) && existingPaymentIds.includes(txn.paymentId);
+        const isOrphanPayment = Boolean(txn.paymentId) && !hasCreatedPayment;
+        const hasExpense = Array.isArray(txn.expenseKeys) && txn.expenseKeys.length > 0;
+
+        const narration = String(txn.narration || '').toUpperCase();
+        const isRazorpaySettlement = narration.startsWith('NEFT-AXIS') &&
+          (narration.includes('RAZORPAY PAYMENTS PVT LTD PA') || narration.includes('RAZORPAY SOFTWARE PRIVATE'));
+        const isFeeOrTaxEntry =
+          (narration.includes('INT:') || narration.includes('CHARGES FOR :')) && narration.includes('TAX:');
+        const needsPayment = hasDeposit && !hasCreatedPayment &&
+          (isOrphanPayment || (!isRazorpaySettlement && !isFeeOrTaxEntry));
+        const needsExpense = hasWithdrawal && !hasExpense;
+
+        if (status === 'needs-payment') return needsPayment;
+        if (status === 'payment-created') return hasCreatedPayment;
+        if (status === 'needs-expense') return needsExpense;
+        if (status === 'expense-created') return hasExpense;
+        if (status === 'other') return !needsPayment && !hasCreatedPayment && !needsExpense && !hasExpense;
+        return true;
+      }
+
       // ── Apply filters ──
       let filtered = allTransactions.filter(txn => {
         // Search on narration
@@ -275,6 +305,8 @@ exports.handler = async function (event, context) {
           const withdrawal = Number(txn.withdrawal);
           if (!withdrawal || withdrawal <= 0) return false;
         }
+
+        if (!matchesStatus(txn)) return false;
 
         // Date range filter
         if (dateFrom || dateTo) {
@@ -307,10 +339,6 @@ exports.handler = async function (event, context) {
 
       const startIdx = (page - 1) * perPage;
       const transactions = filtered.slice(startIdx, startIdx + perPage);
-
-      // Fetch the list of existing payment IDs from the auth store
-      // so the client can detect orphan payment IDs
-      const existingPaymentIds = await store.get('payments:list', { type: 'json' }) || [];
 
       return {
         statusCode: 200,

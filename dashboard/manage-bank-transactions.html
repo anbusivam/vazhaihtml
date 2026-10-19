@@ -1111,6 +1111,17 @@
           </select>
         </div>
         <div class="filter-group">
+          <label for="filter-status">Status</label>
+          <select id="filter-status" onchange="onStatusChange()">
+            <option value="">All Statuses</option>
+            <option value="needs-payment">Needs Payment</option>
+            <option value="payment-created">Payment Created</option>
+            <option value="needs-expense">Needs Expense</option>
+            <option value="expense-created">Expense Created</option>
+            <option value="other">Doesn't Fit Any</option>
+          </select>
+        </div>
+        <div class="filter-group">
           <label for="filter-period">Date Range</label>
           <select id="filter-period">
             <option value="all">All Dates</option>
@@ -1145,6 +1156,9 @@
             <button class="btn-primary btn-sm btn-outline" onclick="resetFilters()">✕ Clear</button>
           </div>
         </div>
+      </div>
+      <div id="status-other-hint" style="display:none;color:var(--text-light);font-size:12px;margin-top:8px;">
+        These are usually records received through the Razorpay payment gateway or interest income. Use the Razorpay page to create the payment.
       </div>
     </div>
 
@@ -1574,6 +1588,7 @@ let currentTotalPages = 1;
 let currentFilters = {
   search: '',
   type: '',
+  status: '',
   period: 'all',
   dateFrom: '',
   dateTo: '',
@@ -1656,12 +1671,18 @@ function onPeriodChange() {
   }
 }
 
+function onStatusChange() {
+  const statusHint = document.getElementById('status-other-hint');
+  statusHint.style.display = document.getElementById('filter-status').value === 'other' ? 'block' : 'none';
+}
+
 /**
  * Read the current filter values from the form and fetch page 1.
  */
 function applyFilters() {
   currentFilters.search = document.getElementById('filter-search').value.trim();
   currentFilters.type = document.getElementById('filter-type').value;
+  currentFilters.status = document.getElementById('filter-status').value;
   currentFilters.period = document.getElementById('filter-period').value;
   currentFilters.dateFrom = document.getElementById('filter-date-from').value;
   currentFilters.dateTo = document.getElementById('filter-date-to').value;
@@ -1675,11 +1696,13 @@ function applyFilters() {
 function resetFilters() {
   document.getElementById('filter-search').value = '';
   document.getElementById('filter-type').value = '';
+  document.getElementById('filter-status').value = '';
+  onStatusChange();
   document.getElementById('filter-period').value = 'all';
   document.getElementById('filter-date-from').value = '';
   document.getElementById('filter-date-to').value = '';
   onPeriodChange();
-  currentFilters = { search: '', type: '', period: 'all', dateFrom: '', dateTo: '' };
+  currentFilters = { search: '', type: '', status: '', period: 'all', dateFrom: '', dateTo: '' };
   currentPage = 1;
   loadTransactions();
 }
@@ -1711,6 +1734,7 @@ function buildTransactionsQuery() {
   params.set('perPage', String(currentPerPage));
   if (currentFilters.search) params.set('search', currentFilters.search);
   if (currentFilters.type) params.set('type', currentFilters.type);
+  if (currentFilters.status) params.set('status', currentFilters.status);
   if (currentFilters.period) params.set('period', currentFilters.period);
   if (currentFilters.period === 'custom') {
     if (currentFilters.dateFrom) params.set('dateFrom', currentFilters.dateFrom);
