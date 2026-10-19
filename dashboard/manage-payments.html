@@ -355,6 +355,27 @@
         <option value="50">50 per page</option>
         <option value="100">100 per page</option>
       </select>
+      <select id="ph-thank-status" style="padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;background:white;">
+        <option value="">All Thank Statuses</option>
+        <option value="needs-thanks">Needs Thanks</option>
+        <option value="thanked">Already Thanked</option>
+      </select>
+      <select id="ph-period" onchange="onPaymentPeriodChange()" style="padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;background:white;">
+        <option value="all">All Dates</option>
+        <option value="last1month">Last 1 Month</option>
+        <option value="last3months">Last 3 Months</option>
+        <option value="last6months">Last 6 Months</option>
+        <option value="thisyear">This Year</option>
+        <option value="custom">Custom Range…</option>
+      </select>
+      <span id="ph-custom-date-fields" style="display:none;align-items:center;gap:8px;">
+        <label for="ph-date-from" style="font-size:12px;color:var(--text-light);">From</label>
+        <input type="date" id="ph-date-from" style="padding:9px 10px;border:2px solid var(--border);border-radius:8px;font-family:inherit;">
+        <label for="ph-date-to" style="font-size:12px;color:var(--text-light);">To</label>
+        <input type="date" id="ph-date-to" style="padding:9px 10px;border:2px solid var(--border);border-radius:8px;font-family:inherit;">
+      </span>
+      <button class="btn-primary" onclick="applyPaymentFilters()">🔍 Apply Filters</button>
+      <button class="btn-primary btn-outline" onclick="resetPaymentFilters()">✕ Clear Filters</button>
       <button class="btn-primary" id="ph-refresh-btn" onclick="loadPaymentHistory(1)">🔄 Load Payments</button>
     </div>
     <div id="ph-msg" class="msg"></div>
@@ -461,6 +482,7 @@
 <script>
 let currentPage = 1;
 let currentUserEmail = '';
+let currentPaymentFilters = { status: '', period: 'all', dateFrom: '', dateTo: '' };
 
 const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
 
@@ -510,6 +532,31 @@ function updatePaginationUI(pagination) {
   nextBtn.disabled = !pagination.hasNext;
 }
 
+function onPaymentPeriodChange() {
+  const customFields = document.getElementById('ph-custom-date-fields');
+  customFields.style.display = document.getElementById('ph-period').value === 'custom' ? 'inline-flex' : 'none';
+}
+
+function applyPaymentFilters() {
+  currentPaymentFilters = {
+    status: document.getElementById('ph-thank-status').value,
+    period: document.getElementById('ph-period').value,
+    dateFrom: document.getElementById('ph-date-from').value,
+    dateTo: document.getElementById('ph-date-to').value,
+  };
+  loadPaymentHistory(1);
+}
+
+function resetPaymentFilters() {
+  document.getElementById('ph-thank-status').value = '';
+  document.getElementById('ph-period').value = 'all';
+  document.getElementById('ph-date-from').value = '';
+  document.getElementById('ph-date-to').value = '';
+  onPaymentPeriodChange();
+  currentPaymentFilters = { status: '', period: 'all', dateFrom: '', dateTo: '' };
+  loadPaymentHistory(1);
+}
+
 async function loadPaymentHistory(page) {
   const limit = parseInt(document.getElementById('ph-page-size').value);
 
@@ -524,7 +571,17 @@ async function loadPaymentHistory(page) {
     const headers = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const res = await fetch(`/razorpay/admin-payments?page=${page}&limit=${limit}`, { headers });
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      status: currentPaymentFilters.status,
+      period: currentPaymentFilters.period,
+    });
+    if (currentPaymentFilters.period === 'custom') {
+      if (currentPaymentFilters.dateFrom) params.set('dateFrom', currentPaymentFilters.dateFrom);
+      if (currentPaymentFilters.dateTo) params.set('dateTo', currentPaymentFilters.dateTo);
+    }
+    const res = await fetch(`/razorpay/admin-payments?${params.toString()}`, { headers });
     const data = await res.json();
 
     document.getElementById('ph-loading').style.display = 'none';
