@@ -102,8 +102,10 @@ exports.handler = async function (event, context) {
     }
 
     const filteredPayments = paymentRecords.filter(payment => {
-      if (thankStatus === 'needs-thanks' && (payment.status !== 'captured' || payment.thankLetterSent === 'Yes')) return false;
-      if (thankStatus === 'thanked' && payment.thankLetterSent !== 'Yes') return false;
+      const isThanked = payment.thankLetterSent === true ||
+        String(payment.thankLetterSent || '').trim().toLowerCase() === 'yes';
+      if (thankStatus === 'needs-thanks' && (payment.status !== 'captured' || isThanked)) return false;
+      if (thankStatus === 'thanked' && (payment.status !== 'captured' || !isThanked)) return false;
       if (dateFrom || dateTo) {
         const date = paymentDate(payment);
         if (!date) return false;
