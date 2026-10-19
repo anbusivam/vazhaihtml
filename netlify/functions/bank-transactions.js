@@ -196,7 +196,7 @@ exports.handler = async function (event, context) {
       const search = (params.search || '').trim().toLowerCase();
       const type = (params.type || '').trim().toLowerCase(); // 'deposit' | 'withdrawal' | ''
       const status = (params.status || '').trim().toLowerCase(); // 'needs-payment' | 'payment-created' | 'needs-expense' | 'expense-created' | 'other' | ''
-      const period = (params.period || 'all').trim().toLowerCase(); // 'last1month' | 'last3months' | 'last6months' | 'thisyear' | 'custom' | 'all'
+      const period = (params.period || 'last2months').trim().toLowerCase(); // 'last1month' | 'last2months' | 'last3months' | 'last6months' | 'thisyear' | 'custom' | 'all'
       const dateFromRaw = (params.dateFrom || '').trim(); // yyyy-mm-dd
       const dateToRaw = (params.dateTo || '').trim(); // yyyy-mm-dd
 
@@ -217,6 +217,9 @@ exports.handler = async function (event, context) {
       if (period === 'custom') {
         if (dateFromRaw) dateFrom = new Date(dateFromRaw + 'T00:00:00');
         if (dateToRaw) dateTo = new Date(dateToRaw + 'T23:59:59.999');
+      } else if (period === 'last2months') {
+        dateFrom = new Date(today.getFullYear(), today.getMonth() - 2, today.getDate());
+        dateTo = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
       } else if (period === 'last1month') {
         dateFrom = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
         dateTo = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);

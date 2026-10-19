@@ -361,6 +361,7 @@
         <option value="thanked">Already Thanked</option>
       </select>
       <select id="ph-period" onchange="onPaymentPeriodChange()" style="padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;background:white;">
+        <option value="last2months" selected>Last 2 Months</option>
         <option value="all">All Dates</option>
         <option value="last1month">Last 1 Month</option>
         <option value="last3months">Last 3 Months</option>
@@ -481,7 +482,7 @@
 <script>
 let currentPage = 1;
 let currentUserEmail = '';
-let currentPaymentFilters = { status: '', period: 'all', dateFrom: '', dateTo: '' };
+let currentPaymentFilters = { status: '', period: 'last2months', dateFrom: '', dateTo: '' };
 
 const SYSTEM_ADMINS = ['anbusivam@gmail.com', 'vazhai.connect@gmail.com'];
 
@@ -547,11 +548,11 @@ function readPaymentFilters() {
 
 function resetPaymentFilters() {
   document.getElementById('ph-thank-status').value = '';
-  document.getElementById('ph-period').value = 'all';
+  document.getElementById('ph-period').value = 'last2months';
   document.getElementById('ph-date-from').value = '';
   document.getElementById('ph-date-to').value = '';
   onPaymentPeriodChange();
-  currentPaymentFilters = { status: '', period: 'all', dateFrom: '', dateTo: '' };
+  currentPaymentFilters = { status: '', period: 'last2months', dateFrom: '', dateTo: '' };
 }
 
 async function loadPaymentHistory(page) {

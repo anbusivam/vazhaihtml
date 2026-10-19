@@ -1124,6 +1124,7 @@
         <div class="filter-group">
           <label for="filter-period">Date Range</label>
           <select id="filter-period">
+            <option value="last2months" selected>Last 2 Months</option>
             <option value="all">All Dates</option>
             <option value="last1month">Last 1 Month</option>
             <option value="last3months">Last 3 Months</option>
@@ -1589,7 +1590,7 @@ let currentFilters = {
   search: '',
   type: '',
   status: '',
-  period: 'all',
+  period: 'last2months',
   dateFrom: '',
   dateTo: '',
 };
@@ -1698,11 +1699,11 @@ function resetFilters() {
   document.getElementById('filter-type').value = '';
   document.getElementById('filter-status').value = '';
   onStatusChange();
-  document.getElementById('filter-period').value = 'all';
+  document.getElementById('filter-period').value = 'last2months';
   document.getElementById('filter-date-from').value = '';
   document.getElementById('filter-date-to').value = '';
   onPeriodChange();
-  currentFilters = { search: '', type: '', status: '', period: 'all', dateFrom: '', dateTo: '' };
+  currentFilters = { search: '', type: '', status: '', period: 'last2months', dateFrom: '', dateTo: '' };
   currentPage = 1;
   loadTransactions();
 }

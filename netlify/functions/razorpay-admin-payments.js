@@ -50,7 +50,7 @@ exports.handler = async function (event, context) {
     // ── Parse filter and pagination params ──
     const params = event.queryStringParameters || {};
     const thankStatus = (params.thankStatus || params.status || '').trim().toLowerCase();
-    const period = (params.period || 'all').trim().toLowerCase();
+    const period = (params.period || 'last2months').trim().toLowerCase();
     const dateFromRaw = (params.dateFrom || '').trim();
     const dateToRaw = (params.dateTo || '').trim();
     const page = Math.max(1, parseInt(event.queryStringParameters?.page) || 1);
@@ -63,7 +63,7 @@ exports.handler = async function (event, context) {
     if (period === 'custom') {
       if (dateFromRaw) dateFrom = new Date(dateFromRaw + 'T00:00:00');
       if (dateToRaw) dateTo = new Date(dateToRaw + 'T23:59:59.999');
-    } else if (period === 'last1month' || period === 'last3months' || period === 'last6months') {
+    } else if (period === 'last2months' || period === 'last1month' || period === 'last3months' || period === 'last6months') {
       const months = Number(period.match(/^last(\d+)months?$/)[1]);
       dateFrom = new Date(today.getFullYear(), today.getMonth() - months, today.getDate());
       dateTo = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
