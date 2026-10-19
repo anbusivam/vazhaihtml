@@ -104,8 +104,9 @@ exports.handler = async function (event, context) {
     }
 
     // ── Check if already sent (skip check if force resend) ──
-    const alreadyThanked = payment.thankLetterSent === true ||
-      String(payment.thankLetterSent || '').trim().toLowerCase() === 'yes';
+    const normalizedThankStatus = String(payment.thankLetterSent || '').trim().toLowerCase();
+    const alreadyThanked = payment.thankLetterSent === true || normalizedThankStatus === 'yes' ||
+      normalizedThankStatus === 'true' || normalizedThankStatus === '1';
     if (alreadyThanked && !force) {
       return {
         statusCode: 200,

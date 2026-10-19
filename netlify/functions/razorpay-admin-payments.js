@@ -49,7 +49,7 @@ exports.handler = async function (event, context) {
 
     // ── Parse filter and pagination params ──
     const params = event.queryStringParameters || {};
-    const thankStatus = (params.status || '').trim().toLowerCase();
+    const thankStatus = (params.thankStatus || params.status || '').trim().toLowerCase();
     const period = (params.period || 'all').trim().toLowerCase();
     const dateFromRaw = (params.dateFrom || '').trim();
     const dateToRaw = (params.dateTo || '').trim();
@@ -102,8 +102,9 @@ exports.handler = async function (event, context) {
     }
 
     const filteredPayments = paymentRecords.filter(payment => {
-      const isThanked = payment.thankLetterSent === true ||
-        String(payment.thankLetterSent || '').trim().toLowerCase() === 'yes';
+      const normalizedThankStatus = String(payment.thankLetterSent || '').trim().toLowerCase();
+      const isThanked = payment.thankLetterSent === true || normalizedThankStatus === 'yes' ||
+        normalizedThankStatus === 'true' || normalizedThankStatus === '1';
       if (thankStatus === 'needs-thanks' && (payment.status !== 'captured' || isThanked)) return false;
       if (thankStatus === 'thanked' && (payment.status !== 'captured' || !isThanked)) return false;
       if (dateFrom || dateTo) {

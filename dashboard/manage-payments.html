@@ -374,7 +374,6 @@
         <label for="ph-date-to" style="font-size:12px;color:var(--text-light);">To</label>
         <input type="date" id="ph-date-to" style="padding:9px 10px;border:2px solid var(--border);border-radius:8px;font-family:inherit;">
       </span>
-      <button class="btn-primary" onclick="applyPaymentFilters()">🔍 Apply Filters</button>
       <button class="btn-primary btn-outline" onclick="resetPaymentFilters()">✕ Clear Filters</button>
       <button class="btn-primary" id="ph-refresh-btn" onclick="loadPaymentHistory(1)">🔄 Load Payments</button>
     </div>
@@ -537,14 +536,13 @@ function onPaymentPeriodChange() {
   customFields.style.display = document.getElementById('ph-period').value === 'custom' ? 'inline-flex' : 'none';
 }
 
-function applyPaymentFilters() {
-  currentPaymentFilters = {
+function readPaymentFilters() {
+  return {
     status: document.getElementById('ph-thank-status').value,
     period: document.getElementById('ph-period').value,
     dateFrom: document.getElementById('ph-date-from').value,
     dateTo: document.getElementById('ph-date-to').value,
   };
-  loadPaymentHistory(1);
 }
 
 function resetPaymentFilters() {
@@ -554,10 +552,10 @@ function resetPaymentFilters() {
   document.getElementById('ph-date-to').value = '';
   onPaymentPeriodChange();
   currentPaymentFilters = { status: '', period: 'all', dateFrom: '', dateTo: '' };
-  loadPaymentHistory(1);
 }
 
 async function loadPaymentHistory(page) {
+  currentPaymentFilters = readPaymentFilters();
   const limit = parseInt(document.getElementById('ph-page-size').value);
 
   phShowMsg('', '');
@@ -574,7 +572,7 @@ async function loadPaymentHistory(page) {
     const params = new URLSearchParams({
       page: String(page),
       limit: String(limit),
-      status: currentPaymentFilters.status,
+      thankStatus: currentPaymentFilters.status,
       period: currentPaymentFilters.period,
     });
     if (currentPaymentFilters.period === 'custom') {
@@ -631,7 +629,9 @@ async function loadPaymentHistory(page) {
 
       // Thank Letter column
       const thankLetterSent = p.thankLetterSent;
-      const isThanked = thankLetterSent === true || String(thankLetterSent || '').trim().toLowerCase() === 'yes';
+      const normalizedThankStatus = String(thankLetterSent || '').trim().toLowerCase();
+      const isThanked = thankLetterSent === true || normalizedThankStatus === 'yes' ||
+        normalizedThankStatus === 'true' || normalizedThankStatus === '1';
       let thankLetterHtml = '';
       if (isThanked) {
         thankLetterHtml = '<span style="font-size:11px;color:#2e7d32;font-weight:600;">✅ Thanked</span> <button class="btn-primary btn-sm" style="font-size:10px;padding:4px 8px;margin-left:4px;" onclick="sendThankLetter(\'' + paymentId + '\', this, true)">🔄 Resend</button>';
