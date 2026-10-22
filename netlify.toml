@@ -155,6 +155,11 @@
   status = 200
 
 [[redirects]]
+  from = "/monthly-donation-child-education"
+  to = "/monthly-donation-child-education.html"
+  status = 200
+
+[[redirects]]
   from = "/areaswework"
   to = "/areaswework.html"
   status = 200
