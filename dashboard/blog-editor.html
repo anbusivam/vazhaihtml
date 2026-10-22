@@ -242,6 +242,9 @@
     #editorjs-container .image-tool__image {
       border-radius: 8px;
     }
+    #editorjs-container .ce-block[data-type="embed"] {
+      margin: 16px 0;
+    }
     /* ── Cover image section ── */
     .cover-section {
       display: flex;
@@ -589,11 +592,12 @@
         <label>Content — click each block to edit</label>
         <div id="editorjs-container"></div>
         <div class="body-image-actions">
+          <button class="btn btn-outline" type="button" onclick="insertVideoLink()">▶️ Insert Video Link</button>
           <button class="btn btn-outline" type="button" onclick="document.getElementById('body-upload-input').click()">📤 Upload from Device</button>
           <button class="btn btn-outline" type="button" onclick="openCloudinaryBrowser('editor')">📁 Browse Server</button>
         </div>
         <input type="file" id="body-upload-input" accept="image/*" style="display:none" onchange="handleBodyUpload(event)">
-        <div class="field-hint">Upload an image from your device or browse the server library to insert into the content.</div>
+        <div class="field-hint">Use the editor's <strong>+</strong> menu and choose <strong>Video / Embed</strong>, then paste a YouTube, Facebook, Vimeo, or direct video URL.</div>
       </div>
 
       <input type="hidden" id="edit-slug" value="">
@@ -648,6 +652,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.5.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.3.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.0.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.7.6"></script>
 
 <script>
 // ── Globals ──
@@ -826,9 +831,73 @@ function initEditor(data) {
         class: Table,
         inlineToolbar: true,
       },
+      embed: {
+        class: Embed,
+        toolbox: {
+          title: 'Video / Embed',
+        },
+        config: {
+          services: {
+            youtube: true,
+            facebook: true,
+            vimeo: true,
+          },
+        },
+      },
     },
     placeholder: 'Start writing your blog post...',
   });
+}
+
+function insertVideoLink() {
+  if (!editor) {
+    showMsg('error', 'The editor is still loading. Please try again.');
+    return;
+  }
+
+  const url = window.prompt('Paste a YouTube, Facebook, Vimeo, or direct video URL:');
+  if (!url || !url.trim()) return;
+
+  const videoData = createVideoEmbedData(url.trim());
+  if (!videoData) {
+    showMsg('error', 'Please enter a valid YouTube, Facebook, Vimeo, or direct video URL.');
+    return;
+  }
+
+  editor.blocks.insert('embed', videoData);
+}
+
+function createVideoEmbedData(url) {
+  try {
+    const sourceUrl = new URL(url);
+    const host = sourceUrl.hostname.toLowerCase().replace(/^www\./, '');
+
+    if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtu.be') {
+      const videoId = host === 'youtu.be'
+        ? sourceUrl.pathname.slice(1).split('/')[0]
+        : sourceUrl.searchParams.get('v') || sourceUrl.pathname.match(/\/embed\/([^/?]+)/)?.[1];
+      if (!videoId || !/^[a-zA-Z0-9_-]{6,20}$/.test(videoId)) return null;
+      return { service: 'youtube', source: url, embed: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`, caption: '' };
+    }
+
+    if (host === 'vimeo.com' || host === 'player.vimeo.com') {
+      const videoId = sourceUrl.pathname.match(/(?:video\/)?(\d+)/)?.[1];
+      if (!videoId) return null;
+      return { service: 'vimeo', source: url, embed: `https://player.vimeo.com/video/${videoId}`, caption: '' };
+    }
+
+    if (host === 'facebook.com' || host === 'm.facebook.com') {
+      return { service: 'facebook', source: url, embed: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false`, caption: '' };
+    }
+
+    if (/\.(mp4|webm|ogg)(?:$|[?#])/i.test(sourceUrl.pathname)) {
+      return { service: 'video', source: url, embed: url, caption: '' };
+    }
+  } catch (e) {
+    return null;
+  }
+
+  return null;
 }
 
 // ── Save Post ──

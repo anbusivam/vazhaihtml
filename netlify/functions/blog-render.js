@@ -121,6 +121,10 @@ main { padding-top:var(--nav-h); min-height:100vh; }
 .editorjs blockquote { border-left:4px solid var(--amber); padding:12px 18px; margin:1.5em 0; background:var(--amber-l); border-radius:0 10px 10px 0; font-style:italic; font-family:var(--ff-serif); color:var(--ink2); line-height:1.7; }
 .editorjs blockquote p { margin-bottom:0; }
 .editorjs img { max-width:100%; height:auto; border-radius:10px; margin:1.5em 0; display:block; }
+.editorjs .video-embed { margin:1.8em 0; }
+.editorjs .video-embed iframe, .editorjs .video-embed video { width:100%; aspect-ratio:16 / 9; border:0; border-radius:10px; display:block; background:#111; }
+.editorjs .video-embed video { height:auto; }
+.editorjs .video-caption { font-size:.78rem; color:var(--muted); text-align:center; margin-top:6px; }
 .editorjs .codex-editor__redactor { padding-bottom:0 !important; }
 .editorjs table { width:100%; border-collapse:collapse; margin:1.2em 0; font-size:.9rem; }
 .editorjs table th, .editorjs table td { border:1px solid var(--border); padding:10px 12px; text-align:left; }
@@ -419,7 +423,10 @@ exports.handler = async function (event, context) {
     if (blocks.length > 0) {
       try {
         const edJsParser = editorjsHtml();
-        postHtml = edJsParser.parse(post.content);
+        postHtml = blocks.map(function(block) {
+          if (block.type === 'embed') return renderVideoEmbed(block);
+          return edJsParser.parse({ blocks: [block] });
+        }).join('');
       } catch (parseErr) {
         console.error('[blog-render] editorjs-html parse error:', parseErr.message);
         postHtml = isTamil ? '<p>உள்ளடக்கத்தை வழங்குவதில் பிழை.</p>' : '<p>Error rendering post content.</p>';
@@ -811,6 +818,54 @@ function escapeHtml(str) {
     .replace(/[>]/g, '&' + 'gt;')
     .replace(/["]/g, '&' + 'quot;')
     .replace(/[']/g, '&#' + '039;');
+}
+
+function renderVideoEmbed(block) {
+  const data = block && block.data ? block.data : {};
+  const source = typeof data.source === 'string' ? data.source.trim() : '';
+  const embed = typeof data.embed === 'string' ? data.embed.trim() : '';
+  const caption = data.caption ? '<div class="video-caption">' + escapeHtml(data.caption) + '</div>' : '';
+  let videoHtml = '';
+
+  try {
+    const sourceUrl = new URL(source);
+    const sourceHost = sourceUrl.hostname.toLowerCase().replace(/^www\./, '');
+
+    if (sourceHost === 'youtube.com' || sourceHost === 'youtu.be' || sourceHost === 'm.youtube.com') {
+      const videoId = sourceHost === 'youtu.be'
+        ? sourceUrl.pathname.slice(1).split('/')[0]
+        : sourceUrl.searchParams.get('v') || sourceUrl.pathname.match(/\/embed\/([^/?]+)/)?.[1];
+      if (videoId && /^[a-zA-Z0-9_-]{6,20}$/.test(videoId)) {
+        videoHtml = '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(videoId) + '" title="Embedded YouTube video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+      }
+    } else if (sourceHost === 'vimeo.com' || sourceHost === 'player.vimeo.com') {
+      const videoId = sourceUrl.pathname.match(/(?:video\/)?(\d+)/)?.[1];
+      if (videoId) {
+        videoHtml = '<iframe src="https://player.vimeo.com/video/' + videoId + '" title="Embedded Vimeo video" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
+      }
+    } else if (sourceHost === 'facebook.com' || sourceHost === 'm.facebook.com') {
+      videoHtml = '<iframe src="https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(source) + '&show_text=false" title="Embedded Facebook video" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>';
+    } else if (/\.(mp4|webm|ogg)(?:$|[?#])/i.test(sourceUrl.pathname)) {
+      videoHtml = '<video controls preload="metadata" src="' + escapeHtml(sourceUrl.href) + '"></video>';
+    }
+  } catch (e) {
+    return '';
+  }
+
+  if (!videoHtml && embed) {
+    try {
+      const embedUrl = new URL(embed);
+      const embedHost = embedUrl.hostname.toLowerCase().replace(/^www\./, '');
+      const allowedEmbedHost = ['youtube-nocookie.com', 'youtube.com', 'player.vimeo.com', 'facebook.com'].includes(embedHost);
+      if (allowedEmbedHost) {
+        videoHtml = '<iframe src="' + escapeHtml(embedUrl.href) + '" title="Embedded video" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>';
+      }
+    } catch (e) {
+      return '';
+    }
+  }
+
+  return videoHtml ? '<div class="video-embed">' + videoHtml + caption + '</div>' : '';
 }
 
 function extractExcerptForMeta(post) {
