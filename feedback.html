@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Share Feedback | Vazhai NGO</title>
+<meta name="description" content="Share feedback about Vazhai or this website. You can submit with your account, contact details, or anonymously.">
+<link rel="canonical" href="https://vazhai.in/feedback.html">
+<link rel="icon" href="/images/favicon_io/favicon.ico">
+<link rel="stylesheet" href="/css/style.css?v=1.6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+<style>
+.feedback-page { max-width: 760px; margin: 0 auto; padding: 44px 28px 72px; }
+.feedback-intro { max-width: 600px; }
+.feedback-form { margin-top: 30px; }
+.feedback-label { display: block; color: var(--ink); font-weight: 800; font-size: .88rem; margin: 20px 0 8px; }
+.feedback-form select, .feedback-form textarea, .feedback-form input { width: 100%; box-sizing: border-box; padding: 13px 14px; border: 2px solid var(--border); border-radius: 8px; background: #fff; color: var(--ink); font: inherit; }
+.feedback-form textarea { min-height: 170px; resize: vertical; }
+.feedback-form select:focus, .feedback-form textarea:focus, .feedback-form input:focus { outline: none; border-color: var(--green); }
+.feedback-choice { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.feedback-choice label { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px; color: var(--ink2); font-size: .84rem; cursor: pointer; }
+.feedback-choice label:has(input:checked) { border-color: var(--green); background: #f2f8f1; color: var(--green-d); }
+.feedback-choice input { width: auto; flex: 0 0 auto; margin: 0; accent-color: var(--green); }
+.feedback-details { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.feedback-note { margin: 8px 0 0; color: var(--muted); font-size: .78rem; line-height: 1.5; }
+.feedback-status { display: none; margin-top: 18px; padding: 13px 15px; border-radius: 8px; font-size: .88rem; }
+.feedback-status.success { display: block; background: #edf7ed; color: #28612c; }
+.feedback-status.error { display: block; background: #fff0ed; color: #a03627; }
+.feedback-login { display: none; margin: 12px 0 0; color: var(--muted); font-size: .82rem; }
+.feedback-login a { color: var(--green-d); font-weight: 800; }
+.feedback-submit { margin-top: 24px; }
+.feedback-submit:disabled { opacity: .55; cursor: wait; }
+@media (max-width: 640px) { .feedback-page { padding: 30px 18px 80px; } .feedback-choice, .feedback-details { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="auth-wrap"><a href="/donors" id="donor-list-link">Our Donors</a><div id="auth-float"><a href="/login?redirect=%2Ffeedback.html" id="auth-float-link">Login</a></div></div>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<header class="top-bar"><div class="top-logo"><img src="/images/favicon_io/logo192x192.png" alt="Vazhai NGO"></div><div class="top-brand"><div class="top-name">வாழை <span>VAZHAI</span></div><div class="top-sub">Rural Education · Tamil Nadu</div></div></header>
+<nav class="lang-switcher" aria-label="Language Switcher"><a href="/feedback.html" class="lang-link active">English</a><span class="lang-sep">|</span><a href="/ta/feedback" class="lang-link">தமிழ்</a></nav>
+<nav class="sidebar"><div class="sb-brand"><div class="sb-logo"><img src="/images/favicon_io/logo192x192.png" alt="Vazhai NGO"></div><div class="sb-brand-text"><div class="sb-name">வாழை VAZHAI</div><div class="sb-tag">Rural Education NGO</div></div></div><div class="sb-lang"><a href="/feedback.html" class="lang-link active">English</a><span class="lang-sep">|</span><a href="/ta/feedback" class="lang-link">தமிழ்</a></div><a href="/donate" class="sb-donate-btn">💛 Donate Now</a><nav class="sb-nav"><a href="/" class="sb-item"><span class="sb-item-icon">🌿</span><span class="sb-item-label">Home</span></a><a href="/who-we-are" class="sb-item"><span class="sb-item-icon">🌱</span><span class="sb-item-label">Who We Are</span></a><a href="/what-we-do" class="sb-item"><span class="sb-item-icon">📚</span><span class="sb-item-label">What We Do</span></a><a href="/join" class="sb-item"><span class="sb-item-icon">🤝</span><span class="sb-item-label">Join Vazhai</span></a><a href="/donate" class="sb-item"><span class="sb-item-icon">💛</span><span class="sb-item-label">Donate</span></a><a href="/contact" class="sb-item"><span class="sb-item-icon">📬</span><span class="sb-item-label">Contact</span></a><a href="/events" class="sb-item"><span class="sb-item-icon">📅</span><span class="sb-item-label">Events</span></a><a href="/blog" class="sb-item"><span class="sb-item-icon">📝</span><span class="sb-item-label">Blog</span></a></nav><div class="sb-footer"><div class="sb-footer-live"><div class="live-dot"></div>Krishnagiri · Active 2025</div><div class="sb-footer-reg">Est. April 2005 · Reg. No. 296/05<br>Tamil Nadu, India</div><div class="sb-footer-links"><a href="/terms">Terms</a> · <a href="/privacy-policy">Privacy</a></div></div></nav>
+<main id="main-content"><section class="feedback-page"><div class="feedback-intro"><span class="eyebrow muted">We are listening</span><h1 class="section-hd">Share <em>Feedback</em></h1><p class="section-sub">Tell us what you think about Vazhai or this website. Your feedback helps us improve the work and the way people experience it.</p></div><form id="feedback-form" class="feedback-form" novalidate><label class="feedback-label" for="feedback-category">What is your feedback about?</label><select id="feedback-category" required><option value="vazhai">Vazhai and our work</option><option value="website">This website</option></select><label class="feedback-label" for="feedback-message">Your feedback</label><textarea id="feedback-message" maxlength="3000" required placeholder="Write your feedback here..."></textarea><p class="feedback-note">Please do not include passwords, payment details, or other sensitive information.</p><div class="feedback-label">How would you like to submit?</div><div class="feedback-choice"><label><input type="radio" name="identity" value="authenticated"> My account</label><label><input type="radio" name="identity" value="guest"> Name and email</label><label><input type="radio" name="identity" value="anonymous" checked> Anonymous</label></div><p id="feedback-login" class="feedback-login">You are not logged in. <a id="feedback-login-link" href="/login?redirect=%2Ffeedback.html">Log in</a> to submit with your account.</p><div id="guest-details" class="feedback-details" hidden><div><label class="feedback-label" for="feedback-name">Name</label><input id="feedback-name" maxlength="120" autocomplete="name"></div><div><label class="feedback-label" for="feedback-email">Email</label><input id="feedback-email" type="email" maxlength="254" autocomplete="email"></div></div><button id="feedback-submit" class="btn btn-green btn-lg feedback-submit" type="submit">Send Feedback</button><div id="feedback-status" class="feedback-status" role="status" aria-live="polite"></div></form></section></main>
+<nav class="bottom-nav" aria-label="Mobile Navigation"><a href="/" class="bn-item"><span class="bn-icon">🌿</span><span class="bn-label">Home</span></a><a href="/what-we-do" class="bn-item"><span class="bn-icon">📚</span><span class="bn-label">Work</span></a><a href="/join" class="bn-item"><span class="bn-icon">🤝</span><span class="bn-label">Join</span></a><a href="/contact" class="bn-item"><span class="bn-icon">📬</span><span class="bn-label">Contact</span></a><a href="/feedback.html" class="bn-item active"><span class="bn-icon">💬</span><span class="bn-label">Feedback</span></a></nav>
+<script src="/js/common.js?v=1.2"></script><script src="/js/feedback.js?v=1.1"></script>
+</body>
+</html>

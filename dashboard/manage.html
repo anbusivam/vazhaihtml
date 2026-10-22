@@ -174,6 +174,43 @@
     .section-hidden {
       display: none;
     }
+    .feedback-list {
+      display: grid;
+      gap: 12px;
+    }
+    .feedback-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+    .feedback-item-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .feedback-item-meta {
+      color: var(--text-light);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .feedback-item-message {
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.55;
+      margin: 12px 0 0;
+      white-space: pre-wrap;
+    }
+    .feedback-status-select {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 8px;
+      background: white;
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+    }
     .msg {
       padding: 10px 14px;
       border-radius: 8px;
@@ -266,6 +303,15 @@
     </div>
   </div>
 
+  <!-- Feedback moderation -->
+  <div class="card">
+    <h2>💬 Feedback</h2>
+    <div id="feedback-msg" class="msg"></div>
+    <div id="feedback-loading" style="color:var(--text-light);font-size:13px;">Loading feedback...</div>
+    <div id="feedback-empty" style="display:none;color:var(--text-light);font-size:13px;">No feedback submitted yet.</div>
+    <div id="feedback-list" class="feedback-list" style="display:none;"></div>
+  </div>
+
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
     <a href="/" class="home-link">🏠 Home</a>
     <a href="/dashboard/user" class="home-link">👤 My Dashboard</a>
@@ -292,6 +338,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
   
   document.getElementById('admin-email').textContent = data.email;
+  loadFeedback();
 
   // Restrict Razorpay and Backup sections to hardcoded system admin users only
   const isHardcodedAdmin = SYSTEM_ADMINS.includes(data.email);
@@ -301,6 +348,74 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('nav-donor-wall').style.display = 'flex';
   }
 });
+
+async function loadFeedback() {
+  const loading = document.getElementById('feedback-loading');
+  const empty = document.getElementById('feedback-empty');
+  const list = document.getElementById('feedback-list');
+  loading.style.display = 'block';
+  empty.style.display = 'none';
+  list.style.display = 'none';
+
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await fetch('/.netlify/functions/feedback', { headers });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not load feedback.');
+    loading.style.display = 'none';
+    const items = data.feedback || [];
+    if (items.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+    list.style.display = 'grid';
+    list.innerHTML = items.map(function(item) {
+      const date = item.createdAt ? new Date(item.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+      const contact = item.email ? ` · ${escapeHtml(item.email)}` : '';
+      const status = item.status === 'pending' || item.status === 'approved' ? 'open' : item.status;
+      return `<article class="feedback-item">
+        <div class="feedback-item-head">
+          <div><strong>${escapeHtml(item.category)}</strong><div class="feedback-item-meta">${escapeHtml(item.name || 'Anonymous')}${contact} · ${date}</div></div>
+          <select class="feedback-status-select" aria-label="Feedback status" onchange="updateFeedbackStatus('${escapeHtml(item.id)}', this.value)">
+            ${['open', 'resolved', 'rejected'].map(option => `<option value="${option}"${status === option ? ' selected' : ''}>${option}</option>`).join('')}
+          </select>
+        </div>
+        <p class="feedback-item-message">${escapeHtml(item.message)}</p>
+      </article>`;
+    }).join('');
+  } catch (error) {
+    loading.style.display = 'none';
+    showMsg('error', error.message);
+  }
+}
+
+async function updateFeedbackStatus(id, status) {
+  try {
+    const token = localStorage.getItem('vazhai_session');
+    const response = await fetch('/.netlify/functions/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ action: 'status', id, status }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not update feedback.');
+    showMsg('success', 'Feedback status updated.');
+    loadFeedback();
+  } catch (error) {
+    showMsg('error', error.message);
+    loadFeedback();
+  }
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 function showMsg(type, text) {
   const el = document.getElementById('msg-area');

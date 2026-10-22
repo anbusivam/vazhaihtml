@@ -198,6 +198,22 @@ body {
   box-shadow: none;
   transition: opacity .15s;
 }
+#feedback-float-link {
+  color: var(--amber);
+  text-decoration: none;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transition: opacity .15s;
+}
+#feedback-float-link:hover {
+  opacity: .8;
+  text-decoration: underline;
+}
+#feedback-mobile-link { display: none; }
 #donor-list-link:hover {
   opacity: .8;
   text-decoration: underline;
@@ -363,6 +379,15 @@ body {
   .sb-donate-btn:hover { background:var(--amber-d); }
   main { margin-left:var(--sb-w); width:calc(100% - var(--sb-w)); }
   .pg { padding-bottom:40px; }
+}
+
+@media (max-width:767px) {
+  #feedback-float-link { display: none; }
+  .lang-switcher #feedback-mobile-link {
+    display: inline-block;
+    color: var(--amber);
+    padding: 2px 6px;
+  }
 }
 
 /* ═══════════════════════

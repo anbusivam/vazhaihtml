@@ -140,6 +140,28 @@ function copyLink(id) {
   }
 })();
 
+/* ── Global feedback entry point ── */
+(function() {
+  if (window.location.pathname === '/feedback.html' || window.location.pathname === '/feedback') return;
+  const authWrap = document.getElementById('auth-wrap');
+  const langSwitcher = document.querySelector('.lang-switcher');
+  if (!authWrap || document.getElementById('feedback-float-link')) return;
+
+  const desktopLink = document.createElement('a');
+  desktopLink.id = 'feedback-float-link';
+  desktopLink.href = '/feedback.html';
+  desktopLink.textContent = 'Feedback';
+  authWrap.insertBefore(desktopLink, authWrap.firstChild);
+
+  if (langSwitcher) {
+    const mobileLink = document.createElement('a');
+    mobileLink.id = 'feedback-mobile-link';
+    mobileLink.href = '/feedback.html';
+    mobileLink.textContent = 'Feedback';
+    langSwitcher.insertBefore(mobileLink, langSwitcher.firstChild);
+  }
+})();
+
 /* ── Hash-based redirect (backward compatibility with old SPA links) ── */
 (function() {
   const hashMap = {

@@ -150,6 +150,7 @@ exports.handler = async function (event, context) {
       // Determine roles: admin if in ADMIN_EMAILS list
       const roles = ADMIN_EMAILS.includes(normalizedEmail) ? ['admin'] : [];
       await store.setJSON(`user:${normalizedEmail}`, {
+        userId: crypto.randomUUID(),
         email: normalizedEmail,
         name: pendingName || '',
         phone: pendingPhone || '',
@@ -166,6 +167,10 @@ exports.handler = async function (event, context) {
         await store.setJSON('users:list', usersList);
       }
     } else {
+      // Older accounts may not have a stable identifier yet.
+      if (!userData.userId) {
+        userData.userId = crypto.randomUUID();
+      }
       // For existing users, ensure admin role is set if they're in the admin list
       if (ADMIN_EMAILS.includes(normalizedEmail)) {
         // Migrate old single-role format to new array format if needed

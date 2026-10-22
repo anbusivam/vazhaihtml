@@ -1,6 +1,7 @@
 // Netlify Function: GET /auth/check
 // Validates the session cookie stored locally
 const { getStore, ADMIN_EMAILS } = require('./auth-store');
+const crypto = require('crypto');
 
 const CORS_HEADERS = {
   'Content-Type': 'application/json',
@@ -54,7 +55,13 @@ exports.handler = async function (event, context) {
     let userPan = '';
     let userAddress = '';
     let userAdditionalEmails = [];
+    let userId = '';
     if (userData) {
+      if (!userData.userId) {
+        userData.userId = crypto.randomUUID();
+        await store.setJSON(`user:${session.email}`, userData);
+      }
+      userId = userData.userId;
       // Support both old single-role format and new array format
       if (Array.isArray(userData.roles)) {
         roles = userData.roles;
@@ -78,7 +85,8 @@ exports.handler = async function (event, context) {
       statusCode: 200,
       headers: CORS_HEADERS,
       body: JSON.stringify({ 
-        authenticated: true, 
+        authenticated: true,
+        userId,
         email: session.email, 
         name: userName,
         phone: userPhone,
