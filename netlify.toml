@@ -34,6 +34,11 @@
   status = 200
 
 [[redirects]]
+  from = "/dashboard/manage-donor-monthly"
+  to = "/dashboard/manage-donor-monthly.html"
+  status = 200
+
+[[redirects]]
   from = "/donate/order"
   to = "/.netlify/functions/donate-order"
   status = 200

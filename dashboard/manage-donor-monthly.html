@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Donor Donations - Vazhai</title>
+  <link rel="icon" href="/images/favicon_io/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --green: #2d5a3f; --border: #dce3dd; --text: #333; --muted: #667069; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f0f9f0; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; }
+    header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 16px 24px; background: white; border-bottom: 1px solid var(--border); }
+    h1 { margin: 0; font-size: 20px; color: var(--green); }
+    .account { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: var(--muted); overflow-wrap: anywhere; }
+    nav { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 24px; background: white; border-bottom: 1px solid var(--border); }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    main { margin: 24px auto; padding: 0 16px 24px; }
+    fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+    form { padding: 16px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; min-width: 0; }
+    input, select, button { font: inherit; border: 1px solid var(--border); border-radius: 6px; background: white; padding: 9px 10px; height: 38px; color: var(--text); max-width: 100%; }
+    input[type="number"] { width: 96px; }
+    button { cursor: pointer; font-weight: 600; }
+    button[type="submit"] { background: var(--green); color: white; border-color: var(--green); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    button:hover:not(:disabled) { filter: brightness(.95); }
+    :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+    .search { flex: 1; min-width: 180px; max-width: 300px; }
+    .summary { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 16px 0; color: var(--muted); font-size: 12px; }
+    .summary strong { color: var(--green); font-size: 14px; }
+    #status { padding: 20px 0; color: var(--muted); }
+    #status.error { color: #b42318; }
+    .matrix-wrap { overflow: auto; max-height: 70vh; border: 1px solid var(--border); background: white; }
+    table { border-collapse: separate; border-spacing: 0; font-size: 12px; line-height: 18px; font-variant-numeric: tabular-nums; width: max-content; }
+    th, td { padding: 6px 8px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+    thead th { position: sticky; top: 0; z-index: 3; background: #e8f5e9; vertical-align: top; min-width: 88px; text-align: right; }
+    th:first-child { position: sticky; left: 0; z-index: 2; width: 176px; background: #f7faf7; text-align: left; }
+    thead th:first-child { z-index: 4; background: #e8f5e9; }
+    .donor-name { display: block; width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--green); background: transparent; border: 0; border-radius: 0; padding: 0; margin: 0; text-align: left; font: inherit; line-height: inherit; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+    .donor-tooltip { position: fixed; z-index: 20; max-width: min(280px, calc(100vw - 24px)); padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: white; color: var(--text); box-shadow: 0 4px 16px rgba(0,0,0,.16); font-size: 12px; line-height: 1.6; white-space: normal; overflow-wrap: anywhere; pointer-events: none; }
+    .donor-tooltip strong { display: block; margin-bottom: 3px; color: var(--green); font-size: 13px; }
+    td.paid { background: #f1f8f2; color: var(--green); font-weight: 600; }
+    td.gap { background: #fafafa; color: #b7bdb8; }
+    .total { background: #f4f6f5; font-weight: 700; }
+    tfoot th, tfoot td { background: #e8f5e9; border-bottom: 0; font-weight: 700; }
+    tr:hover td { box-shadow: inset 0 0 0 999px rgba(45,90,63,.025); }
+    [hidden] { display: none !important; }
+    @media (max-width: 600px) {
+      header, nav { padding-left: 16px; padding-right: 16px; }
+      h1 { font-size: 18px; }
+      main { margin-top: 12px; padding-left: 10px; padding-right: 10px; }
+      fieldset > label { flex: 1 1 140px; }
+      .search { max-width: none; }
+      th:first-child { width: 156px; }
+      .donor-name { width: 140px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Monthly Donor Donations</h1>
+    <div class="account"><span id="admin-email"></span><button id="sign-out" type="button">Sign Out</button></div>
+  </header>
+  <nav aria-label="Dashboard"><a href="/dashboard/manage">Admin Dashboard</a><a href="/dashboard/manage-payments">Payment History</a><a href="/">Home</a></nav>
+  <main>
+    <form id="filters">
+      <fieldset id="controls" disabled>
+        <label>Date range<select id="date-range"><option value="4">Last 4 months</option><option value="12" selected>Last 12 months</option><option value="24">Last 2 years</option><option value="custom">Custom range</option></select></label>
+        <label id="date-from-label" hidden>From<input id="date-from" name="dateFrom" type="date" required></label>
+        <label id="date-to-label" hidden>To<input id="date-to" name="dateTo" type="date" required></label>
+        <label>Donor category<select id="category" name="category"><option value="all">All donors</option><option value="frequent">Frequent donors</option><option value="non-frequent">Non-frequent donors</option></select></label>
+        <label>Frequent: minimum months / year<input id="min-months" name="minMonths" type="number" min="2" max="12" value="3" required></label>
+        <label class="search">Donor name or email<input id="search" name="search" type="search" placeholder="Search donors" maxlength="200"></label>
+        <button id="apply" type="submit">Apply</button>
+      </fieldset>
+    </form>
+    <div id="summary" class="summary" hidden><strong id="result-summary"></strong><span id="frequency-window"></span></div>
+    <div id="status" role="status" aria-live="polite">Checking admin access...</div>
+    <div id="matrix-wrap" class="matrix-wrap" tabindex="0" role="region" aria-label="Monthly donation amounts in INR" hidden>
+      <table id="matrix"><caption hidden>Donors by month, amounts in Indian rupees</caption><thead></thead><tbody></tbody><tfoot></tfoot></table>
+    </div>
+  </main>
+  <div id="donor-tooltip" class="donor-tooltip" role="tooltip" hidden></div>
+  <script>
+    const money = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 });
+    let activeRequest;
+    let activeDonorButton;
+    const donorTooltip = document.getElementById('donor-tooltip');
+
+    function showDonorTooltip(button) {
+      activeDonorButton = button;
+      donorTooltip.replaceChildren();
+      const donorName = document.createElement('strong');
+      donorName.textContent = button.dataset.donorName;
+      donorTooltip.append(donorName);
+      for (const detail of [button.dataset.donorEmail, button.dataset.donorFrequency, 'Last donation: ' + button.dataset.lastDonation]) {
+        const line = document.createElement('div');
+        line.textContent = detail;
+        donorTooltip.append(line);
+      }
+      donorTooltip.hidden = false;
+      button.setAttribute('aria-describedby', 'donor-tooltip');
+      const trigger = button.getBoundingClientRect();
+      const tooltip = donorTooltip.getBoundingClientRect();
+      const left = Math.min(Math.max(12, trigger.left), innerWidth - tooltip.width - 12);
+      const below = trigger.bottom + 8;
+      const top = below + tooltip.height <= innerHeight - 8 ? below : Math.max(8, trigger.top - tooltip.height - 8);
+      donorTooltip.style.left = left + 'px';
+      donorTooltip.style.top = top + 'px';
+    }
+
+    function hideDonorTooltip(button) {
+      if (button && button !== activeDonorButton) return;
+      if (activeDonorButton) activeDonorButton.removeAttribute('aria-describedby');
+      activeDonorButton = null;
+      donorTooltip.hidden = true;
+    }
+
+    function authHeaders() {
+      const token = localStorage.getItem('vazhai_session');
+      return token ? { Authorization: 'Bearer ' + token } : {};
+    }
+    function updateDateRange() {
+      const range = document.getElementById('date-range').value;
+      const custom = range === 'custom';
+      document.getElementById('date-from-label').hidden = !custom;
+      document.getElementById('date-to-label').hidden = !custom;
+      if (custom) return;
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      const end = new Date(today + 'T00:00:00Z');
+      document.getElementById('date-to').value = today;
+      document.getElementById('date-from').value = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - Number(range) + 1, 1)).toISOString().slice(0, 10);
+    }
+    function cell(tag, text, className) {
+      const element = document.createElement(tag);
+      element.textContent = text;
+      if (className) element.className = className;
+      return element;
+    }
+    function monthLabel(month) {
+      return new Date(month + '-01T00:00:00Z').toLocaleDateString('en-IN', { timeZone: 'UTC', month: 'short', year: 'numeric' });
+    }
+    function render(data) {
+      const table = document.getElementById('matrix');
+      const months = [...data.months].sort().reverse();
+      table.tHead.replaceChildren();
+      table.tBodies[0].replaceChildren();
+      table.tFoot.replaceChildren();
+      const header = document.createElement('tr');
+      const donorHeader = cell('th', 'Donor / INR');
+      donorHeader.scope = 'col';
+      header.append(donorHeader);
+      for (const month of months) {
+        const heading = cell('th', monthLabel(month));
+        heading.scope = 'col';
+        header.append(heading);
+      }
+      const totalHeader = cell('th', 'Range total', 'total');
+      totalHeader.scope = 'col';
+      header.append(totalHeader);
+      table.tHead.append(header);
+      for (const donor of data.donors) {
+        const row = document.createElement('tr');
+        const label = cell('th', '');
+        label.scope = 'row';
+        const name = cell('button', donor.name, 'donor-name');
+        name.type = 'button';
+        name.dataset.donorName = donor.name;
+        name.dataset.donorEmail = 'Email: ' + (donor.email || 'Not available');
+        name.dataset.donorFrequency = 'Frequency: ' + (donor.category === 'frequent' ? 'Frequent' : 'Non-frequent') + ' (' + donor.activeMonths + '/12 months)';
+        name.dataset.lastDonation = donor.lastDonation;
+        name.setAttribute('aria-label', donor.name + '. Show email, donation frequency, and last donation.');
+        name.addEventListener('pointerenter', () => showDonorTooltip(name));
+        name.addEventListener('pointerleave', () => {
+          if (document.activeElement !== name) hideDonorTooltip(name);
+        });
+        name.addEventListener('focus', () => showDonorTooltip(name));
+        name.addEventListener('blur', () => hideDonorTooltip(name));
+        name.addEventListener('click', () => showDonorTooltip(name));
+        label.append(name);
+        row.append(label);
+        for (const month of months) {
+          const amount = donor.amounts[month] || 0;
+          const amountCell = cell('td', amount ? money.format(amount) : '-', amount ? 'paid' : 'gap');
+          amountCell.setAttribute('aria-label', donor.name + ', ' + monthLabel(month) + ': ' + (amount ? money.format(amount) : 'No donation'));
+          row.append(amountCell);
+        }
+        row.append(cell('td', money.format(donor.total), 'total'));
+        table.tBodies[0].append(row);
+      }
+      const totalRow = document.createElement('tr');
+      const totalLabel = cell('th', 'Monthly total');
+      totalLabel.scope = 'row';
+      totalRow.append(totalLabel);
+      for (const month of months) totalRow.append(cell('td', money.format(data.totals[month])));
+      totalRow.append(cell('td', money.format(data.total)));
+      table.tFoot.append(totalRow);
+      document.getElementById('result-summary').textContent = data.donors.length + ' donors | ' + money.format(data.total);
+      document.getElementById('frequency-window').textContent = 'Frequency window: ' + data.frequencyFrom + ' to ' + data.dateTo;
+      document.getElementById('summary').hidden = false;
+    }
+    async function loadMatrix() {
+      if (activeRequest) activeRequest.abort();
+      const request = new AbortController();
+      activeRequest = request;
+      const status = document.getElementById('status');
+      status.hidden = false;
+      status.className = '';
+      status.textContent = 'Loading donations...';
+      document.getElementById('matrix-wrap').hidden = true;
+      document.getElementById('summary').hidden = true;
+      document.getElementById('apply').disabled = true;
+      try {
+        const params = new URLSearchParams(new FormData(document.getElementById('filters')));
+        const response = await fetch('/.netlify/functions/donor-monthly?' + params, { headers: authHeaders(), signal: request.signal });
+        const data = await response.json();
+        if (response.status === 401) { window.location.href = '/login'; return; }
+        if (!response.ok) throw new Error(data.error || 'Could not load donations.');
+        render(data);
+        status.textContent = data.donors.length ? '' : 'No donors match these filters.';
+        status.hidden = data.donors.length > 0;
+        document.getElementById('matrix-wrap').hidden = data.donors.length === 0;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        status.className = 'error';
+        status.textContent = error.message;
+      } finally {
+        if (activeRequest === request) document.getElementById('apply').disabled = false;
+      }
+    }
+    document.getElementById('filters').addEventListener('submit', event => {
+      event.preventDefault();
+      loadMatrix();
+    });
+    document.addEventListener('pointerdown', event => {
+      if (activeDonorButton && !activeDonorButton.contains(event.target)) hideDonorTooltip();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        const donorButton = activeDonorButton;
+        hideDonorTooltip();
+        if (donorButton) donorButton.focus();
+      }
+    });
+    document.getElementById('date-range').addEventListener('change', () => {
+      updateDateRange();
+      if (document.getElementById('date-range').value !== 'custom') loadMatrix();
+    });
+    document.getElementById('sign-out').addEventListener('click', async () => {
+      try { await fetch('/auth/logout', { method: 'POST', headers: authHeaders() }); } catch (_) {}
+      localStorage.removeItem('vazhai_session');
+      document.cookie = 'vazhai_session=; Path=/; Max-Age=0; SameSite=Lax';
+      window.location.href = '/login';
+    });
+    document.addEventListener('DOMContentLoaded', async () => {
+      updateDateRange();
+      try {
+        const response = await fetch('/auth/check', { headers: authHeaders() });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Could not check admin access.');
+        if (!data.authenticated) { window.location.href = '/login'; return; }
+        const isAdmin = data.roles ? data.roles.includes('admin') : data.role === 'admin';
+        if (!isAdmin) throw new Error('Admin access required.');
+        document.getElementById('admin-email').textContent = data.email;
+        document.getElementById('controls').disabled = false;
+        await loadMatrix();
+      } catch (error) {
+        document.getElementById('status').className = 'error';
+        document.getElementById('status').textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>
