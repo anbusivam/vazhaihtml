@@ -548,8 +548,9 @@
   <div class="card">
     <h2>👥 Registered Users</h2>
     <div class="bulk-actions">
-      <button class="btn-primary" id="fetch-users-btn" onclick="loadUsers()">📥 Fetch Users</button>
+      <button class="btn-primary" id="fetch-users-btn" onclick="fetchAllUsers()">📥 Fetch Users</button>
       <button class="btn-primary" id="fetch-donors-btn" onclick="fetchDonors()">💝 Fetch Donors</button>
+      <button class="btn-primary btn-outline" id="download-users-btn" onclick="downloadUsersCsv()" disabled>⬇ Download CSV</button>
       <select id="donor-duration" onchange="onDurationChange()" title="Select duration for donor fetch">
         <option value="all">🗓️ All time</option>
         <option value="30d">Last 30 days</option>
@@ -639,6 +640,11 @@ let totalUsers = 0;
 let searchQuery = '';
 let searchTimeout = null;
 const PAGE_SIZE = 50;
+let activeDonorsFilter = false;
+let activeDonorFrom = '';
+let activeDonorTo = '';
+let singleUserEmail = null;
+let hasLoadedUsers = false;
 
 document.addEventListener('DOMContentLoaded', async function() {
   const res = await fetch('/auth/check');
@@ -688,6 +694,7 @@ async function loadSingleUser(email) {
   document.getElementById('users-loading').style.display = 'block';
   document.getElementById('users-empty').style.display = 'none';
   document.getElementById('users-table-wrap').style.display = 'none';
+  document.getElementById('download-users-btn').disabled = true;
   document.getElementById('fetch-users-btn').disabled = true;
 
   try {
@@ -711,6 +718,9 @@ async function loadSingleUser(email) {
 
     // Render only this single user into the table
     renderUsers(data.users);
+    singleUserEmail = email;
+    hasLoadedUsers = true;
+    document.getElementById('download-users-btn').disabled = false;
     document.getElementById('users-loading').style.display = 'none';
     document.getElementById('fetch-users-btn').disabled = false;
 
@@ -852,6 +862,26 @@ function formatRolesDisplay(roles) {
   return roles.map(r => `<span class="role-badge" style="background:var(--green-light);color:var(--green-dark);padding:2px 6px;border-radius:4px;font-size:11px;margin-right:3px;">${r}</span>`).join(' ');
 }
 
+function buildUserListParams(page, limit, donors = activeDonorsFilter, from = activeDonorFrom, to = activeDonorTo) {
+  const params = new URLSearchParams();
+  params.set('page', page);
+  params.set('limit', limit);
+  if (donors) {
+    params.set('donors', '1');
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+  }
+  if (searchQuery) params.set('search', searchQuery);
+  return params;
+}
+
+function getAdminHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  const token = localStorage.getItem('vazhai_session');
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
+
 /**
  * Render an array of user objects into the users table.
  * Resets usersData, originalUsersData, and dirty state.
@@ -966,20 +996,14 @@ async function loadUsers() {
   document.getElementById('users-empty').style.display = 'none';
   document.getElementById('users-table-wrap').style.display = 'none';
   document.getElementById('pagination').style.display = 'none';
+  document.getElementById('download-users-btn').disabled = true;
   document.getElementById('fetch-users-btn').disabled = true;
   document.getElementById('fetch-users-btn').innerHTML = '<span class="spinner"></span>Loading...';
   
   // Build query string with pagination and search
-  const params = new URLSearchParams();
-  params.set('page', currentPage);
-  params.set('limit', PAGE_SIZE);
-  if (searchQuery) {
-    params.set('search', searchQuery);
-  }
+  const params = buildUserListParams(currentPage, PAGE_SIZE);
   
-  const token = localStorage.getItem('vazhai_session');
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const headers = getAdminHeaders();
   
   const res = await fetch('/auth/admin?' + params.toString(), { headers });
   const data = await res.json();
@@ -994,11 +1018,16 @@ async function loadUsers() {
   }
   
   if (!data.users || data.users.length === 0) {
+    hasLoadedUsers = false;
     document.getElementById('users-empty').style.display = 'block';
     document.getElementById('pagination').style.display = 'none';
     return;
   }
   
+  singleUserEmail = null;
+  hasLoadedUsers = true;
+  document.getElementById('download-users-btn').disabled = false;
+
   // Update pagination state from response
   if (data.pagination) {
     currentPage = data.pagination.page;
@@ -1057,28 +1086,20 @@ async function fetchDonors() {
       return;
     }
   }
+
+  currentPage = 1;
   
   document.getElementById('users-loading').style.display = 'block';
   document.getElementById('users-empty').style.display = 'none';
   document.getElementById('users-table-wrap').style.display = 'none';
   document.getElementById('pagination').style.display = 'none';
+  document.getElementById('download-users-btn').disabled = true;
   document.getElementById('fetch-donors-btn').disabled = true;
   document.getElementById('fetch-donors-btn').innerHTML = '<span class="spinner"></span>Loading...';
   
   // Build query string with donor filter, date range, pagination and search
-  const params = new URLSearchParams();
-  params.set('page', currentPage);
-  params.set('limit', PAGE_SIZE);
-  params.set('donors', '1');
-  if (from) params.set('from', from);
-  if (to) params.set('to', to);
-  if (searchQuery) {
-    params.set('search', searchQuery);
-  }
-  
-  const token = localStorage.getItem('vazhai_session');
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const params = buildUserListParams(currentPage, PAGE_SIZE, true, from, to);
+  const headers = getAdminHeaders();
   
   try {
     const res = await fetch('/auth/admin?' + params.toString(), { headers });
@@ -1092,14 +1113,23 @@ async function fetchDonors() {
       showMsg('error', data.error);
       return;
     }
+
+    activeDonorsFilter = true;
+    activeDonorFrom = from;
+    activeDonorTo = to;
+    singleUserEmail = null;
     
     if (!data.users || data.users.length === 0) {
+      hasLoadedUsers = false;
       document.getElementById('users-empty').style.display = 'block';
       document.getElementById('users-empty').textContent = 'No donors found for the selected period.';
       document.getElementById('pagination').style.display = 'none';
       return;
     }
     
+    hasLoadedUsers = true;
+    document.getElementById('download-users-btn').disabled = false;
+
     // Update pagination state from response
     if (data.pagination) {
       currentPage = data.pagination.page;
@@ -1162,6 +1192,92 @@ function doSearch() {
     searchQuery = newQuery;
     currentPage = 1; // Reset to first page on new search
     loadUsers();
+  }
+}
+
+function fetchAllUsers() {
+  activeDonorsFilter = false;
+  activeDonorFrom = '';
+  activeDonorTo = '';
+  singleUserEmail = null;
+  currentPage = 1;
+  loadUsers();
+}
+
+function csvCell(value) {
+  let text = value == null ? '' : String(value);
+  if (/^[\t\r=+\-@]/.test(text)) text = "'" + text;
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+
+async function downloadUsersCsv() {
+  const button = document.getElementById('download-users-btn');
+  if (!hasLoadedUsers) return;
+
+  button.disabled = true;
+  button.innerHTML = '<span class="spinner"></span>Preparing...';
+
+  try {
+    const headers = getAdminHeaders();
+    let users = [];
+
+    if (singleUserEmail) {
+      const res = await fetch('/auth/admin?email=' + encodeURIComponent(singleUserEmail), { headers });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Failed to fetch user.');
+      if (!Array.isArray(data.users)) throw new Error('Invalid user data received.');
+      users = data.users;
+    } else {
+      const limit = 500;
+      const firstParams = buildUserListParams(1, limit);
+      const firstRes = await fetch('/auth/admin?' + firstParams.toString(), { headers });
+      const firstData = await firstRes.json();
+      if (!firstRes.ok || firstData.error) throw new Error(firstData.error || 'Failed to fetch users.');
+      if (!Array.isArray(firstData.users) || !firstData.pagination || !Number.isInteger(firstData.pagination.totalPages)) {
+        throw new Error('Invalid users response received.');
+      }
+
+      users = firstData.users;
+      const totalPagesToDownload = firstData.pagination.totalPages;
+      const expectedTotal = firstData.pagination.total;
+
+      for (let page = 2; page <= totalPagesToDownload; page++) {
+        const params = buildUserListParams(page, limit);
+        const res = await fetch('/auth/admin?' + params.toString(), { headers });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || `Failed to fetch page ${page}.`);
+        if (!Array.isArray(data.users) || !data.pagination || data.pagination.total !== expectedTotal) {
+          throw new Error('The user list changed during download. Please try again.');
+        }
+        users = users.concat(data.users);
+      }
+
+      if (users.length !== expectedTotal) {
+        throw new Error('Could not fetch every user page. Please try again.');
+      }
+    }
+
+    const rows = [
+      ['Name', 'Phone', 'Email', 'Address'],
+      ...users.map(user => [user.name, user.phone, user.email, user.address])
+    ];
+    const csv = '\uFEFF' + rows.map(row => row.map(csvCell).join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `vazhai-users-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showMsg('success', `✅ Downloaded ${users.length} user(s).`);
+  } catch (err) {
+    showMsg('error', 'Could not download users: ' + err.message);
+    console.error('[downloadUsersCsv]', err);
+  } finally {
+    button.disabled = !hasLoadedUsers;
+    button.innerHTML = '⬇ Download CSV';
   }
 }
 
