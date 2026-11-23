@@ -9,7 +9,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-const VALID_ROLES = ['admin', 'volunteer', 'donor', 'blogger'];
+const VALID_ROLES = ['admin', 'volunteer', 'newvolunteermgmt', 'donor', 'blogger'];
 
 // Extract session from request
 async function getSession(store, event) {

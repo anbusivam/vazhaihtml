@@ -428,7 +428,8 @@
 
 <div class="dashboard-topnav">
   <a href="/">🏠 Home</a>
-  <a href="/dashboard/manage">⚙️ Admin Dashboard</a>
+  <a href="/dashboard/manage" id="nav-admin-dashboard">⚙️ Admin Dashboard</a>
+  <a href="/dashboard/manage-volunteers" id="nav-volunteer-registrations" style="display:none;">🤝 Volunteer Registrations</a>
 </div>
 
 <div class="dashboard-container">
@@ -664,6 +665,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   currentUserEmail = data.email;
   userRoles = data.roles || (data.role ? [data.role] : []);
   currentUserName = data.name || '';
+  if (!userRoles.includes('admin')) document.getElementById('nav-admin-dashboard').style.display = 'none';
+  if (userRoles.includes('newvolunteermgmt') || userRoles.includes('admin')) {
+    document.getElementById('nav-volunteer-registrations').style.display = '';
+  }
 
   document.getElementById('user-name-display').textContent = currentUserName || data.email;
   document.getElementById('user-email-display').textContent = data.email;

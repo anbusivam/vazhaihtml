@@ -1,4 +1,4 @@
-// Admin endpoint: GET/POST /volunteer/manage
+// Volunteer registration access: GET /volunteer/manage; admins may also POST.
 const { getStore, ADMIN_EMAILS } = require('./auth-store');
 const { getVolunteerStore } = require('./volunteer-store');
 
@@ -26,16 +26,17 @@ async function getSession(store, event) {
   return session;
 }
 
-async function requireAdmin(event) {
-  const authStore = await getStore(event);
+async function requireAccess(event, authStoreProvider) {
+  const authStore = await authStoreProvider(event);
   const session = await getSession(authStore, event);
   if (!session) return { error: response(401, { error: 'Unauthorized' }) };
   const user = await authStore.get(`user:${session.email}`, { type: 'json' });
   const roles = Array.isArray(user?.roles) ? user.roles : (user?.role ? [user.role] : []);
-  if (!ADMIN_EMAILS.includes(session.email) && !roles.includes('admin')) {
-    return { error: response(403, { error: 'Admin access required.' }) };
+  const isAdmin = ADMIN_EMAILS.includes(session.email) || roles.includes('admin');
+  if (!isAdmin && !roles.includes('newvolunteermgmt')) {
+    return { error: response(403, { error: 'Volunteer management access required.' }) };
   }
-  return { authStore, session };
+  return { authStore, session, isAdmin };
 }
 
 async function readRecords(store) {
@@ -44,13 +45,13 @@ async function readRecords(store) {
   return records.filter(Boolean).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
 }
 
-exports.handler = async function(event) {
+async function handle(event, authStoreProvider = getStore, volunteerStoreProvider = getVolunteerStore) {
   if (event.httpMethod === 'OPTIONS') return response(200, {});
 
   try {
-    const access = await requireAdmin(event);
+    const access = await requireAccess(event, authStoreProvider);
     if (access.error) return access.error;
-    const store = await getVolunteerStore(event);
+    const store = await volunteerStoreProvider(event);
 
     if (event.httpMethod === 'GET') {
       const params = event.queryStringParameters || {};
@@ -62,10 +63,17 @@ exports.handler = async function(event) {
         records = records.filter(record => [record.id, record.name, record.email, record.phone, record.city]
           .some(value => String(value || '').toLowerCase().includes(search)));
       }
+      records = records.map(record => {
+        const safeRecord = { ...record };
+        delete safeRecord.whatsappToken;
+        if (!access.isAdmin) delete safeRecord.notes;
+        return safeRecord;
+      });
       return response(200, { success: true, volunteers: records });
     }
 
     if (event.httpMethod !== 'POST') return response(405, { error: 'Method not allowed.' });
+    if (!access.isAdmin) return response(403, { error: 'Admin access required to modify registrations.' });
     const body = JSON.parse(event.body || '{}');
     const action = body.action;
     const id = String(body.id || '').trim();
@@ -98,4 +106,7 @@ exports.handler = async function(event) {
     console.error('[volunteer-manage] Error:', err.message, err.stack);
     return response(500, { error: 'Server error.' });
   }
-};
+}
+
+exports.handler = event => handle(event);
+exports.handle = handle;
