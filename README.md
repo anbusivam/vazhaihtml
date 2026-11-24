@@ -40,7 +40,7 @@ Where it falls short psychologically
 
 Keep the English and Tamil homepages to one upcoming-programme banner in the original animated spotlight style, two recent highlights, and a link to the past-events archive. Replace highlights rather than appending more. The events pages separate upcoming programmes, past events and milestones, and recurring activities. Each programme has its own bilingual detail pages, linked from the homepage and events index, with matching Netlify routes and sitemap entries.
 
-Current coverage is 10 schools. Seven school locations are recorded in the map data; PUPS, Doddamanchi; PUMS, Doddur; and PUMS, Nellukunthi are listed separately until their coordinates are verified. Historical event plans and attendance figures must not be presented as current network totals.
+Current coverage and the map include all 10 schools. The three recently added locations—PUPS, Doddamanchi; PUMS, Doddur; and PUMS, Nellukunthi—are recorded alongside the original seven schools. Historical event plans and attendance figures must not be presented as current network totals.
 
 ## to run
 1. ensure netlify cli is installed

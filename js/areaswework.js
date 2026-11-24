@@ -5,7 +5,10 @@ const schools = [
   { name: 'Bollakollai', type: 'Middle School', block: 'Kelamangalam', village: 'Bollakollai', students: 162, lat: 12.356819444444444, lng: 77.89015833333335 },
   { name: 'Kodagarai', type: 'Higher Secondary School', block: 'Thally', village: 'Kodagarai', students: 127, lat: 12.295530555555555, lng: 77.86153333333333 },
   { name: 'Kodagarai', type: 'Primary School', block: 'Thally', village: 'Kodagarai', students: 122, lat: 12.290627777777777, lng: 77.86082222222221 },
-  { name: 'Kotchavur', type: 'Primary School', block: 'Thally', village: 'Kotchavur', students: 61, lat: 12.303291666666667, lng: 77.86097222222222 }
+  { name: 'Kotchavur', type: 'Primary School', block: 'Thally', village: 'Kotchavur', students: 61, lat: 12.303291666666667, lng: 77.86097222222222 },
+  { name: 'PUPS, Doddamanchi', type: 'Primary School', village: 'Doddamanchi', lat: 12.312344956959407, lng: 77.80723925277813 },
+  { name: 'PUMS, Doddur', type: 'Middle School', village: 'Doddur', lat: 12.311262943930986, lng: 77.81589848069756 },
+  { name: 'PUMS, Nellukunthi', type: 'Middle School', village: 'Nellukunthi', lat: 12.439810408916715, lng: 77.88562414601849 }
 ];
 
 const map = L.map('school-map', { scrollWheelZoom: false, zoomControl: false });
@@ -29,7 +32,8 @@ schools.forEach((school, index) => {
   const displayName = `${school.name} - ${school.type}`;
   bounds.extend(position);
   const marker = L.marker(position, { icon: L.divIcon({ className: '', html: `<div class="school-pin"><span>${index + 1}</span></div>`, iconSize: [30, 30], iconAnchor: [8, 27], popupAnchor: [7, -25] }) }).addTo(map);
-  marker.bindPopup(`<div class="map-popup"><h3>${displayName}</h3><p>${school.village}, ${school.block}<br>${school.students} students listed</p><a href="https://www.google.com/maps/search/?api=1&query=${school.lat},${school.lng}" target="_blank" rel="noopener">Open in Google Maps ↗</a></div>`);
+  const schoolDetails = [school.block ? `${school.village}, ${school.block}` : school.village, school.students === undefined ? null : `${school.students} students listed`].filter(Boolean).join('<br>');
+  marker.bindPopup(`<div class="map-popup"><h3>${displayName}</h3><p>${schoolDetails}</p><a href="https://www.google.com/maps/search/?api=1&query=${school.lat},${school.lng}" target="_blank" rel="noopener">Open in Google Maps ↗</a></div>`);
   school.marker = marker;
 
   if (!shownPlaces.has(school.village)) {
