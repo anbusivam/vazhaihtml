@@ -6,7 +6,7 @@
 /* ── SEO META ── */
 const sectionMeta = {
   'home':        { title:'Vazhai NGO — Rural Education NGO Tamil Nadu | Krishnagiri, Dharmapuri, Villupuram', description:'Vazhai is an impact-focused education NGO placing full-time School Companions in rural government schools across Tamil Nadu. Donate, volunteer, or sponsor a school.' },
-  'who-we-are':  { title:'Who We Are — Vazhai NGO | Rural Education Tamil Nadu Since 2005', description:'Founded in April 2005 by first-generation graduates from Presidency College Chennai, Vazhai has supported 500+ students across Tamil Nadu.' },
+  'who-we-are':  { title:'Who We Are — Vazhai NGO | Rural Education Tamil Nadu Since 2005', description:'Founded in April 2005 by first-generation graduates from Presidency College Chennai, Vazhai has mentored 500+ students and reached 1,000+ more this year across 10 schools.' },
   'what-we-do':  { title:'What We Do — School Companions & Field Coordinators | Vazhai NGO', description:'Vazhai supports 10 rural government schools through its School Companion programme in Krishnagiri, Tamil Nadu. Learn how School Companions, Field Coordinators and volunteers help.' },
   'join-vazhai': { title:'Join Vazhai — Volunteer, School Companion or Field Coordinator | Tamil Nadu NGO', description:'Volunteer remotely with Vazhai NGO, or apply for a full-time School Companion or Field Coordinator role in Krishnagiri, Tamil Nadu.' },
   'donation':   { title:'Donate to Vazhai NGO — Support Rural Education in Tamil Nadu', description:'₹15,000/month fully funds a School Companion in a rural Tamil Nadu government school. Support Vazhai NGO with a one-time or monthly donation.' },
