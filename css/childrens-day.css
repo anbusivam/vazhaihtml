@@ -1,0 +1,33 @@
+.childrens-story .event-detail-hero h1 { line-height: 1.15; }
+.childrens-story .event-detail-hero h1 em { display: block; margin-top: 12px; }
+.story-hero-note { display: block; margin-top: 24px; color: var(--sun); font-size: .75rem; font-weight: 800; }
+.story-jump { display: flex; flex-wrap: wrap; gap: 10px 20px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.story-jump a, .childrens-story .event-detail-section a { color: var(--green-d); text-underline-offset: 4px; font-weight: 800; }
+.story-jump a { font-size: .8rem; }
+.childrens-story section { scroll-margin-top: calc(var(--nav-h) + 24px); }
+.childrens-story .event-detail-section { padding-top: 32px; }
+.childrens-story .event-detail-section p { max-width: 70ch; }
+.childrens-story .story-photo-note, .childrens-story .story-footnote { font-size: .76rem; color: var(--muted); }
+.story-scrapbook { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 16px; align-items: start; margin: 30px 0 12px; padding: 18px 8px; background: var(--amber-l); border-radius: var(--r-lg); }
+.story-scrapbook figure { width: fit-content; max-width: 100%; margin: 0; padding: 8px 8px 12px; background: #fff; box-shadow: 0 3px 12px #20120815; justify-self: center; }
+.story-scrapbook figure:nth-child(3n + 1) { transform: rotate(-1deg); }
+.story-scrapbook figure:nth-child(3n + 2) { transform: rotate(1deg); margin-top: 12px; }
+.story-scrapbook img { display: block; max-width: 100%; height: auto; }
+.story-scrapbook figcaption { max-width: 28ch; padding-top: 10px; font-size: .72rem; line-height: 1.6; color: var(--ink2); font-weight: 700; }
+.story-quote { margin: 24px 0; padding: 24px; background: var(--green-l); border-left: 4px solid var(--green); border-radius: 0 var(--r-lg) var(--r-lg) 0; }
+.story-quote blockquote { margin: 0; color: var(--green-d); font-size: 1.05rem; line-height: 2; }
+.story-quote figcaption { margin-top: 16px; font-size: .75rem; line-height: 1.7; color: var(--ink2); }
+.story-schools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0; margin: 24px 0; list-style: none; }
+.story-schools li { padding: 14px 16px; background: var(--bg2); border-left: 3px solid var(--amber); font-size: .85rem; font-weight: 800; }
+.childrens-story:lang(ta) h1, .childrens-story:lang(ta) h2 { line-height: 1.65; }
+.childrens-story:lang(ta) .event-detail-hero h1 em { font-family: inherit; }
+@media (max-width: 599px) {
+  .story-scrapbook { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 8px; }
+  .story-scrapbook figure { padding: 5px 5px 10px; }
+  .story-scrapbook figcaption { font-size: .68rem; }
+  .story-schools { grid-template-columns: 1fr; }
+  .story-quote { padding: 20px 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-scrapbook figure { transform: none !important; }
+}

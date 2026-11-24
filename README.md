@@ -42,6 +42,8 @@ Keep the English and Tamil homepages to one upcoming-programme banner in the ori
 
 Current coverage and the map include all 10 schools. The three recently added locations—PUPS, Doddamanchi; PUMS, Doddur; and PUMS, Nellukunthi—are recorded alongside the original seven schools. Historical event plans and attendance figures must not be presented as current network totals.
 
+The bilingual World Children's Day recap covers 20 November 2026 at seven schools. All its photos are from PUMS, Kottaiyur, not from the other six schools. Its curated photos are hosted in Cloudinary under `events/nov20/childrens-day-2026`. Use only the supplied small images, strip embedded metadata before uploading, and do not upscale them or add larger-image links. Social sharing uses separate branded 1200 × 630 Cloudinary cards so the small student photos remain private. The shared scrapbook styles are in `css/childrens-day.css`.
+
 ## to run
 1. ensure netlify cli is installed
 2. run `netlify dev` in the terminal
