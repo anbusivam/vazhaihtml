@@ -645,6 +645,18 @@ body {
   .impact-event-status::after { animation: none; }
 }
 
+.career-spotlight .impact-feature-intro { flex-direction: column; align-items: flex-start; gap: 6px; }
+.career-spotlight .impact-event-status { position: static; line-height: 1.4; }
+.career-spotlight .impact-feature-intro h2 { white-space: normal; overflow: visible; line-height: 1.4; }
+.career-spotlight .impact-date strong { font-size: 1.25rem; }
+.impact-story.recent-highlight .impact-story-marker { flex: 1 1 auto; min-width: 0; line-height: 1.7; }
+.impact-archive-link { padding: 12px 22px; background: var(--amber-l); color: var(--green-d); font-size: .75rem; line-height: 1.7; font-weight: 900; }
+.impact-archive-link:hover { text-decoration: underline; }
+.impact-archive-link:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+.event-jump-links { display: flex; flex-wrap: wrap; gap: 10px; padding: 0 16px 20px; }
+#upcoming-events .event-feature-grid { grid-template-columns: minmax(0, 1fr); }
+#upcoming-events, #past-events, #recurring-events { scroll-margin-top: 100px; }
+
 /* ── HERO POEM / TAGLINE ── */
 .hero-poem {
   background: var(--amber-l);
@@ -675,7 +687,7 @@ body {
 @media (min-width: 768px) {
   .hero-cta { padding: 40px 48px 36px; }
   .impact-spotlight { padding: 42px 48px 36px; }
-  .impact-spotlight-grid { grid-template-columns: 1fr; gap: 12px; }
+  .impact-spotlight-grid { grid-template-columns: 1fr; gap: 0; }
   .impact-story:not(.featured) { grid-template-columns: 190px minmax(0, 1fr); column-gap: 32px; padding: 26px 18px; }
   .impact-story.completed { display: flex; gap: 16px; padding: 11px 18px 11px 22px; }
   .impact-spotlight-footer { flex-direction: row; align-items: center; justify-content: space-between; margin-top: 24px; }

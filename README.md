@@ -36,6 +36,12 @@ Where it falls short psychologically
    On the Donate page, frame amounts around concrete outcomes: "₹500/month funds one student's materials for a year"
    Want me to go ahead and implement these? Some will need you to supply real stories/quotes, but I can build the structure and write placeholder prompts for where that content should go.
 
+## Homepage events and school coverage
+
+Keep the English and Tamil homepages to one upcoming-programme banner in the original animated spotlight style, two recent highlights, and a link to the past-events archive. Replace highlights rather than appending more. The events pages separate upcoming programmes, past events and milestones, and recurring activities. Each programme has its own bilingual detail pages, linked from the homepage and events index, with matching Netlify routes and sitemap entries.
+
+Current coverage is 10 schools. Seven school locations are recorded in the map data; PUPS, Doddamanchi; PUMS, Doddur; and PUMS, Nellukunthi are listed separately until their coordinates are verified. Historical event plans and attendance figures must not be presented as current network totals.
+
 ## to run
 1. ensure netlify cli is installed
 2. run `netlify dev` in the terminal

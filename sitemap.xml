@@ -127,6 +127,24 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://vazhai.in/events/career-guidance</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/events/career-guidance"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/events/career-guidance"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/events/career-guidance"/>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vazhai.in/ta/events/career-guidance</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/events/career-guidance"/>
+    <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/events/career-guidance"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://vazhai.in/events/career-guidance"/>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://vazhai.in/events/world-childrens-day</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://vazhai.in/events/world-childrens-day"/>
     <xhtml:link rel="alternate" hreflang="ta" href="https://vazhai.in/ta/events/world-childrens-day"/>

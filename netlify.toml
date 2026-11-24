@@ -100,6 +100,11 @@
   status = 200
 
 [[redirects]]
+  from = "/ta/events/career-guidance"
+  to = "/ta/events/career-guidance.html"
+  status = 200
+
+[[redirects]]
   from = "/ta/events/world-childrens-day"
   to = "/ta/events/world-childrens-day.html"
   status = 200
@@ -176,6 +181,11 @@
 
 # Clean URL rewrites (status=200 means internal rewrite, no client redirect)
 [[redirects]]
+  from = "/newdesign"
+  to = "/newdesign.html"
+  status = 200
+
+[[redirects]]
   from = "/who-we-are"
   to = "/who-we-are.html"
   status = 200
@@ -213,6 +223,11 @@
 [[redirects]]
   from = "/events"
   to = "/events.html"
+  status = 200
+
+[[redirects]]
+  from = "/events/career-guidance"
+  to = "/events/career-guidance.html"
   status = 200
 
 [[redirects]]
